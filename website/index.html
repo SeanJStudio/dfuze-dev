@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<!--
+		Author: Sean Johnson
+	!-->
+	<head>
+		<title>Dfuze</title>
+		<meta name="viewport" content="width=device-width">
+		<meta charset="UTF-8">
+		<meta name="author" content="Sean Johnson">
+		<link type="text/css" rel="stylesheet" href="css/style.css"/>
+		<link rel='icon' href='img/favicon.ico'/>
+	</head>
+	<body>
+
+		<div id="myNav" class="overlay">
+		  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+		  <div class="overlay-content">
+			<ul>
+				<li><a href="index.html">Home</a></li>
+				<li><a href="roadmap.html">Roadmap</a></li>
+				<li><a href="getting_started.html">Getting Started</a></li>
+				<li><a href="about.html">About</a></li>
+				<li><a href="faq.html">FAQ</a></li>
+			</ul>
+		  </div>
+		</div>
+
+		<a href="index.html"><img id="logo" src="img/logo.png" alt="logo"/></a>
+		<img id="menu" onclick="openNav()" src="img/menu.png" alt="menu"/>
+		<header>
+			<h1 class="title">Name/address de-duplication and B2B data onboarding</h1>
+			<p class="subtitle">learn more</p>
+			<img id="arrow_down" class="vert-move" src="img/arrow_down.png" alt="down arrow"/>
+		</header>
+		
+		<div class="fullscreen_header">
+			<video autoplay muted loop playsinline class="opacity1">
+				<source src="img/crosswalk.mp4" type="video/mp4">
+			</video>
+		</div>
+		
+		<div class="container">
+
+			<div class="outer_wrapper">
+				<div class="inner_container justify_center">
+					<img class="left_tilt" src="img/names.png" alt="name tags"/>
+				</div>
+				<div class="inner_container justify_right">
+					<div class="text_container">
+					<h2 class="bodytitle">Hello, goodbye</h2>
+					<p class="bodycopy">Advanced offline name & address matching keeping your data secure.
+					</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<hr/>
+		
+		<div class="container">
+			<div class="outer_wrapper reverse">
+				<div class="inner_container justify_center inner_reverse">
+					<div class="text_container">
+						<h2 class="bodytitle">Merge 'em all</h2>
+						<p class="bodycopy">Easily merge multiple data files together and automatically identify field names.
+						</p>
+					</div>
+				</div>
+				<div class="inner_container justify_center">
+					<img class="right_tilt" src="img/file_formats.png" alt="file formats"/>
+				</div>
+			</div>
+		</div>
+		
+		<hr/>
+		
+		<div class="container">
+			<div class="outer_wrapper">
+				<div class="inner_container justify_center">
+					<img class="left_tilt" src="img/automate.png" alt="automation"/>
+				</div>
+				<div class="inner_container justify_right">
+					<div class="text_container">
+						<h2 class="bodytitle">Automate</h2>
+						<p class="bodycopy">Select your client then job type and let Dfuze handle the rest.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--
+		<a href="#">
+		<div class="cta angled_gradient">
+			<p>Get notified when we launch</p>
+		</div>
+		</a> -->
+		
+		<footer>
+			<a href="index.html"><img src="img/footer_logo.png" alt="logo"/></a>
+		</footer>
+		
+		<script>
+		/* Open */
+		function openNav() {
+		  document.getElementById("myNav").style.display = "block";
+		}
+
+		/* Close */
+		function closeNav() {
+		  document.getElementById("myNav").style.display = "none";
+		}
+		</script>
+	</body>
+</html>

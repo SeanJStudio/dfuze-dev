@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<!--
+		Author: Sean Johnson
+	!-->
+	<head>
+		<title>About</title>
+		<meta name="viewport" content="width=device-width">
+		<meta charset="UTF-8">
+		<meta name="author" content="Sean Johnson">
+		<link type="text/css" rel="stylesheet" href="css/style.css"/>
+		<link rel='icon' href='img/favicon.ico'/>
+	</head>
+	<body>
+
+		<div id="myNav" class="overlay">
+			<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  
+			<div class="overlay-content">
+			  <ul>
+				<li><a href="index.html">Home</a></li>
+				<li><a href="roadmap.html">Roadmap</a></li>
+				<li><a href="getting_started.html">Getting Started</a></li>
+				<li><a href="about.html">About</a></li>
+				<li><a href="faq.html">FAQ</a></li>
+			  </ul>
+			</div>
+		</div>
+
+		<a href="index.html"><img id="logo" src="img/logo.png" alt="logo"/></a>
+		<img id="menu" onclick="openNav()" src="img/menu.png" alt="menu"/>
+		<header>
+			  <h1 class="title">About</h1><br/>
+			  <p class="bodycopy">Dfuze is a desktop Java application designed for B2B data onboarding, deduplication, and ETL.</p>	
+		</header>
+		
+		<div class="fullscreen_header d_black">
+		</div>
+				
+		<footer>
+			<a href="index.html"><img src="img/footer_logo.png" alt="logo"/></a>
+		</footer>
+		
+		<script>
+		/* Open */
+		function openNav() {
+		  document.getElementById("myNav").style.display = "block";
+		}
+
+		/* Close */
+		function closeNav() {
+		  document.getElementById("myNav").style.display = "none";
+		}
+
+		</script>
+	</body>
+</html>

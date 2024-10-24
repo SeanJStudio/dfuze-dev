@@ -1,0 +1,753 @@
+/*
+	Author: Sean Johnson
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tomorrow:wght@700&display=swap');
+
+*{
+font-family: 'Inter', sans-serif;
+	margin:0;
+	padding:0;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+
+	font-size:1em;
+	line-height: 1.312em;
+}
+
+html{
+	background: radial-gradient(rgb(52,54,56), #000);
+}
+
+header{
+	position: absolute;	
+	width:100%;
+	text-align:center;
+	z-index: 2;
+	height:100vh;
+	color: rgb(255, 255, 255);
+}
+
+hr{
+	border:0;
+	border-bottom:8px solid rgb(255 255 255);
+}
+
+.outer_wrapper_wrap li:not(:last-child), .outer_wrapper_wrap li p {
+margin-bottom:24px;
+}
+
+.container .outer_wrapper_wrap {
+	padding: 80px 0;
+}
+
+ol li{
+ 	list-style-position: outside;
+	margin-left:16px;
+	padding-left: 8px;
+	font-family: 'Inter', sans-serif;
+	font-weight: 600;
+	color:#5a5b5c;
+
+}
+
+a{
+	text-decoration: underline;
+	font-weight: normal;
+	color:inherit;
+}
+
+
+a:link {
+color:inherit;
+}
+
+a:visited {
+color:inherit;
+}
+
+a:hover {
+color:inherit;
+}
+
+a:active {
+color:inherit;
+}
+
+footer{
+	height:148px;
+	background:#fff;
+	font-weight: 900;
+	text-align:center;
+	display:flex;
+	align-items: center;
+	justify-content: center;
+}
+
+header > a > h1:hover, .download_table a:hover,.sitemap a:hover{
+	background: linear-gradient(45deg, rgb(0,78,255),rgb(0,153,255));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+footer > a {
+	opacity:0.15;
+	line-height:0;
+}
+
+img.vert-move {
+    -webkit-animation: mover 1s infinite  alternate;
+    animation: mover 1s infinite  alternate;
+}
+img.vert-move {
+    -webkit-animation: mover 1s infinite  alternate;
+    animation: mover 1s infinite  alternate;
+}
+
+@-webkit-keyframes mover {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+@keyframes mover {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+.shortcut {
+text-transform: uppercase;
+    background: linear-gradient(45deg, rgb(0,78,255),rgb(0,153,255));
+    color: #f9fafd;
+    padding: 2px 6px;
+    border-radius: 16px;
+    font-size: 0.675em;
+    font-family: 'Inter';
+    top: -2px;
+    position: relative;
+    letter-spacing: 0.12ch;
+	margin: 0 1px;
+}
+
+.title{
+	font-family: 'Tomorrow', sans-serif;
+	font-size: 3em;
+	font-weight: 700;
+	letter-spacing: -0.05ch;
+	max-width:860px;
+	margin:40vh auto 0 auto;
+	color: #fff;
+}
+
+.subtitle{
+	font-size: 1.625em;
+	font-weight: 300;
+	letter-spacing: -0.06ch;
+	position:absolute;
+	bottom:10vh;
+	left:0;
+	right:0;
+	color: #fff;
+}
+
+.bodycopy{
+	font-family: 'Inter', sans-serif;
+	font-weight: 600;
+	letter-spacing: normal;
+	color: #5a5b5c;
+	font-size: 1em;
+	letter-spacing: -0.02ch;
+    line-height: 1.8em;
+}
+
+
+header .bodycopy {
+	color: #fff;
+	opacity: 0.6;
+}
+
+.bodytitle{
+	font-family: 'Tomorrow', sans-serif;
+	font-size: 2em;
+	line-height:2.5em;
+	font-weight: 900;
+	letter-spacing: -0.04ch;
+	color: rgb(52 54 56);
+}
+
+.doc_video {
+	max-width: 768px;
+	border-radius: 8px;
+	margin: 16px 0 48px 0;
+	box-shadow:0 3px 30px rgb(167 189 255);
+}
+
+.outer_wrapper{
+	max-width:768px;
+	margin:0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.outer_wrapper_wrap{
+	max-width:768px;
+	margin:0 auto;
+	display: flex;
+	flex-flow: column;
+	align-items: flex-start;
+	justify-content: center;
+
+}
+
+.inner_container{
+	display:flex;
+	width:500px;
+	height:70vh;
+	align-items: center;
+}
+
+.text_container{
+	max-width: 350px;
+}
+
+.container{
+	position: relative;
+	width:100%;
+	background-color:rgb(249 250 253);
+	z-index: 10;
+}
+
+.float_left{
+	float:left;
+}
+
+.float_right{
+	float:right;
+}
+
+.justify_center{
+	justify-content: center;
+}
+
+.justify_left{
+	justify-content: left;
+}
+
+.justify_right{
+	justify-content: right;
+}
+
+.margin-right3{
+	margin-right: 3em;
+}
+
+.left_tilt{
+	zoom: 0.861;
+	transform: perspective(400px) rotateY(12deg) rotateX(4deg) rotate(1deg);
+}
+
+.right_tilt{
+	zoom: 0.861;
+	transform: perspective(400px) rotateY(-12deg) rotateX(4deg) rotate(1deg);
+}
+
+.fullscreen_header {
+	z-index:1;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;  
+	object-fit: cover;
+}
+
+.opacity1{
+	opacity:0.3;
+}
+
+::-webkit-scrollbar{display:none;}
+
+.text_field{
+	margin: 48px 0 0 0;
+    float: left;
+    border: none;
+    height: 48px;
+	width: 330px;
+	border-radius: 8px 0px 0px 8px;
+	background:rgb(246, 251, 255);
+	font-size: 1.5em;
+	font-weight: 300;
+	letter-spacing: -0.06ch;
+	color: rgb(52 54 56);
+	padding:0 16px;
+}
+
+.signup_wrapper{
+	margin:0 auto;
+	width:482px;
+}
+
+.sitemap{
+	bottom:initial;
+}
+
+.submit{
+	float: left;
+	margin-top:48px;
+    border: none;
+    height: 48px;
+	padding: 4px 24px;
+	border-radius: 0 8px 8px 0;
+	color:white;
+	cursor: pointer;
+	font-size: 1.5em;
+	font-weight: 300;
+	letter-spacing: -0.06ch;
+}
+
+.cta {
+	text-decoration:none;
+	height:239px;
+	display:flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 2.5em;
+	font-weight: 900;
+	letter-spacing: -0.06ch;
+	color: #fff;
+	text-align:center;
+}
+
+.angled_gradient{
+	background: linear-gradient(45deg, rgb(0,78,255),rgb(0,153,255));
+}
+
+.radial_gradient{
+	background: radial-gradient(rgb(0,153,255), rgb(0,78,255));
+}
+
+.d_black{
+	background:rgb(52,54,56);
+}
+
+.download_table{
+	width:100%;
+	border-spacing: 8px;
+    border-collapse: separate;
+	margin:100px 0;
+}
+
+.download_table tr th{
+	color: rgb(247, 251, 255);
+	padding:8px;
+}
+
+.download_table tr td{
+	background: #fff;
+	padding:16px;
+}
+.download_table tr th,.download_table tr td{
+	box-shadow:0 3px 30px rgb(167 189 255 / 30%);
+	border-radius:8px;
+}
+
+.shorten_header{
+	display: block;
+	padding: 100px 24px;
+	margin-top:-35vh;
+}
+
+.faqlist{
+	    list-style: none;
+}
+
+#arrow_down{
+	position:absolute;
+	bottom:5vh;
+	margin-left: -12px;
+}
+
+#logo{
+	position:absolute;
+	left:24px;
+	top: 24px;
+	z-index:990;
+}
+#menu{
+	position:fixed;
+	right:24px;
+	top: 24px;
+	z-index:990;
+	background:rgb(52,54,56);
+	padding: 4px 8px;
+	border-radius:4px;
+}
+
+#menu:hover{
+	cursor: pointer;
+}
+
+
+
+#navbar{
+	top:-84px;
+	height: 84px;
+	background: #fff;
+	position: fixed;
+	width:100%;
+	box-shadow:0 20px 40px rgba(0,0,0,0.04);
+	z-index:4;
+	transition: all 0.3s ease-in-out 0s;
+    -moz-transition: all 0.3s ease-in-out 0s;
+    -webkit-transition: all 0.3s ease-in-out 0s;
+}
+
+#nav_links li{
+	display: inline-block;
+}
+
+#nav_links {
+	text-align: right;
+	line-height: 84px;
+}
+
+
+/* Menu Overlay */
+.overlay {
+	display:none;  
+	height: 100%;
+	width: 100%;
+	position: fixed;
+	z-index: 999;
+	left: 0;
+	top: 0;
+
+	background-color: rgba(20, 22, 24, 0.95);
+	overflow-x: hidden; /* Disable horizontal scroll */
+}
+
+/* Position the content inside the overlay */
+.overlay-content {
+	position: relative;
+	top: 25%;
+	width: 100%;
+	text-align: center;
+	margin-top: 30px;
+}
+
+/* The navigation links inside the overlay */
+.overlay a {
+	padding: 8px;font-size: 3.5em;
+	font-weight: 700;
+	letter-spacing: -0.06ch;
+	text-decoration: none;
+	font-size: 36px;
+	color: rgb(150,152,154);
+	display: block;
+	transition: 0.3s;
+	font-family: 'Tomorrow', sans-serif;
+}
+
+.overlay a:hover, .overlay a:focus {
+	color: rgb(246, 251, 255);
+}
+
+/* Position the close button (top right corner) */
+.overlay .closebtn {
+	position: absolute;
+	top: -14px;
+	right: 18px;
+	font-size: 60px;
+	z-index:991;
+}
+
+/* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
+@media screen and (max-height: 450px) {
+	.overlay a {font-size: 20px}
+	.overlay .closebtn {
+		font-size: 40px;
+		top: 15px;
+		right: 35px;
+  }
+}
+
+
+
+
+
+
+
+/*Roadmap styles*/
+
+.timelinecopy{
+	font-size: 1.125em;
+	font-weight: 300;
+	letter-spacing: -0.04ch;
+	color: rgb(142, 146, 150);
+}
+
+.timelineitle{
+	font-size: 2em;	
+	font-weight: 900;
+}
+
+.roadmap{
+	background: rgb(52, 54, 56);
+	margin-top:-35vh;
+	display:flex;
+}
+
+/* The actual timeline (the vertical ruler) */
+.timeline {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 100px 0;
+}
+
+/* The actual timeline (the vertical ruler) */
+.timeline::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  background: linear-gradient(45deg, rgb(246, 251, 255), rgb(52, 54, 56));
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  margin-left: -3px;
+}
+
+/* Container around content */
+.timeline_container {
+  padding: 10px 40px;
+  position: relative;
+  background-color: inherit;
+
+}
+
+/* The circles on the timeline */
+.timeline .timeline_container::after {
+  content: '';
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  right: -17px;
+  background: linear-gradient(45deg, rgb(0,78,255),rgb(0,153,255));
+  border: 4px solid rgb(246, 251, 255);
+  top: 15px;
+  border-radius: 50%;
+  z-index: 1;
+	box-shadow: 0 3px 24px rgb(167 189 255);
+}
+
+/* Place the container to the left */
+.left {
+	right: 50%;
+}
+
+/* Place the container to the right */
+.right {
+  left: 50%;
+}
+
+/* Add arrows to the left container (pointing right) */
+.left::before {
+  content: " ";
+  height: 0;
+  position: absolute;
+  top: 22px;
+  width: 0;
+  z-index: 1;
+  right: 30px;
+  border: medium solid rgb(246, 251, 255);
+  border-width: 10px 0 10px 10px;
+  border-color: transparent transparent transparent rgb(246, 251, 255);
+}
+
+/* Add arrows to the right container (pointing left) */
+.right::before {
+  content: " ";
+  height: 0;
+  position: absolute;
+  top: 22px;
+  width: 0;
+  z-index: 1;
+  left: 30px;
+  border: medium solid rgb(246, 251, 255);
+  border-width: 10px 10px 10px 0;
+  border-color: transparent rgb(246, 251, 255) transparent transparent;
+}
+
+/* Fix the circle for containers on the right side */
+.right::after {
+  left: -16px;
+}
+
+/* The actual content */
+.content {
+  padding: 20px 30px;
+  background-color: rgb(246, 251, 255);
+  position: relative;
+  border-radius: 8px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+	
+}
+
+
+
+@media only screen and (max-width: 1024px) {
+
+	#logo{
+		left:24px;
+		top: 24px;
+		width: 100px;
+	}
+	#menu{
+		position: fixed;
+		right: 24px;
+		top: 24px;
+		background: rgb(52,54,56);
+		padding: 4px 8px;
+		border-radius: 4px;
+		border: 1px solid rgb(255 255 255 / 20%);
+	}
+
+	.title {
+		font-size: 2em;
+		font-weight: 900;
+		letter-spacing: -0.05ch;
+		max-width: 860px;
+		margin: 40vh auto 0 auto;
+		color: #fff;
+		padding: 0 20px;
+	}
+
+	.subtitle {
+		font-size: 1.25em;
+		font-weight: 300;
+		letter-spacing: -0.06ch;
+		position: absolute;
+		bottom: 10vh;
+		left: 0;
+		right: 0;
+		color: #fff;
+	}
+
+	.inner_container {
+		display: flex;
+		width: 100%;
+		height: 30vh;
+		flex-direction: column;
+		align-items: center;
+		padding: 20px 0;
+	}
+
+	.outer_wrapper {
+		max-width: 768px;
+		margin: 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		padding: 0 20px;
+	}
+
+	.left_tilt {
+		zoom: 0.4;
+		transform: none;
+		bottom: -75px;
+		position: relative;
+	}
+
+	.right_tilt {
+		zoom: 0.4;
+		transform: none;
+		bottom: -50px;
+		position: relative;
+	}
+
+	.text_container {
+		max-width: 350px;
+		text-align: center;
+	}
+
+	.reverse {
+		display: flex;
+   		flex-direction: column-reverse;
+	}
+
+	.inner_reverse{
+		display: flex;
+		width: 100%;
+		flex-direction: column;
+		align-items: center;
+		padding: 20px 0;
+		flex-wrap: nowrap;
+		align-content: space-between;
+		justify-content: flex-start;
+	}
+
+	.doc_video{
+		width: 100%;
+	}
+
+	.container .outer_wrapper_wrap {
+		padding: 80px 30px;
+	}
+
+	.bodytitle{
+		margin: 0 0 20px 0;
+		padding: 0 20px 0 0;
+		line-height: 1;
+	}
+
+	.bodycopy {
+		font-size: 0.9em;
+		padding: 0 20px 0 0;
+	}
+
+	header .bodycopy {
+		padding: 0 40px;
+	}
+
+
+.timeline_container{
+	width: initial;
+}
+  /* Place the timelime to the left */
+  .timeline::after {
+  left: 31px;
+  }
+  
+  /* Full-width containers */
+  .timeline_container {
+
+  padding-left: 70px;
+  padding-right: 25px;
+  
+  }
+  
+  /* Make sure that all arrows are pointing leftwards */
+  
+  .timeline_container::before {
+  left: 60px;
+  border: medium solid rgb(246, 251, 255);
+  border-width: 10px 10px 10px 0;
+  border-color: transparent rgb(246, 251, 255) transparent transparent;
+  }
+
+  /* Make sure all circles are at the same spot */
+  .left::after, .right::after {
+  left: 15px;
+  }
+  
+  /* Make all right containers behave like the left ones */
+  .right {
+  left: 0%;
+  }
+  
+  .left{
+	left:0;
+  }
+}

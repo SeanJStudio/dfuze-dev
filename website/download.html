@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<!--
+		Author: Sean Johnson
+	!-->
+	<head>
+		<title>Download</title>
+		<meta charset="UTF-8">
+		<meta name="author" content="Sean Johnson">
+		<link type="text/css" rel="stylesheet" href="css/style.css"/>
+		<link rel='icon' href='img/favicon.ico'/>
+	</head>
+	<body>
+
+		<div id="myNav" class="overlay">
+			<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  
+			<div class="overlay-content">
+			  <ul>
+				  <li><a href="index.html">Home</a></li>
+				  <li><a href="download.html">Download</a></li>
+				  <li><a href="getting_started.html">Getting Started</a></li>
+				  <li><a href="job_documentation.html">Job Documentation</a></li>
+				  <li><a href="roadmap.html">Roadmap</a></li>
+				  <li><a href="about.html">About</a></li>
+				  <li><a href="faq.html">FAQ</a></li>
+			  </ul>
+			</div>
+		</div>
+
+		<a href="index.html"><img id="logo" src="img/logo.png" alt="logo"/></a>
+		<img id="menu" onclick="openNav()" src="img/menu.png" alt="menu"/>
+		<header>
+			<a href="#"><h1 class="title">Download ver 1.0</h1></a>
+			<p class="subtitle">past versions</p>
+			<img id="arrow_down" class="vert-move" src="img/arrow_down.png" alt="down arrow"/>
+		</header>
+		
+		<div class="fullscreen_header d_black">
+		</div>
+		
+		<div class="container">
+
+			<div class="outer_wrapper">
+				<table class="bodycopy download_table">
+				  <tr>
+					<th class="angled_gradient">File</th>
+					<th class="angled_gradient">Version</th>
+					<th class="angled_gradient">Release Date</th>
+				  </tr>
+				  <tr>
+					<td><a href="#">dfuze_v0.3.jar</a></td>
+					<td>0.3</td>
+					<td>01/01/2020</td>
+				  </tr>
+				</table>
+			</div>
+		</div>
+				
+		<footer>
+			<a href="index.html"><img src="img/footer_logo.png" alt="logo"/></a>
+		</footer>
+		
+		<script>
+		/* Open */
+		function openNav() {
+		  document.getElementById("myNav").style.display = "block";
+		}
+
+		/* Close */
+		function closeNav() {
+		  document.getElementById("myNav").style.display = "none";
+		}
+
+		</script>
+	</body>
+</html>

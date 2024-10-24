@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-cli-1.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-codec-1.13.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-collections4-4.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-compress-1.19.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-csv-1.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-lang3-3.10.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/commons-text-1.8.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/curvesapi-1.06.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/flatlaf-2.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/icu4j-68.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/jackcess-4.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/jackcess-encrypt-4.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/javadbf-1.11.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/java-string-similarity-2.0.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/jaxb-api-2.3.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/jaxb-core-2.3.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/jaxb-impl-2.3.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/jgoodies-forms-1.8.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/lightning-csv-jre9-8.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/log4j-api-2.11.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/log4j-core-2.11.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/miglayout15-swing.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/opencsv-5.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/poi-4.1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/poi-examples-4.1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/poi-excelant-4.1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/poi-ooxml-4.1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/poi-ooxml-schemas-4.1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/poi-scratchpad-4.1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/sfm-converter-jre9-8.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/sfm-csv-8.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/sfm-map-jre9-8.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/sfm-util-jre9-8.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/SparseBitSet-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/xmlbeans-3.1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/U/Desktop/Dfuze/lib/LGoodDatePicker-11.2.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

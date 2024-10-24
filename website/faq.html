@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<!--
+		Author: Sean Johnson
+	!-->
+	<head>
+		<title>FAQ</title>
+		<meta name="viewport" content="width=device-width">
+		<meta charset="UTF-8">
+		<meta name="author" content="Sean Johnson">
+		<link type="text/css" rel="stylesheet" href="css/style.css"/>
+		<link rel='icon' href='img/favicon.ico'/>
+	</head>
+	<body>
+
+		<div id="myNav" class="overlay">
+			<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  
+			<div class="overlay-content">
+			  <ul>
+				<li><a href="index.html">Home</a></li>
+				<li><a href="roadmap.html">Roadmap</a></li>
+				<li><a href="getting_started.html">Getting Started</a></li>
+				<li><a href="about.html">About</a></li>
+				<li><a href="faq.html">FAQ</a></li>
+			  </ul>
+			</div>
+		</div>
+
+		<a href="index.html"><img id="logo" src="img/logo.png" alt="logo"/></a>
+		<img id="menu" onclick="openNav()" src="img/menu.png" alt="menu"/>
+		<header>
+			<h1 class="title">FAQ</h1>
+
+		</header>
+		<div class="fullscreen_header d_black">
+		</div>
+		<div class="container">
+			<div class="outer_wrapper_wrap shorten_header">
+			<ul class="faqlist">
+				<li>
+					<p class="bodytitle">Supported files</p>
+					<p class="bodycopy">accdb, csv, cert-1, dat, dbf, mdb, txt, xls, xlsm, xlsx.<br><br></p>
+				</li>
+				<li>
+					<p class="bodytitle">What is Dfuze?</p>
+					<p class="bodycopy">Dfuze is an application that simplifies the process of working with large, unstructured data sets.
+						As you may know, working with large amounts of data can be a time-consuming and error-prone process. Traditionally,
+						this has involved running multiple queries in Access or using complex Excel formulas to manipulate the data.
+						Dfuze offers a more efficient and user-friendly solution.<br><br>
+						</p>
+				</li>
+				<li>
+					<p class="bodytitle">What hardware do I need?</p>
+					<p class="bodycopy">You will need a Windows OS with Java SDK 9.0 or later installed.<br><br></p>
+				</li>
+			</ul>
+			</div>
+		</div>
+				
+		<footer>
+			<a href="index.html"><img src="img/footer_logo.png" alt="logo"/></a>
+		</footer>
+		
+		<script>
+		/* Open */
+		function openNav() {
+		  document.getElementById("myNav").style.display = "block";
+		}
+
+		/* Close */
+		function closeNav() {
+		  document.getElementById("myNav").style.display = "none";
+		}
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<!--
+		Author: Sean Johnson
+	!-->
+	<head>
+		<title>Getting Started</title>
+		<meta name="viewport" content="width=device-width">
+		<meta charset="UTF-8">
+		<meta name="author" content="Sean Johnson">
+		<link type="text/css" rel="stylesheet" href="css/style.css"/>
+		<link rel='icon' href='img/favicon.ico'/>
+	</head>
+	<body>
+
+		<div id="myNav" class="overlay">
+			<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  
+			<div class="overlay-content">
+			  <ul>
+				<li><a href="index.html">Home</a></li>
+				<li><a href="roadmap.html">Roadmap</a></li>
+				<li><a href="getting_started.html">Getting Started</a></li>
+				<li><a href="about.html">About</a></li>
+				<li><a href="faq.html">FAQ</a></li>
+			  </ul>
+			</div>
+		</div>
+
+		<a href="index.html"><img id="logo" src="img/logo.png" alt="logo"/></a>
+		<img id="menu" onclick="openNav()" src="img/menu.png" alt="menu"/>
+		<header>
+			  <h1 class="title">Getting Started</h1><br/>
+			  <p class="bodycopy">Get to know the basics of Dfuze</p>	
+		</header>
+		
+		<div class="fullscreen_header d_black">
+		</div>
+				
+		<div class="container">
+			<div class="outer_wrapper_wrap shorten_header">
+			<ul class="faqlist">
+
+					<p class="bodytitle">Shortcuts</p>
+
+				<li><p class="bodycopy"><a href="#runjob">Run a Job</a></p></li>
+				<li><p class="bodycopy"><a href="#exportdatabase">Export Database</a></p></li>
+				<li><p class="bodycopy"><a href="#dedupe">Dedupe Names & Addresses</a></p></li>
+				<li><p class="bodycopy"><a href="#rental">Disparate Data Normalizer (Rental)</a></p></li>
+				<li><p class="bodycopy"><a href="#regex">Regex Search Database</a></p></li>
+				<li><p class="bodycopy"><a href="#tools">Tools</a></p></li>
+			</ul>
+			</div>
+			<hr/>
+			<div class="outer_wrapper_wrap">
+			<ol>
+				
+					<p id="runjob" class="bodytitle">Run a Job</p>
+					<div class="">
+						<video loop controls="true" width='100%' height='100%' class="doc_video">
+							<source src="img/run_job.mp4" type="video/mp4">
+						</video>
+					</div>
+					<li>
+					<p class="bodycopy">Click File ➜ New Job or press <span class="shortcut">Space</span> to show the Job window.</p>
+					</li>
+					<li><p class="bodycopy">Make a selection from the Client dropdown, then another selection from the Job dropdown. Once a Job is chosen you will
+						see information displayed on the right.
+					</p></li>
+					<li><p class="bodycopy">Click the "Load Data" button to import your data. The location of the last file Dfuze interacted with will open for ease of use. Hold 
+					<span class="shortcut">CTRL</span> or <span class="shortcut">SHIFT</span> to merge multiple files. The file types .accdb, .cert-1, .csv, .dat, .dbf, .mdb, .txt, .xls, .xlsm, and .xlsx 
+					are supported. Text based files will be automatically encoded and any BOM markers will be removed.</p></li>
+					<li><p class="bodycopy">Next you must map any required fields from the data to the required fields. Dfuze automatically maps most required fields but you should verify it was done 
+					correctly, pressing right/left on your keyboard to preview record data can help with this. If fields arent automatically mapped you must drag the fields on the left to the required
+					fields on the right.</p>
+					<p class="bodycopy">You can merge fields together into a new field by holding <span class="shortcut">CTRL</span> and selecting multiple fields on the left and pressing the 
+					"Merge New Field" button.</p>
+					<p class="bodycopy">Checking the "Remember fields used for this job" box will save the fields used for future use if available.</p></li>
+					<li><p class="bodycopy">Once mapped, click Job ➜ Run or press <span class="shortcut">R</span> to run the Job.</p></li>
+				
+			</ol>
+			</div>
+			<hr/>
+			<div class="outer_wrapper_wrap">
+			<ul class="faqlist">
+				
+					<p id="exportdatabase" class="bodytitle">Export Database</p>
+					<div class="">
+						<video loop controls="true" width='100%' height='100%' class="doc_video">
+							<source src="img/export_data.mp4" type="video/mp4">
+						</video>
+					</div>
+					<li>
+					<p class="bodycopy">After a Job has run click Data ➜ Export or press <span class="shortcut">E</span> to show the export window.</p>
+					</li>
+					<li><p class="bodycopy">Data can be exported as .accdb, .csv, .dat, .dbf, .mdb, .txt, or .xlsx file types.
+					</p></li>
+					<li><p class="bodycopy">Export multiple data files based on unique values within a field. Ex. if the field "Fruit" is selected and has the values "apple, orange, banana" then 3 files will be created.</p></li>
+					<li><p class="bodycopy">Press the "Export Data" button to browse for the location to export data.</p></li>
+				
+			</ul>
+			</div>
+			<hr/>
+			<div class="outer_wrapper_wrap">
+			<ul class="faqlist">
+				
+					<p id="dedupe" class="bodytitle">Dedupe Names & Addresses</p>
+					<div class="">
+						<video loop controls="true" width='100%' height='100%' class="doc_video">
+							<source src="img/dupe.mp4" type="video/mp4">
+						</video>
+					</div>
+					<ol>
+					<li>
+					<p class="bodycopy">Click File ➜ New Job then select "0 - Utility" as the Client and "Dedupe" as the Job.</p>
+					</li>
+					<li><p class="bodycopy">After mapping the required fields and running the job, the dedupe window will display.
+					Here you can customize how matches are made, choose your name fields, prioritize records, view/modify/export/delete dupes.
+					</p></li>
+					<li><p class="bodycopy">After choosing your settings click run to start. The dedupe works by 
+					normalizing the address fields by fixing errors, converting accents, converting numbers to words, changing spelling of hundreds of components to be the same in multiple languages, 
+					parsing out various components, removing vowels and comparing the final parts to find enough of a match.</p>
+					<p class="bodycopy">When a name is selected it is compared by removing hundreds of prefixes/suffixes, converting accents, parsing multiple names into different components, 
+					going through 4 string matching algorithms (Jaro Wrinkler, NYSIIS, Metaphone3, Refined Soundex), comparing initials, comparing reversed names and more!</p></li>
+					<li><p class="bodycopy">Once the dedupe finishes its a good idea to click the view button to view the dupes and make any necessary modifications. If
+					you want to remove the dupes from the database, then click the delete button.</p>
+					</li>
+					<li><p class="bodycopy">You can run the dedupe again with different settings or if you're finished close the window and click Data ➜ Export or press <span class="shortcut">E</span> to show the export window to export your database.</p></li></ol>
+				
+			</ul>
+			</div>
+			<hr/>
+			<div class="outer_wrapper_wrap">
+			<ul class="faqlist">
+				
+					<p id="rental" class="bodytitle">Disparate Data Normalizer (Rental)</p>
+					<div class="">
+						<video loop controls="true" width='100%' height='100%' class="doc_video">
+							<source src="img/rental.mp4" type="video/mp4">
+						</video>
+					</div>
+					<ol>
+					<li>
+					<p class="bodycopy">Click File ➜ New Job then select "0 - Utility" as the Client and "Rental" as the Job.</p>
+					</li>
+					<li><p class="bodycopy">After running the job Dfuze will attempt to map the headers from the imported files to a set of common predefined headers and then
+					displays the mapping for you to review. If everything looks good, close the window to continue.
+					</p></li>
+					<li><p class="bodycopy">Dfuze will then analyze the name fields to fix data entry errors and identify companies.</p></li>
+					<li><p class="bodycopy">Next it will prompt you to select how the salutation field should be built.</p>
+					</li>
+					<li><p class="bodycopy">Once finished, click Data ➜ Export or press <span class="shortcut">E</span> to show the export window to export your database with the normalized fields appended.</p></li></ol>
+				
+			</ul>
+			</div>
+			<hr/>
+			<div class="outer_wrapper_wrap">
+			<ul class="faqlist">
+				
+					<p id="regex" class="bodytitle">Regex Search Database</p>
+					<div class="">
+						<video loop controls="true" width='100%' height='100%' class="doc_video">
+							<source src="img/view.mp4" type="video/mp4">
+						</video>
+					</div>
+					<ol>
+					<li>
+					<p class="bodycopy">After running any job you can click Data ➜ View or press <span class="shortcut">V</span> to view the database.</p>
+					</li>
+					<li><p class="bodycopy">Here you can type a regex pattern that will be searched against the entire database with only the matched records returned and their 
+					matched parts highlighted in yellow.
+					</p></li>
+					<li><p class="bodycopy">If you are unfamiliar with regex patterns, check out this <a href="https://www.freeformatter.com/java-regex-tester.html#documentation" target="_blank">site</a>.</p></li>
+					<li><p class="bodycopy">If you want to export the data, select the rows you want and click "Export Selected Rows"</p>
+					</li></ol>
+				
+			</ul>
+			</div>
+			<hr/>
+			<div class="outer_wrapper_wrap">
+			<ul class="faqlist">
+				
+					<p id="tools" class="bodytitle">Tools</p>
+					<li>
+					<p class="bodycopy">After running a Job, various tools become available in the "Tools" section.</p>
+					</li>
+			</ul>
+			<ol>
+					<li><p class="bodycopy"><span class="shortcut">Casing Conversion</span> - Variety of options including auto casing</p></li>
+					<li><p class="bodycopy"><span class="shortcut">Encoding Correction</span> - Fix incorrectly encoded characters</p></li>
+					<li><p class="bodycopy"><span class="shortcut">Inkjet Maker</span> - Batch create inkjet printing files and layout report</p></li>
+					<li><p class="bodycopy"><span class="shortcut">Proof Maker</span> - Create a proof database for client review</p></li>
+					<li><p class="bodycopy"><span class="shortcut">Sample Maker</span> - Make a sample file for internal tracking</p></li>		
+			</ol>
+			</div>
+		</div>
+		<footer>
+			<a href="index.html"><img src="img/footer_logo.png" alt="logo"/></a>
+		</footer>
+		
+		<script>
+		/* Open */
+		function openNav() {
+		  document.getElementById("myNav").style.display = "block";
+		}
+
+		/* Close */
+		function closeNav() {
+		  document.getElementById("myNav").style.display = "none";
+		}
+
+		</script>
+	</body>
+</html>
