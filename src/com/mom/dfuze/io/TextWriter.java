@@ -67,8 +67,16 @@ public class TextWriter {
 			if(includeHeader)
 				writer.appendRow(headers);
 			
-			for (String[] record : data)
+			for (int i = 0; i < data.length; ++i) {
+				String[] record = data[i];
+				for(int j = 0; j < record.length; ++j) {
+					String cell = record[j];
+					if(cell.length() > XLSXWriter.MAX_CHAR - 100)
+						record[j] = cell.substring(0, XLSXWriter.MAX_CHAR - 100);
+				}
+					
 				writer.appendRow(record);
+			}
 			
 			bufferedwriter.close();
 		} catch (IOException e) {

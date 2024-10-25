@@ -38,6 +38,7 @@ import com.mom.dfuze.data.ExcelCell;
 public class XLSXWriter {
 
 	private static final String INV_CHAR = "\\\\|\\/|\\*|\\?|\\:|\\[|\\]|'";
+	public static final int MAX_CHAR = 32767;
 
 	/**
 	 * Private constructor for XlsxWriter Class to prevent instantiation
@@ -106,11 +107,17 @@ public class XLSXWriter {
 			for (int i = 0; i < data.length; ++i) {
 				Row row = sheet.createRow(i + 1); // + 1 to account for header row
 				for (int j = 0; j < data[i].length; ++j) {
+					
+					String value = data[i][j];
+					
+					if(value.length() > MAX_CHAR)
+						value = value.substring(0, MAX_CHAR);
+					
 					Cell cell = row.createCell(j);
 					if (formatAsFormulas)
-						cell.setCellFormula(data[i][j]);
+						cell.setCellFormula(value);
 					else
-						cell.setCellValue(data[i][j]);
+						cell.setCellValue(value);
 
 					fEvaluator.clearAllCachedResultValues();
 

@@ -407,7 +407,7 @@ public class UiController {
 					// Check if there is a header
 					String[] previewLines = previewText.split("\r");
 
-					String headerLine = previewLines[0];
+					String headerLine = previewLines[0].replaceAll("\"", "");
 					String[] headerLines = headerLine.split(String.valueOf(delimiterSelectDialog.getDelimiterField()));
 					
 					boolean hasHeaders = false;

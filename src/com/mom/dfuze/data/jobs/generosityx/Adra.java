@@ -31,6 +31,7 @@ import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
+import com.mom.dfuze.data.util.Analyze;
 import com.mom.dfuze.data.util.Common;
 import com.mom.dfuze.data.util.DateTimeInferer;
 import com.mom.dfuze.data.util.Validators;
@@ -145,7 +146,7 @@ public class Adra implements RunGenerosityXBehavior {
 		setRFM(userData);
 		
 		//min max rfm
-		minMaxRFM(userData);
+		Analyze.minMaxRFM(userData);
 		
 		// Place into categories
 		setSegment(userData);
@@ -177,7 +178,7 @@ public class Adra implements RunGenerosityXBehavior {
 			setGiftArrayMetrics(userData, defaultAskAmount);		// normal
 		
 		// value priority, high = good
-		setPriority2(userData);
+		Analyze.prioritizeRFM(userData);
 		
 		formatAmounts(userData);
 		
@@ -620,47 +621,6 @@ public class Adra implements RunGenerosityXBehavior {
 		return median;
 	}
 	
-	// Sets the priority of a record based on RFM where R is weighted * 2
-	private void setPriority(UserData userData) {
-		for(Record record : userData.getRecordList()) {
-			String[] rfmParts = record.getRfmScore().split("_");
-			int sum = 0;
-			for(int i = 0; i < rfmParts.length; ++i)
-				if(Validators.isNumber(rfmParts[i]))
-					if(i == 0) // double recency values to keep new donors
-						sum += Integer.parseInt(rfmParts[i])*2;
-					else
-						sum += Integer.parseInt(rfmParts[i]);
-						
-			
-			sum *= 1000000;
-			
-			String tempLastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
-			
-			if(Validators.isNumber(tempLastDonation))
-				sum += Double.parseDouble(tempLastDonation);
-			
-			if(record.getInId().toLowerCase().contains("seed"))
-				sum = 999999999;
-			
-			record.setPriority(String.valueOf(sum));
-		}
-	}
-	
-	// Sets the priority of a record based on RFM where R is weighted * 2
-		private void setPriority2(UserData userData) {
-			for(Record record : userData.getRecordList()) {
-				double sum = 0;
-				sum += Double.parseDouble(record.getRScore()) * 10.0;
-				sum += Double.parseDouble(record.getMScore());
-				sum += Double.parseDouble(record.getFScore());
-							
-				if(record.getInId().toLowerCase().contains("seed"))
-					sum = 999999999;
-				
-				record.setPriority(String.valueOf(sum));
-			}
-		}
 	
 	private void setCampaignCode(UserData userData, String campaignCode) {
 		for(Record record : userData.getRecordList()) {
@@ -1326,63 +1286,6 @@ public class Adra implements RunGenerosityXBehavior {
 		FileExporter.exportData(userData.getExportHeaders(), userData.getExportData(removed), file);
 
 		JOptionPane.showMessageDialog(UiController.getMainFrame(), String.format("%d records with zero gifts removed and exported.", removed.size()), "Results", JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	private void minMaxRFM(UserData userData) {
-
-		double minR = userData.getRecordList()
-				.stream()
-				.map(r ->Double.parseDouble(r.getRScore()))
-				.mapToDouble(Double::doubleValue)
-				.min()
-				.getAsDouble();
-
-		double maxR = userData.getRecordList()
-				.stream()
-				.map(r ->Double.parseDouble(r.getRScore()))
-				.mapToDouble(Double::doubleValue)
-				.max()
-				.getAsDouble();
-
-		double minF = userData.getRecordList()
-				.stream()
-				.map(r ->Double.parseDouble(r.getFScore()))
-				.mapToDouble(Double::doubleValue)
-				.min()
-				.getAsDouble();
-
-		double maxF = userData.getRecordList()
-				.stream()
-				.map(r ->Double.parseDouble(r.getFScore()))
-				.mapToDouble(Double::doubleValue)
-				.max()
-				.getAsDouble();
-
-		double minM = userData.getRecordList()
-				.stream()
-				.map(r ->Double.parseDouble(r.getMScore()))
-				.mapToDouble(Double::doubleValue)
-				.min()
-				.getAsDouble();
-
-		double maxM = userData.getRecordList()
-				.stream()
-				.map(r ->Double.parseDouble(r.getMScore()))
-				.mapToDouble(Double::doubleValue)
-				.max()
-				.getAsDouble();
-
-		for(Record record : userData.getRecordList()) {
-			Double rScore = Double.parseDouble(record.getRScore());
-			Double fScore = Double.parseDouble(record.getFScore());
-			Double mScore = Double.parseDouble(record.getMScore());
-
-			record.setRScore(String.format("%.9f", ((maxR - rScore) / (maxR - minR))));
-			record.setFScore(String.format("%.9f", ((fScore - minF) / (maxF - minF))));
-			record.setMScore(String.format("%.9f", ((mScore - minM) / (maxM - minM))));
-
-		}
-
 	}
 	
 	// calculates the months between two dates

@@ -31,6 +31,7 @@ import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
+import com.mom.dfuze.data.util.Analyze;
 import com.mom.dfuze.data.util.Common;
 import com.mom.dfuze.data.util.DateTimeInferer;
 import com.mom.dfuze.data.util.Validators;
@@ -158,6 +159,9 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		// build RFM score
 		setRFM(userData);
 		
+		//min max rfm
+		Analyze.minMaxRFM(userData);
+		
 		// Place into categories
 		setSegment2(userData);
 		
@@ -193,7 +197,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		}
 		
 		// value priority, high = good
-		setPriority(userData);
+		Analyze.prioritizeRFM(userData);
 		
 		userData.getRecordList().sort(new RecordSorters.CompareByFieldDescAsNumber(UserData.fieldName.PRIORITY.getName()));
 
