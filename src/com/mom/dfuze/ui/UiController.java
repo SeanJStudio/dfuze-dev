@@ -143,7 +143,7 @@ public class UiController {
 								mainFrame.getMntmNewJob().setEnabled(false); // deEnable the option to start a new job in case it takes awhile to load
 
 								// create the file chooser dialog with filters
-								JFileChooser fileChooser = new JFileChooser(UserPrefs.getLastUsedFolder());
+								JFileChooser fileChooser = new FileChooserFix(UserPrefs.getLastUsedFolder());
 								fileChooser.setPreferredSize(new Dimension(800,600));
 								Action details = fileChooser.getActionMap().get("viewTypeDetails");
 								details.actionPerformed(null);

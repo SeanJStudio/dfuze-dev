@@ -15,6 +15,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import com.mom.dfuze.data.FileExtensions;
 import com.mom.dfuze.data.UserPrefs;
 import com.mom.dfuze.ui.DelimiterSelectDialog;
+import com.mom.dfuze.ui.FileChooserFix;
 import com.mom.dfuze.ui.TableSelectDialog;
 import com.mom.dfuze.ui.UiController;
 import com.mom.dfuze.ui.UserInputDialog;
@@ -28,7 +29,7 @@ public class FileIngestor {
 	    List<List<String>> ingestedFile = null;
 
 	    try {      
-	      JFileChooser fileChooser = new JFileChooser(UserPrefs.getLastUsedFolder());
+	      JFileChooser fileChooser = new FileChooserFix(UserPrefs.getLastUsedFolder());
 	      fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(String.join(" ", FileExtensions.FILE_IMPORT_EXTENSIONS_LIST), "accdb", "csv", "cert-1", "dat", "dbf",
 	              "mdb", "txt", "xlsx", "xlsm", "xls"));
 	      fileChooser.setAcceptAllFileFilterUsed(true);
