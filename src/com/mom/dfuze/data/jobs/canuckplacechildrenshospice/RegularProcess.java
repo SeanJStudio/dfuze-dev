@@ -33,7 +33,6 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 			UserData.fieldName.FIRSTNAME.getName(),
 			UserData.fieldName.LASTNAME.getName(),
 			UserData.fieldName.NAME1.getName(),
-			UserData.fieldName.COMPANY.getName(),
 			UserData.fieldName.SEGMENT_CODE.getName(),
 			UserData.fieldName.LAST_DONATION_AMOUNT.getName()
 			};
@@ -121,76 +120,15 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 
 			// Get all the fields we can for now
 			String segCode = data[i][userData.getSegCodeIndex()];
-			String dearSal = data[i][userData.getDearSalIndex()];
+			String dearSal = data[i][userData.getDearSalIndex()].replaceAll("\"", "");
 			String paraSal = dearSal;
 			String prefix = data[i][userData.getPrefixIndex()];
 			String fnam = data[i][userData.getFstNameIndex()];
 			String lnam = data[i][userData.getLstNameIndex()];
-			String nam1 = data[i][userData.getNam1Index()];
-			String cmpny = data[i][userData.getCmpnyIndex()];
+			String nam1 = data[i][userData.getNam1Index()].replaceAll("\"", "");
+			String cmpny = "";
 			String lastGiftAmt = data[i][userData.getLstDnAmtIndex()].replaceAll("[^0-9\\.]", "");
 			String seg = "";
-			
-			// 5050 doesn't include name1, combine prefix, fname and lname
-			if(nam1.isEmpty())
-				nam1 = String.format("%s %s %s", prefix, fnam, lnam).replaceAll("  ", " ").trim();
-			
-			// Only include the company name one
-			if (nam1.trim().equalsIgnoreCase(cmpny.trim()))
-				nam1 = "";
-			
-			String fullName = fnam + lnam;
-			
-			// Fix the salutations
-			if(dearSal.toLowerCase().replaceAll("[^\\p{L}]", "").equals((fullName).toLowerCase().replaceAll("[^\\p{L}]", ""))) {
-				dearSal = "";
-				paraSal = "";
-			}	
-
-			if(dearSal.length() <= 1 // check for bad sal
-					|| dearSal.length() >= 2 && dearSal.substring(1, 2).replaceAll("[\\p{L}']", "").length() > 0
-					|| dearSal.length() == 2 && Validators.areCharactersSame(dearSal)
-					|| dearSal.length() == 2 && !Validators.hasVowel(dearSal)
-					) {
-
-				if(!prefix.isEmpty() && !lnam.isEmpty()) { // change to prefix last if possible
-					dearSal = prefix + " " + lnam;
-					paraSal = dearSal;
-				}else if(fnam.length() >= 2
-						&& fnam.substring(1, 2).replaceAll("[\\p{L}']", "").length() == 0
-						&& !Validators.areCharactersSame(fnam)
-						&& Validators.hasVowel(fnam)
-						) { // otherwise change to fname if possible
-					dearSal = fnam;
-					paraSal = fnam;
-				} else {	// otherwise friend
-					dearSal = "Friend";
-					paraSal = "";
-				}
-			}
-			
-			// Update dear salutation and paragraph salutation for organizations
-			if (seg.equalsIgnoreCase(SEG_ORGANIZATION) || (cmpny.length() > 0 && cmpny.equalsIgnoreCase(dearSal)) ) {
-				if (!fullName.replaceAll(" ", "").equalsIgnoreCase(cmpny.replaceAll(" ", ""))) {
-					if(!prefix.isEmpty() && !lnam.isEmpty()) { // change to prefix last if possible
-						dearSal = prefix + " " + lnam;
-						paraSal = dearSal;
-					}else if(fnam.length() >= 2
-							&& fnam.substring(1, 2).replaceAll("[\\p{L}']", "").length() == 0
-							&& !Validators.areCharactersSame(fnam)
-							&& Validators.hasVowel(fnam)
-							) { // otherwise change to fname if possible
-						dearSal = fnam;
-						paraSal = fnam;
-					} else {	// otherwise friend
-						dearSal = "Friend";
-						paraSal = "";
-					}
-				} else {
-					dearSal = "Friends";
-					paraSal = "";
-				}
-			}
 
 			// Check if our patterns match, if not, throw an error
 			// Check for campaign specific segments first
@@ -248,6 +186,77 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 				seg = SEG_ACTIVE;
 				segCode = "SEED";
 			}
+			
+			/////
+			
+			// company names are in the name field
+			if (seg.equalsIgnoreCase(SEG_ORGANIZATION)) {
+				cmpny = nam1;
+				nam1 = "";
+				if (dearSal.replaceAll(" ", "").equalsIgnoreCase(cmpny.replaceAll(" ", "")))
+					dearSal = "";
+			}
+
+			// 5050 doesn't include name1, combine prefix, fname and lname
+			if(nam1.isEmpty())
+				nam1 = String.format("%s %s %s", prefix, fnam, lnam).replaceAll("  ", " ").trim();
+
+			String fullName = fnam + lnam;
+
+			// Fix the salutations
+			if(dearSal.toLowerCase().replaceAll("[^\\p{L}]", "").equals((fullName).toLowerCase().replaceAll("[^\\p{L}]", ""))) {
+				dearSal = "";
+				paraSal = "";
+			}	
+
+			if(dearSal.length() <= 1 // check for bad sal
+					|| dearSal.length() >= 2 && dearSal.substring(1, 2).replaceAll("[\\p{L}']", "").length() > 0
+					|| dearSal.length() == 2 && Validators.areCharactersSame(dearSal)
+					|| dearSal.length() == 2 && !Validators.hasVowel(dearSal)
+					) {
+
+				if(!prefix.isEmpty() && !lnam.isEmpty()) { // change to prefix last if possible
+					dearSal = prefix + " " + lnam;
+					paraSal = dearSal;
+				}else if(fnam.length() >= 2
+						&& fnam.substring(1, 2).replaceAll("[\\p{L}']", "").length() == 0
+						&& !Validators.areCharactersSame(fnam)
+						&& Validators.hasVowel(fnam)
+						) { // otherwise change to fname if possible
+					dearSal = fnam;
+					paraSal = fnam;
+				} else {	// otherwise friend
+					dearSal = (!seg.equalsIgnoreCase(SEG_ORGANIZATION)) ? "Friend" : "Friends";
+					paraSal = "";
+				}
+			}
+			
+			
+
+			/*// Update dear salutation and paragraph salutation for organizations
+			if (seg.equalsIgnoreCase(SEG_ORGANIZATION) || (cmpny.length() > 0 && cmpny.equalsIgnoreCase(dearSal)) ) {
+				if (!fullName.replaceAll(" ", "").equalsIgnoreCase(cmpny.replaceAll(" ", ""))) {
+					if(!prefix.isEmpty() && !lnam.isEmpty()) { // change to prefix last if possible
+						dearSal = prefix + " " + lnam;
+						paraSal = dearSal;
+					}else if(fnam.length() >= 2
+							&& fnam.substring(1, 2).replaceAll("[\\p{L}']", "").length() == 0
+							&& !Validators.areCharactersSame(fnam)
+							&& Validators.hasVowel(fnam)
+							) { // otherwise change to fname if possible
+						dearSal = fnam;
+						paraSal = fnam;
+					} else {	// otherwise friend
+						dearSal = "Friend";
+						paraSal = "";
+					}
+				} else {
+					dearSal = "Friends";
+					paraSal = "";
+				}
+			}*/
+
+			/////
 
 			// Initialize the last gift amount
 			BigDecimal lastGiftAmountAsBigDecimal = new BigDecimal("5.0");

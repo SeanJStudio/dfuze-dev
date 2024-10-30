@@ -55,9 +55,7 @@ public class Adra implements RunGenerosityXBehavior {
 
 	private final String BEHAVIOR_NAME = "Adra";
 	private String[] REQUIRED_FIELDS = {
-			UserData.fieldName.IN_ID.getName(),
-			UserData.fieldName.NAME1.getName(),
-			UserData.fieldName.RECORD_TYPE.getName()
+			UserData.fieldName.IN_ID.getName()
 	};
 
 	private String DESCRIPTION = 
@@ -123,7 +121,7 @@ public class Adra implements RunGenerosityXBehavior {
 		userData.autoSetRecordListFields(REQUIRED_FIELDS);	// set record members via required fields
 		
 		// create the salutation
-		createSaluation(userData);
+		//createSaluation(userData);
 		
 		// Remove leading zeros to match Giving History
 		removeLeadingZeroFromId(userData);
@@ -185,7 +183,6 @@ public class Adra implements RunGenerosityXBehavior {
 		userData.getRecordList().sort(new RecordSorters.CompareByFieldDescAsNumber(UserData.fieldName.PRIORITY.getName()));
 
 		userData.setDfHeaders(new String[] {
-				UserData.fieldName.DEAR_SALUTATION.getName(),
 				UserData.fieldName.LAST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.LAST_DONATION_DATE.getName(),
 				UserData.fieldName.FIRST_DONATION_AMOUNT.getName(),
