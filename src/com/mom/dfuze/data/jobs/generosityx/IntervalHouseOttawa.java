@@ -439,18 +439,19 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 						if(giftHistory.getGiftAmount() > largestGiftMadeLast24Months)
 							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
 					
+					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
+					
+					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
+					if(daysBetween <= 60) {
+						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftCampaign());
+						if(monthlyMatcher.find())
+							record.setSeg(segment.MONTHLY.getName());
+					}
+					
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
-						long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 						record.setRScore(String.valueOf(daysBetween));
-						
-						// identify monthly donors if last gift is within 60 days and monthly id found in appeal
-						if(daysBetween <= 60) {
-							Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftCampaign());
-							if(monthlyMatcher.find())
-								record.setSeg(segment.MONTHLY.getName());
-						}
 					}
 					
 					if(j == giftHistoryList.size() - 1) {

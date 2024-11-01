@@ -6,18 +6,20 @@ public class UWGiftHistory {
 	private String id;
 	private double giftAmount;
 	private LocalDate giftDate;
-	private String leadSource;
+	private String sourceDetail;
 	private String staffSupported;
+	private String recurringDonation;
 	
 	public UWGiftHistory() {}
 
-	public UWGiftHistory(String id, double giftAmount, LocalDate giftDate, String leadSource, String staffSupported) {
+	public UWGiftHistory(String id, double giftAmount, LocalDate giftDate, String sourceDetail, String staffSupported, String recurringDonation) {
 		super();
 		this.id = id;
 		this.giftAmount = giftAmount;
 		this.giftDate = giftDate;
-		this.leadSource = leadSource;
+		this.sourceDetail = sourceDetail;
 		this.staffSupported = staffSupported;
+		this.recurringDonation = recurringDonation;
 	}
 
 	public String getId() {
@@ -44,12 +46,12 @@ public class UWGiftHistory {
 		this.giftDate = giftDate;
 	}
 
-	public String getLeadSource() {
-		return leadSource;
+	public String getSourceDetail() {
+		return sourceDetail;
 	}
 
-	public void setLeadSource(String leadSource) {
-		this.leadSource = leadSource;
+	public void setSourceDetail(String sourceDetail) {
+		this.sourceDetail = sourceDetail;
 	}
 
 	public String getStaffSupported() {
@@ -60,9 +62,19 @@ public class UWGiftHistory {
 		this.staffSupported = staffSupported;
 	}
 
+	public String getRecurringDonation() {
+		return recurringDonation;
+	}
+
+	public void setRecurringDonation(String recurringDonation) {
+		this.recurringDonation = recurringDonation;
+	}
+
 	@Override
 	public String toString() {
-		return "UWGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", leadSource="
-				+ leadSource + ", staffSupported=" + staffSupported + "]";
+		return "UWGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", sourceDetail="
+				+ sourceDetail + ", staffSupported=" + staffSupported + ", recurringDonation=" + recurringDonation
+				+ "]";
 	}
+	
 }

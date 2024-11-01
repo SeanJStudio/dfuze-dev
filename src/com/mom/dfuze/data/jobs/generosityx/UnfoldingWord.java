@@ -58,12 +58,14 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 					+ Common.arrayFieldsToHTMLList(REQUIRED_FIELDS)
 					+ "</html>";
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)donor_id(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)id(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)gift_date(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)solicit_code_descr(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)date(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_SOURCE_DETAIL_PATTERN = Pattern.compile("(^|\\s+)source detail(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_STAFF_SUPPORTED_PATTERN = Pattern.compile("(^|\\s+)staff(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_RECURRING_DONATION_PATTERN = Pattern.compile("(^|\\s+)recurring(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)monthly(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern MARK_LOWRY_PATTERN = Pattern.compile("(^|\\s+)mark lowry(\\s+|$)", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		NEW("New"),
@@ -86,6 +88,9 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		}
 	};
 	
+	// gift history fields
+	private int idIndex, amountIndex, giftDateIndex, sourceIndex, staffIndex, recurringIndex = -1;
+	
 	//
 	/*
 	 * (non-Javadoc)
@@ -93,12 +98,15 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 	 */
 	@Override
 	public void run(UserData userData) throws Exception {
+		
+		// reset indexes for gift history
+		resetJob();
 
 		userData.autoSetRecordList();						// add the records to the userData list
 		userData.autoSetRecordListFields(REQUIRED_FIELDS);	// set record members via required fields
 		
 		// Remove leading zeros to match Giving History
-		removeLeadingZeroFromId(userData);
+		normalizeId(userData);
 		
 		// load gifts file as record list,	infer gift date format to use
 		List<Record> giftList = getGiftList(); // dfInId, dfLstDnAmt, dfLstGftDat, dfSeg is set
@@ -109,7 +117,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		giftList.sort(new RecordSorters.CompareByFieldDescAsDate(UserData.fieldName.LAST_DONATION_DATE.getName(), datetimeFormatter));
 				
 		// Convert the gifts into a gift history map (id, List(history))
-		HashMap<String, List<IHOGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
+		HashMap<String, List<UWGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
 		
 		// process gift history into main donor list
 		processGifts(userData, giftHistoryMap);
@@ -164,10 +172,20 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				UserData.fieldName.PROVIDE3.getName(),
 				UserData.fieldName.PROVIDE4.getName(),
 				UserData.fieldName.OPEN_DONATION_AMOUNT.getName(),
-				UserData.fieldName.PRIORITY.getName()
+				UserData.fieldName.PRIORITY.getName(),
+				UserData.fieldName.RECORD_TYPE.getName(),
 		});
 		
 		//removeZeroGiftRecords(userData);
+	}
+	
+	private void resetJob() {
+		idIndex = -1;
+		amountIndex = -1;
+		giftDateIndex = -1;
+		sourceIndex = -1;
+		staffIndex = -1;
+		recurringIndex = -1;
 	}
 	
 	private void formatAmounts(UserData userData) {
@@ -203,9 +221,9 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		}
 	}
 
-	private void removeLeadingZeroFromId(UserData userData) {
+	private void normalizeId(UserData userData) {
 		for(Record record : userData.getRecordList())
-				record.setInId(record.getInId().replaceFirst("^0+", ""));
+				record.setInId(record.getInId().replaceFirst("^0+", "").toUpperCase());
 	}
 	
 	private List<Record> getGiftList() throws Exception {
@@ -217,8 +235,6 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		
 		List<List<String>> giftFile = FileIngestor.ingest();	// get the gift file	
 		HashSet<Integer> indexSet = new HashSet<>();
-	
-		int idIndex, amountIndex, giftDateIndex, appealIndex = -1;
 		
 		String[] headers = giftFile.get(0).toArray(new String[0]);
 
@@ -284,12 +300,12 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		if(!indexSet.add(giftDateIndex))
 			throw new Exception("The gift date field has been mapped more than once.");
 		
-		// designation
-		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Appeal Name field.");
+		// lead source
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Source Detail field.");
 		dsd.setValues(headers);
 
 		for(int i = 0; i < headers.length; ++i) {
-			if(GIFT_FILE_CAMPAIGN_PATTERN.matcher(headers[i]).find()) {
+			if(GIFT_FILE_SOURCE_DETAIL_PATTERN.matcher(headers[i]).find()) {
 				dsd.getComboBoxValues().setSelectedIndex(i);
 				break;
 			}
@@ -300,20 +316,66 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		if(!dsd.isNextPressed())
 			throw new Exception("Selection cancelled, please restart job.");
 
-		appealIndex = dsd.getSelectedValueIndex();
+		sourceIndex = dsd.getSelectedValueIndex();
 		
-		if(!indexSet.add(appealIndex))
-			throw new Exception("The appeal name field has been mapped more than once.");
+		if(!indexSet.add(sourceIndex))
+			throw new Exception("The source detail field has been mapped more than once.");
+		
+		// staff supported
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Staff Supported field.");
+		dsd.setValues(headers);
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_STAFF_SUPPORTED_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		staffIndex = dsd.getSelectedValueIndex();
+				
+		if(!indexSet.add(staffIndex))
+			throw new Exception("The staff supported field has been mapped more than once.");
+		
+		// recurring donation
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Recurring Donation field.");
+		dsd.setValues(headers);
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_RECURRING_DONATION_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		recurringIndex = dsd.getSelectedValueIndex();
+				
+		if(!indexSet.add(recurringIndex))
+			throw new Exception("The recurring donation field has been mapped more than once.");
 		
 		List<Record> giftsList = new ArrayList<>();
 		
 		giftFile.remove(0); // remove header row
 		
 		for(int i = 0; i < giftFile.size(); ++i) {
-			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", ""); // Remove leading zeros
+			// Remove leading zeros
+			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", "").toUpperCase();
+			// Remove the last 3 characters to match the donor file
+			if(id.length() > 0)
+				id = id.substring(0, id.length() - 3);
+			
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
-			String giftDesignation = giftFile.get(i).get(appealIndex).trim();
 			
 			boolean isGiftZero = false;
 			
@@ -329,7 +391,6 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 					.setInId(id)
 					.setLstDnAmt(giftAmount)
 					.setLstDnDat(giftDate)
-					.setSeg(giftDesignation)
 					.build();
 			
 			if(giftAmount.contains("-")) // Skip negative dollar amounts
@@ -344,38 +405,43 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 	}
 
 	// converts a list of gifts into a HashMap
-	private HashMap<String, List<IHOGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
+	private HashMap<String, List<UWGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
+		
+		
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(giftDateFormat);
 
 		// id, giftHistory
-		HashMap<String, List<IHOGiftHistory>> giftHistoryMap = new HashMap<>();
+		HashMap<String, List<UWGiftHistory>> giftHistoryMap = new HashMap<>();
 
 		for(Record record : giftList) {
 			double giftAmount = (Validators.isNumber(record.getLstDnAmt())) ? Double.parseDouble(record.getLstDnAmt()) : 0.0;
-
 			if(Validators.isStringOfDateFormat(record.getLstDnDat(), giftDateFormat)) {
 				//System.out.println(record.getLstDnDat() + " vs " + giftDateFormat);
 				LocalDate giftDate = LocalDate.parse(record.getLstDnDat(), formatter);
 				//System.out.println(giftDate.toString());
-				IHOGiftHistory history = new IHOGiftHistory(
+				UWGiftHistory history = new UWGiftHistory(
 						record.getInId(),
 						giftAmount,
 						giftDate,
-						record.getSeg()
+						record.getDfInData()[sourceIndex],
+						record.getDfInData()[staffIndex],
+						record.getDfInData()[recurringIndex]
 						);
 
 				if(!giftHistoryMap.containsKey(record.getInId()))
-					giftHistoryMap.put(record.getInId(), new ArrayList<IHOGiftHistory>());
+					giftHistoryMap.put(record.getInId(), new ArrayList<UWGiftHistory>());
 
 				giftHistoryMap.get(record.getInId()).add(history);
+			} else {
+				System.out.println("bad date for " + record.getInId());
 			}
 		}
 
 		return giftHistoryMap;
 	}
 	
-	private void processGifts(UserData userData, HashMap<String, List<IHOGiftHistory>> giftHistoryMap) {
+	private void processGifts(UserData userData, HashMap<String, List<UWGiftHistory>> giftHistoryMap) {
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
@@ -384,6 +450,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		
 		for(int i = 0; i < userData.getRecordList().size(); ++i) {
 			Record record = userData.getRecordList().get(i);
+			record.setRecType("");
 			
 			if(!giftHistoryMap.containsKey(record.getInId())) {
 				System.out.println("No ID for " + record.getInId());
@@ -404,7 +471,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 			}
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
-				List<IHOGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
+				List<UWGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
 				
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
@@ -422,7 +489,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				        .collect(Collectors.joining(","));
 				
 				for(int j = 0; j < giftHistoryList.size(); ++j) {
-					IHOGiftHistory giftHistory = giftHistoryList.get(j);
+					UWGiftHistory giftHistory = giftHistoryList.get(j);
 					
 					totalGiftAmount += giftHistory.getGiftAmount();
 					giftAmounts.add(giftHistory.getGiftAmount());
@@ -441,21 +508,35 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 						if(giftHistory.getGiftAmount() > largestGiftMadeLast24Months)
 							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
 					
+					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
+					
+					// identify monthly donors if gift is within 60 days and monthly id found in appeal
+					if(daysBetween <= 60) {
+						if(giftHistory.getRecurringDonation().length() > 0)
+							record.setSeg(segment.MONTHLY.getName());
+					}
+					
 					// This is the last gift made
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
-						long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 						record.setRScore(String.valueOf(daysBetween));
 						
-						// identify monthly donors if last gift is within 60 days and monthly id found in appeal
-						if(daysBetween <= 60) {
-							Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftCampaign());
-							if(monthlyMatcher.find())
-								record.setSeg(segment.MONTHLY.getName());
+						// Set the mark lowry donors
+						Matcher markLowryMatcher = MARK_LOWRY_PATTERN.matcher(giftHistory.getSourceDetail());
+						if(markLowryMatcher.find() && record.getSeg() == null)
+							record.setSeg(segment.MARK_LOWRY.getName());
+							
+						
+						// Set staff segment and identify if a monthly segment is also part of the staff segment
+						if(!giftHistory.getStaffSupported().equalsIgnoreCase("none") && giftHistory.getStaffSupported().length() > 0) {
+							if(record.getSeg() == null)
+								record.setSeg(segment.STAFF.getName());
+								
+							record.setRecType("Staff");
 						}
 					}
-					
+
 					// This is the first gift made
 					if(j == giftHistoryList.size() - 1) {
 						record.setFstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
@@ -560,12 +641,10 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 	// Convert the gift arrays to metrics
 	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
 		
-		int unitMultiplier = 70;
-		
-		String less = "$%s helps provide " + unitMultiplier + " unreached people with the life-changing gospel.";
-		String single = "$%s provides " + unitMultiplier + " unreached people with the life-changing gospel.";
-		String plural = "$%s provides Emergency Supplies to %s Families.";
-		String open = "$________ to help as many Families as possible.";
+		String less = "$%s goes towards strengthening the church to endure.";
+		String single = "$%s goes towards strengthening the church to endure.";
+		String plural = "$%s goes towards strengthening the church to endure.";
+		String open = "$________ for the church to endure.";
 		
 		DecimalFormat formatter = new DecimalFormat("#,###.00");
 		DecimalFormat provides_formatter = new DecimalFormat("#,###");
@@ -593,7 +672,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				} else if(difference1 < 2) {
 					record.setProvide1(String.format(single, formatter.format(dn1).replaceAll("\\.0+$", "")));
 				} else if(difference1 >= 2) {
-					record.setProvide1(String.format(plural, formatter.format(dn1).replaceAll("\\.0+$", ""), provides_formatter.format(difference1 * unitMultiplier)));
+					record.setProvide1(String.format(plural, formatter.format(dn1).replaceAll("\\.0+$", ""), provides_formatter.format(difference1)));
 				}
 				
 				// Donation 2
@@ -602,7 +681,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				} else if(difference2 < 2) {
 					record.setProvide2(String.format(single, formatter.format(dn2).replaceAll("\\.0+$", "")));
 				} else if(difference2 >= 2) {
-					record.setProvide2(String.format(plural, formatter.format(dn2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2 * unitMultiplier)));
+					record.setProvide2(String.format(plural, formatter.format(dn2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2)));
 				}
 				
 				// Donation 3
@@ -611,7 +690,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				} else if(difference3 < 2) {
 					record.setProvide3(String.format(single, formatter.format(dn3).replaceAll("\\.0+$", "")));
 				} else if(difference3 >= 2) {
-					record.setProvide3(String.format(plural, formatter.format(dn3).replaceAll("\\.0+$", ""), provides_formatter.format(difference3 * unitMultiplier)));
+					record.setProvide3(String.format(plural, formatter.format(dn3).replaceAll("\\.0+$", ""), provides_formatter.format(difference3)));
 				}
 				
 				// Donation 4
@@ -620,7 +699,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				} else if(difference4 < 2) {
 					record.setProvide4(String.format(single, formatter.format(dn4).replaceAll("\\.0+$", "")));
 				} else if(difference4 >= 2) {
-					record.setProvide4(String.format(plural, formatter.format(dn4).replaceAll("\\.0+$", ""), provides_formatter.format(difference4 * unitMultiplier)));
+					record.setProvide4(String.format(plural, formatter.format(dn4).replaceAll("\\.0+$", ""), provides_formatter.format(difference4)));
 				}
 				
 			}
@@ -810,20 +889,21 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
 			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
 
-			if(record.getInId().toLowerCase().contains("seed"))
-				record.setSeg(segment.GENERAL.getName());
-			else if(record.getSeg() != null && record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
-				record.setSeg(segment.MONTHLY.getName());
-			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
-				record.setSeg(segment.TOP.getName());
-			else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
-				record.setSeg(segment.NEW.getName());
-			else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
-				record.setSeg(segment.FREQUENT.getName());
-			else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
-				record.setSeg(segment.LAPSED.getName());
-			else
-				record.setSeg(segment.GENERAL.getName());
+			// monthly, staff, and mark lowry donors have already by set, skip if segment is populated
+			if(record.getSeg() == null) {
+				if(record.getInId().toLowerCase().contains("seed"))
+					record.setSeg(segment.GENERAL.getName());
+				else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
+					record.setSeg(segment.TOP.getName());
+				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
+					record.setSeg(segment.NEW.getName());
+				else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
+					record.setSeg(segment.FREQUENT.getName());
+				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
+					record.setSeg(segment.LAPSED.getName());
+				else
+					record.setSeg(segment.GENERAL.getName());
+			}
 		}
 	}
 

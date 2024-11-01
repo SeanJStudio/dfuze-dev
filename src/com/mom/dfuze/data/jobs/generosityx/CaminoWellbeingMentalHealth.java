@@ -520,10 +520,11 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 					if(monthsFromDonation <= MONTHS12)
 						++totalGiftsLast12Months;
 					
+					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
+					
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
-						long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 						record.setRScore(String.valueOf(daysBetween));
 					}
 					
