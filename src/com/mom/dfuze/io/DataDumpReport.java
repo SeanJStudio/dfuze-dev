@@ -250,13 +250,19 @@ public class DataDumpReport {
 		  else
 			  styleToUse = rowEvenStyle;
 		  
-		  ArrayList<ExcelCell> rowSegmentsValue = (isAddRow) ? new ArrayList<>() : listOfBlanksAndSegmentsRows.get(blanksAndSegmentsRowIndex++);
+		  boolean isNewRow = sortedMapCounter > listOfBlanksAndSegmentsRows.size();
+		  
+		  ArrayList<ExcelCell> rowSegmentsValue = (isNewRow) ? new ArrayList<>() : listOfBlanksAndSegmentsRows.get(blanksAndSegmentsRowIndex++);
 
 		  rowSegmentsValue.add( new ExcelCell(entry.getKey(), CellType.STRING, styleToUse, defaultFont, isFormula) );
 		  rowSegmentsValue.add( new ExcelCell(String.valueOf(entry.getValue()), CellType.NUMERIC, styleToUse, defaultFont, isFormula) );
 		  
-		  if(isAddRow)
+		  if(isNewRow) {
+			  rowSegmentsValue.add(0, cellBlank);
+			  rowSegmentsValue.add(0, cellBlank);
+			  rowSegmentsValue.add(0, cellBlank);		
 			  listOfBlanksAndSegmentsRows.add(rowSegmentsValue);
+		  }
 	  }
 	  
 	  
