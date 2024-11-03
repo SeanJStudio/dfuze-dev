@@ -65,7 +65,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 	public final Pattern GIFT_FILE_STAFF_SUPPORTED_PATTERN = Pattern.compile("(^|\\s+)staff(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_RECURRING_DONATION_PATTERN = Pattern.compile("(^|\\s+)recurring(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern MARK_LOWRY_PATTERN = Pattern.compile("(^|\\s+)mark lowry(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern MARK_LOWRY_PATTERN = Pattern.compile("mark lowry", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		NEW("New"),
