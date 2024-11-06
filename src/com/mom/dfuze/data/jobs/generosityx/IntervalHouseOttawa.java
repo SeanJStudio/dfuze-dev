@@ -461,7 +461,11 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 
 				}
 				
-				record.setMScore(String.valueOf(calculateMedian(giftAmounts)));
+				double monetarySum = giftAmounts.stream()
+                        .mapToDouble(Double::doubleValue)
+                        .sum();
+				
+				record.setMScore(String.valueOf(monetarySum));
 				record.setFScore(String.valueOf(totalGifts));
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
 				record.setTtlDnAmtLst12Mnths(String.valueOf(totalGiftAmountLast12Months));

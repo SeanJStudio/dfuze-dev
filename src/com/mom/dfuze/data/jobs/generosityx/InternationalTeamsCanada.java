@@ -44,25 +44,18 @@ import com.mom.dfuze.ui.UserInputDialog;
 
 
 /**
- * InternationalTeamsCanada implements a RunBehavior for GenerosityX Jobs
+ * RegularProcess implements a RunBehavior for Adra Jobs
  * 
  * @author Sean Johnson
  *         Mail-o-Matic Services Ltd
- *         Date: 08/21/2023
+ *         Date: 06/11/2024
  *
  */
 public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 
 	private final String BEHAVIOR_NAME = "International Teams Canada";
 	private String[] REQUIRED_FIELDS = {
-			UserData.fieldName.IN_ID.getName(),
-			//UserData.fieldName.FIRSTNAME.getName(),
-			//UserData.fieldName.LASTNAME.getName(),
-			UserData.fieldName.ADDRESS1.getName(),
-			//UserData.fieldName.CITY.getName(),
-			//UserData.fieldName.PROVINCE.getName(),
-			//UserData.fieldName.POSTALCODE.getName(),
-			UserData.fieldName.RECORD_TYPE.getName() // Use this to hold the monthly identifier
+			UserData.fieldName.IN_ID.getName()
 	};
 
 	private String DESCRIPTION = 
@@ -73,13 +66,12 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 					+ "</ul>"
 					+ "Instructions<br/>"
 					+ "<ol>"
-					+ "<li>Load the donor data file</li>"
-					+ "<li>Map record type to the monthly identifier (Recurring donor status)</li>"
-					+ "<li>Load the gifts data file when prompted</li>"
+					+ "<li>Load the supplied data file</li>"
 					+ "<li>Enter the campaign code when prompted</li>"
 					+ "<li>Enter the cost per unit metric when prompted</li>"
 					+ "<li>Enter gift metrics for &lt;1, ==1, &gt;1, and open when prompted</li>"
 					+ "</ol>"
+
 					+ Common.arrayFieldsToHTMLList(REQUIRED_FIELDS)
 					+ "</html>";
 	
@@ -88,20 +80,19 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	public final Pattern NEW_PATTERN = Pattern.compile("(4|5)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	public final Pattern LAPSED_PATTERN = Pattern.compile("(1)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)no client(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)contact(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)date(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)designation(\\s+|$)|(^|\\s+)gift id(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)designation(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GENERAL_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)general(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern IMPACT_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)impact(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)monthly(\\s+|$)", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		NEW("New"),
 		LAPSED("Lapsed"),
 		FREQUENT("Frequent"),
 		TOP("Top"),
-		ACTIVE("Active"),
+		GENERAL("General"),
 		MONTHLY("Monthly");
 		
 		String name;
@@ -123,38 +114,25 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	@Override
 	public void run(UserData userData) throws Exception {
 
-		// add records to userData, set userData record members via required fields
-		userData.autoSetRecordList();
-		userData.autoSetRecordListFields(REQUIRED_FIELDS);
+		userData.autoSetRecordList();						// add the records to the userData list
+		userData.autoSetRecordListFields(REQUIRED_FIELDS);	// set record members via required fields
 		
-		// Create full name
-		//setName(userData);
-		
-		// Create salutation
-		//setSalutation(userData);
-		
-		// Add the seeds
-		//addSeeds(userData);
-		
-		// Clean the address
-		cleanAddresses(userData);
+		// Remove leading zeros to match Giving History
+		removeLeadingZeroFromId(userData);
 		
 		// load gifts file as record list,	infer gift date format to use
 		List<Record> giftList = getGiftList(); // dfInId, dfLstDnAmt, dfLstGftDat, dfSeg is set
 		String giftDateFormat = DateTimeInferer.inferFormat(giftList, UserData.fieldName.LAST_DONATION_DATE.getName());
-		
+				
 		// Sort the gift list by latest donation
 		DateTimeFormatter datetimeFormatter = DateTimeFormatter.ofPattern(giftDateFormat);
 		giftList.sort(new RecordSorters.CompareByFieldDescAsDate(UserData.fieldName.LAST_DONATION_DATE.getName(), datetimeFormatter));
-		
+				
 		// Convert the gifts into a gift history map (id, List(history))
 		HashMap<String, List<ITCGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
 		
 		// process gift history into main donor list
 		processGifts(userData, giftHistoryMap);
-		
-		// remove "impact" from the letter version
-		cleanLetVer(userData);
 		
 		// build RFM score
 		setRFM(userData);
@@ -163,53 +141,44 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		Analyze.minMaxRFM(userData);
 		
 		// Place into categories
-		setSegment2(userData);
+		setSegment(userData);
 		
 		// Set the campaign code
 		setCampaignCode(userData, getCampaignCode());
 		
-		int hasGiftArraysButtonPressed = JOptionPane.showConfirmDialog(UiController.getMainFrame(),
-				"Does this campaign require gift arrays?",
-				"Gift Calculations", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		// Set the gift amounts
+		double defaultAskAmount = getCostPerUnit();
+		setGiftArrays(userData, defaultAskAmount);
 		
-		if(hasGiftArraysButtonPressed == JOptionPane.YES_OPTION) {
-			
-			int hasGiftMetricsButtonPressed = JOptionPane.showConfirmDialog(UiController.getMainFrame(),
-					"Does this campaign require gift metrics?\n\nEx. $500 provides a week of groceries for 5 families",
-					"Gift Calculations", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-			
-			setGiftArrays(userData); 							// Set the gift amounts
-			
-			if(hasGiftMetricsButtonPressed == JOptionPane.YES_OPTION) {
-				UiController.displayMessage("Warning", "Slowly answer the following prompts as you can't go back!", JOptionPane.WARNING_MESSAGE);
-				setGiftArrayMetrics(userData, getCostPerUnit()); 	// Set the metrics via user input
-			}
-			
-		} else {
-			// Fill in placeholder values
-			for(Record record : userData.getRecordList()) {
-				record.setDn1Amt("");
-				record.setDn2Amt("");
-				record.setDn3Amt("");
-				record.setDn4Amt("");
-				record.setODnAmt("");
-			}
-		}
+		
+		// Ask the user if the gifts should be doubled
+		int isMatchCampaign = JOptionPane.showConfirmDialog(UiController.getMainFrame(), "Is this a doubling match campaign?\n\nEx. $5 DOUBLES to $10",
+					"Doubling Match Campaign", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		
+		UiController.displayMessage("Warning", "Slowly answer the following prompts as you can't go back!", JOptionPane.WARNING_MESSAGE);
+		
+		// Set the metrics, either doubled or normal
+		if(isMatchCampaign == JOptionPane.YES_OPTION)
+			setMatchedGiftArrayMetrics(userData, defaultAskAmount); // doubled
+		else
+			setGiftArrayMetrics(userData, defaultAskAmount);		// normal
 		
 		// value priority, high = good
 		Analyze.prioritizeRFM(userData);
 		
+		formatAmounts(userData);
+		
 		userData.getRecordList().sort(new RecordSorters.CompareByFieldDescAsNumber(UserData.fieldName.PRIORITY.getName()));
 
 		userData.setDfHeaders(new String[] {
-				UserData.fieldName.DEAR_SALUTATION.getName(),
-				UserData.fieldName.NAME1.getName(),
 				UserData.fieldName.LAST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.LAST_DONATION_DATE.getName(),
 				UserData.fieldName.FIRST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.FIRST_DONATION_DATE.getName(),
 				UserData.fieldName.TOTAL_DONATION_AMOUNT.getName(),
+				UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS.getName(),
+				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.DONATION_AMOUNT_ARRAY.getName(),
 				UserData.fieldName.RECENCY.getName(),
 				UserData.fieldName.FREQUENCY.getName(),
@@ -221,147 +190,52 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				UserData.fieldName.DONATION2_AMOUNT.getName(),
 				UserData.fieldName.DONATION3_AMOUNT.getName(),
 				UserData.fieldName.DONATION4_AMOUNT.getName(),
+				UserData.fieldName.PROVIDE1.getName(),
+				UserData.fieldName.PROVIDE2.getName(),
+				UserData.fieldName.PROVIDE3.getName(),
+				UserData.fieldName.PROVIDE4.getName(),
 				UserData.fieldName.OPEN_DONATION_AMOUNT.getName(),
-				UserData.fieldName.PACKAGE_VERSION.getName(),
-				UserData.fieldName.LETTER_VERSION.getName(),
-				UserData.fieldName.PRIORITY.getName(),
+				UserData.fieldName.PRIORITY.getName()
 		});
-		
-		if(hasGiftArraysButtonPressed == JOptionPane.YES_OPTION)
-			removeZeroGiftRecords(userData);
 	}
+
 	
-	private void cleanLetVer(UserData userData) {
+	private void formatAmounts(UserData userData) {
+		DecimalFormat formatter = new DecimalFormat("$#,###.00");//formatter.format(dn1).replaceAll("\\.0+$", "")
 		for(Record record : userData.getRecordList()) {
-			Matcher impactMatcher = IMPACT_DESIGNATION_PATTERN.matcher(record.getLetVer());
-			if(impactMatcher.find())
-				record.setLetVer(record.getLetVer().replaceAll(impactMatcher.group(), "").trim());
+			record.setLstDnAmt(formatter.format(Double.parseDouble(record.getLstDnAmt())).replaceAll("\\.0+$", ""));
+			record.setFstDnAmt(formatter.format(Double.parseDouble(record.getFstDnAmt())).replaceAll("\\.0+$", ""));
+			record.setTtlDnAmt(formatter.format(Double.parseDouble(record.getTtlDnAmt())).replaceAll("\\.0+$", ""));
+			record.setTtlDnAmtLst12Mnths(formatter.format(Double.parseDouble(record.getTtlDnAmtLst12Mnths())).replaceAll("\\.0+$", ""));
+			record.setLrgDnAmt(formatter.format(Double.parseDouble(record.getLrgDnAmt())).replaceAll("\\.0+$", ""));
 			
-			if(record.getLetVer().equalsIgnoreCase("DR"))
-				record.setLetVer("Dominican Republic");
-		}
-	}
-	
-	private void cleanAddresses(UserData userData) {
-		for(Record record : userData.getRecordList()) {
-			String[] inData = record.getDfInData();
-			inData[userData.getAdd1Index()] = inData[userData.getAdd1Index()].replaceAll("\"", "");
-			record.setDfInData(inData);
-		}
+			if(record.getLstDnAmt().equals("$"))
+				record.setLstDnAmt("$0");
 			
-	}
-	
-	private void removeZeroGiftRecords(UserData userData) throws Exception {
-		
-		List<Record> removed = new ArrayList<>();
-		
-		for(int i = userData.getRecordList().size() - 1; i >= 0; --i) {
-			Record record = userData.getRecordList().get(i);
+			if(record.getFstDnAmt().equals("$"))
+				record.setFstDnAmt("$0");
 			
-			if(record.getNumDn().equalsIgnoreCase("0"))
-				if(!record.getDfInData()[userData.getInIdIndex()].toLowerCase().contains("seed"))
-					removed.add(userData.getRecordList().remove(i));
-		}
-		
-		if(removed.size() == 0)
-			return;
-		
-		File file = new File(UserPrefs.getLastUsedFolder() + "\\" + UiController.getUserDataFileName() + "_NO_GIFTS" + FileExtensions.XLSX);
-		
-		FileExporter.exportData(userData.getExportHeaders(), userData.getExportData(removed), file);
-		
-		JOptionPane.showMessageDialog(UiController.getMainFrame(), String.format("%d records with zero gifts removed and exported.", removed.size()), "Results", JOptionPane.INFORMATION_MESSAGE);
-	}
-	
-	private void addSeeds(UserData userData) {
-		Record template = userData.getRecordList().get(userData.getRecordList().size() - 1);
-		
-		String[] inDataMatt = Arrays.copyOf(template.getDfInData(), template.getDfInData().length);
-		Arrays.fill(inDataMatt, "");
-		inDataMatt[userData.getInIdIndex()] = "SEEDER01";
-		inDataMatt[userData.getFstNameIndex()] = "Matt";
-		inDataMatt[userData.getLstNameIndex()] = "Hussey";
-		inDataMatt[userData.getAdd1Index()] = "4531 Lindholm Road";
-		inDataMatt[userData.getCityIndex()] = "Victoria";
-		inDataMatt[userData.getProvIndex()] = "BC";
-		inDataMatt[userData.getPCodeIndex()] = "V9C 4C5";
-		
-		String[] inDataBecca = Arrays.copyOf(template.getDfInData(), template.getDfInData().length);
-		Arrays.fill(inDataBecca, "");
-		inDataBecca[userData.getInIdIndex()] = "SEEDER02";
-		inDataBecca[userData.getFstNameIndex()] = "Becca";
-		inDataBecca[userData.getLstNameIndex()] = "Gust";
-		inDataBecca[userData.getAdd1Index()] = "11-19330 69 Ave";
-		inDataBecca[userData.getCityIndex()] = "Surrey";
-		inDataBecca[userData.getProvIndex()] = "BC";
-		inDataBecca[userData.getPCodeIndex()] = "V4N 0Z2";
-		
-		String[] inDataITC = Arrays.copyOf(template.getDfInData(), template.getDfInData().length);
-		Arrays.fill(inDataITC, "");
-		inDataITC[userData.getInIdIndex()] = "SEEDER03";
-		inDataITC[userData.getFstNameIndex()] = "Jacob";
-		inDataITC[userData.getLstNameIndex()] = "Gaudaur";
-		inDataITC[userData.getAdd1Index()] = "1 Union Street 2nd Floor";
-		inDataITC[userData.getCityIndex()] = "Elmira";
-		inDataITC[userData.getProvIndex()] = "ON";
-		inDataITC[userData.getPCodeIndex()] = "N3B 3J9";
-		
-		Record seedMatt = new Record.Builder(9999999, inDataMatt, "", "", "")
-				.setDearSal("Matt")
-				.setFstName("Matt")
-				.setLstName("Hussey")
-				.setNam1("Matt Hussey")
-				.setInId("SEEDER01")
-				.setRecType("")
-				.setPkgVer("General")
-				.setLetVer("General")
-				.build();
-		
-		Record seedBecca = new Record.Builder(9999998, inDataBecca, "", "", "")
-				.setDearSal("Becca")
-				.setFstName("Becca")
-				.setLstName("Gust")
-				.setNam1("Becca Gust")
-				.setInId("SEEDER02")
-				.setRecType("")
-				.setPkgVer("General")
-				.setLetVer("General")
-				.build();
-		
-		Record seedITC = new Record.Builder(9999997, inDataITC, "", "", "")
-				.setDearSal("Jacob")
-				.setFstName("Jacob")
-				.setLstName("Gaudaur")
-				.setNam1("Jacob Gaudaur")
-				.setInId("SEEDER03")
-				.setRecType("")
-				.setPkgVer("General")
-				.setLetVer("General")
-				.build();
-		
-		userData.add(seedMatt);
-		userData.add(seedBecca);
-		userData.add(seedITC);
-	}
-	
-	// Trims extra spaces, cases first/last names and combines them
-	private void setName(UserData userData) {
-		for(Record record : userData.getRecordList())
-			record.setNam1(Common.caseName(record.getFstName() + " " + record.getLstName()).replaceAll("  ", " ").trim());
-	}
-	
-	private void setSalutation(UserData userData) {
-		for(Record record : userData.getRecordList()) {
-			String dearSal = Common.caseName(record.getFstName()).replaceAll("  ", " ").trim();
-			if(dearSal.length() <= 1 // check for bad sal
-					|| dearSal.length() >= 2 && dearSal.substring(1, 2).replaceAll("[\\p{L}']", "").length() > 0
-					|| dearSal.length() == 2 && Validators.areCharactersSame(dearSal)
-					|| dearSal.length() == 2 && !Validators.hasVowel(dearSal)
-					) {
-				dearSal = "Friend";
+			if(record.getTtlDnAmt().equals("$"))
+				record.setTtlDnAmt("$0");
+			
+			if(record.getTtlDnAmtLst12Mnths().equals("$"))
+				record.setTtlDnAmtLst12Mnths("$0");
+			
+			if(record.getLrgDnAmt().equals("$"))
+				record.setLrgDnAmt("$0");
+			
+			if(record.getDn1Amt().length() > 0) {
+				record.setDn1Amt(formatter.format(Double.parseDouble(record.getDn1Amt())).replaceAll("\\.0+$", ""));
+				record.setDn2Amt(formatter.format(Double.parseDouble(record.getDn2Amt())).replaceAll("\\.0+$", ""));
+				record.setDn3Amt(formatter.format(Double.parseDouble(record.getDn3Amt())).replaceAll("\\.0+$", ""));
+				record.setDn4Amt(formatter.format(Double.parseDouble(record.getDn4Amt())).replaceAll("\\.0+$", ""));
 			}
-			record.setDearSal(dearSal);
 		}
+	}
+	
+	private void removeLeadingZeroFromId(UserData userData) {
+		for(Record record : userData.getRecordList())
+				record.setInId(record.getInId().replaceFirst("^0+", ""));
 	}
 	
 	private List<Record> getGiftList() throws Exception {
@@ -374,7 +248,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		List<List<String>> giftFile = FileIngestor.ingest();	// get the gift file	
 		HashSet<Integer> indexSet = new HashSet<>();
 	
-		int idIndex, amountIndex, giftDateIndex, designationIndex = -1;
+		int idIndex, amountIndex, giftDateIndex, appealIndex = -1;
 		
 		String[] headers = giftFile.get(0).toArray(new String[0]);
 
@@ -441,11 +315,11 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			throw new Exception("The gift date field has been mapped more than once.");
 		
 		// designation
-		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Gift Designation field.");
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Appeal Name field.");
 		dsd.setValues(headers);
 
 		for(int i = 0; i < headers.length; ++i) {
-			if(GIFT_FILE_DESIGNATION_PATTERN.matcher(headers[i]).find()) {
+			if(GIFT_FILE_CAMPAIGN_PATTERN.matcher(headers[i]).find()) {
 				dsd.getComboBoxValues().setSelectedIndex(i);
 				break;
 			}
@@ -456,10 +330,10 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		if(!dsd.isNextPressed())
 			throw new Exception("Selection cancelled, please restart job.");
 
-		designationIndex = dsd.getSelectedValueIndex();
+		appealIndex = dsd.getSelectedValueIndex();
 		
-		if(!indexSet.add(designationIndex))
-			throw new Exception("The gift designation field has been mapped more than once.");
+		if(!indexSet.add(appealIndex))
+			throw new Exception("The appeal name field has been mapped more than once.");
 		
 		List<Record> giftsList = new ArrayList<>();
 		
@@ -469,7 +343,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", ""); // Remove leading zeros
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
-			String giftDesignation = giftFile.get(i).get(designationIndex).trim();
+			String giftDesignation = giftFile.get(i).get(appealIndex).trim();
 			
 			boolean isGiftZero = false;
 			
@@ -498,59 +372,64 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		
 		return giftsList;
 	}
-	
+
 	// converts a list of gifts into a HashMap
 	private HashMap<String, List<ITCGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
-		
+
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(giftDateFormat);
-		
+
 		// id, giftHistory
 		HashMap<String, List<ITCGiftHistory>> giftHistoryMap = new HashMap<>();
-		
+
 		for(Record record : giftList) {
 			double giftAmount = (Validators.isNumber(record.getLstDnAmt())) ? Double.parseDouble(record.getLstDnAmt()) : 0.0;
-			
+
 			if(Validators.isStringOfDateFormat(record.getLstDnDat(), giftDateFormat)) {
+				//System.out.println(record.getLstDnDat() + " vs " + giftDateFormat);
 				LocalDate giftDate = LocalDate.parse(record.getLstDnDat(), formatter);
+				//System.out.println(giftDate.toString());
 				ITCGiftHistory history = new ITCGiftHistory(
 						record.getInId(),
 						giftAmount,
 						giftDate,
 						record.getSeg()
 						);
-				
+
 				if(!giftHistoryMap.containsKey(record.getInId()))
 					giftHistoryMap.put(record.getInId(), new ArrayList<ITCGiftHistory>());
-				
+
 				giftHistoryMap.get(record.getInId()).add(history);
 			}
 		}
-		
+
 		return giftHistoryMap;
 	}
 	
 	private void processGifts(UserData userData, HashMap<String, List<ITCGiftHistory>> giftHistoryMap) {
-		final int MONTHS24 = 24;
+		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
+		final int MONTHS24 = 24;
+
 		String now = String.valueOf(LocalDate.now());
 		
 		for(int i = 0; i < userData.getRecordList().size(); ++i) {
 			Record record = userData.getRecordList().get(i);
 			
 			if(!giftHistoryMap.containsKey(record.getInId())) {
-				record.setLstDnAmt("0.0");
+				System.out.println("No ID for " + record.getInId());
+				record.setLstDnAmt("0");
 				record.setLstDnDat("1900-01-01");
-				record.setFstDnAmt("0.0");
+				record.setFstDnAmt("0");
 				record.setFstDnDat("1900-01-01");
-				record.setTtlDnAmt("0.0");
+				record.setTtlDnAmt("0");
+				record.setTtlDnAmtLst12Mnths("0");
 				record.setNumDn("0");
+				record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
 				record.setDnAmtArr("");
-				record.setPkgVer("General");
-				record.setLetVer("General");
 				record.setRScore("99999");
 				record.setFScore("0");
 				record.setMScore("0");
-				record.setQuantity("0"); // Using this to hold the number of gifts in last 12 months
+				record.setQuantity("0"); // Using this to hold the number of gifts in last 18 months
 				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
 			}
 			
@@ -560,8 +439,10 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
 				
-				double totalGiftAmountLast24Months = 0.0;
+				double totalGiftAmountLast6Months = 0.0;
+				double totalGiftAmountLast12Months = 0.0;
 				int totalGiftsLast12Months = 0;
+				double largestGiftMadeLast24Months = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
 				
@@ -569,10 +450,6 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				        .stream()
 				        .map(String::valueOf)
 				        .collect(Collectors.joining(","));
-				
-				boolean hasGeneral = false;
-				HashSet<String> giftImpactSet = new HashSet<>();
-				String lastGiftDesignationImpact = "";
 				
 				for(int j = 0; j < giftHistoryList.size(); ++j) {
 					ITCGiftHistory giftHistory = giftHistoryList.get(j);
@@ -582,16 +459,30 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 					
 					long monthsFromDonation = getMonthsBetween(giftHistory.getGiftDate().toString(), now);
 					
-					if(monthsFromDonation <= MONTHS24)
-						totalGiftAmountLast24Months += giftHistory.getGiftAmount();
+					if(monthsFromDonation <= MONTHS6 && monthsFromDonation > -1)
+						totalGiftAmountLast6Months += giftHistory.getGiftAmount();
 					
-					if(monthsFromDonation <= MONTHS12)
+					if(monthsFromDonation <= MONTHS12 && monthsFromDonation > -1) {
 						++totalGiftsLast12Months;
+						totalGiftAmountLast12Months += giftHistory.getGiftAmount();
+					}
+					
+					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
+						if(giftHistory.getGiftAmount() > largestGiftMadeLast24Months)
+							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
+					
+					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
+					
+					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
+					if(daysBetween <= 60) {
+						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftDesignation());
+						if(monthlyMatcher.find())
+							record.setSeg(segment.MONTHLY.getName());
+					}
 					
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
-						long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 						record.setRScore(String.valueOf(daysBetween));
 					}
 					
@@ -599,42 +490,22 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 						record.setFstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setFstDnDat(giftHistory.getGiftDate().toString());
 					}
-					
-					// Pattern search the designations
-					Matcher generalMatcher = GENERAL_DESIGNATION_PATTERN.matcher(giftHistory.getGiftDesignation());
-					if(generalMatcher.find())
-						hasGeneral = true;
-					
-					Matcher impactMatcher = IMPACT_DESIGNATION_PATTERN.matcher(giftHistory.getGiftDesignation());
-					if(impactMatcher.find()) {
-						giftImpactSet.add(giftHistory.getGiftDesignation());
-						lastGiftDesignationImpact = giftHistory.getGiftDesignation();
-					}
 
 				}
 				
-				// set the package version and letter versions
-				if(record.getRecType().toLowerCase().trim().contains("y") || record.getRecType().toLowerCase().trim().contains("true")) {
-					record.setPkgVer(segment.MONTHLY.getName());
-					record.setLetVer(segment.MONTHLY.getName());
-				} else if(hasGeneral || giftImpactSet.size() > 1) {
-					record.setPkgVer("General");
-					record.setLetVer("General");
-				} else if(giftImpactSet.size() == 1) {
-					record.setPkgVer("Impact");
-					record.setLetVer(lastGiftDesignationImpact);
-				} else {
-					record.setPkgVer("General");
-					record.setLetVer("General");
-				}
+				double monetarySum = giftAmounts.stream()
+                        .mapToDouble(Double::doubleValue)
+                        .sum();
 				
-				record.setMScore(String.valueOf(calculateMedian(giftAmounts)));
+				record.setMScore(String.valueOf(monetarySum));
 				record.setFScore(String.valueOf(totalGifts));
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
+				record.setTtlDnAmtLst12Mnths(String.valueOf(totalGiftAmountLast12Months));
 				record.setNumDn(String.valueOf(totalGifts));
+				record.setLrgDnAmt(String.valueOf(largestGiftMadeLast24Months));
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setQuantity(String.valueOf(totalGiftsLast12Months)); // Using this to hold the number of gifts of last 12 months
-				record.setYear(String.valueOf(totalGiftAmountLast24Months)); // Using this to hold the total donation amount of last 24 months
+				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			
@@ -659,42 +530,12 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		return median;
 	}
 	
-	// Sets the priority of a record based on RFM where R is weighted * 2
-	private void setPriority(UserData userData) {
-		for(Record record : userData.getRecordList()) {
-			String[] rfmParts = record.getRfmScore().split("_");
-			int sum = 0;
-			for(int i = 0; i < rfmParts.length; ++i)
-				if(Validators.isNumber(rfmParts[i]))
-					if(i == 0) // double recency values to keep new donors
-						sum += Integer.parseInt(rfmParts[i])*5;
-					else if(i == 1)
-						sum += Integer.parseInt(rfmParts[i])*3;
-					else
-						sum += Integer.parseInt(rfmParts[i])*2;
-						
-			
-			sum *= 1000000;
-			
-			String tempLastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
-			
-			if(Validators.isNumber(tempLastDonation))
-				sum += Double.parseDouble(tempLastDonation);
-			
-			if(record.getInId().toLowerCase().contains("seed"))
-				sum = 999999999;
-			
-			record.setPriority(String.valueOf(sum));
-			
-		}
-	}
 	
 	private void setCampaignCode(UserData userData, String campaignCode) {
-		
 		for(Record record : userData.getRecordList()) {
 			if(record.getSeg().equalsIgnoreCase(segment.TOP.getName()))
 				record.setSegCode(campaignCode + "-MD1");
-			else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
+			else if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
 				record.setSegCode(campaignCode + "-A");
 			else if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
 				record.setSegCode(campaignCode + "-M1");
@@ -709,24 +550,20 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code (Ex. SEPT23-01-NL)");
-		uid.getTextField().setText("SEPT23-01-NL");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. NOV24-01-DM)");
+		uid.getTextField().setText("NOV24-01-DM");
 		uid.setVisible(true);
 
-		if(uid.getIsNextPressed()) {
-			String campaignCode = uid.getUserInput().toUpperCase().trim();
-			if(campaignCode.endsWith("-"))
-				campaignCode = campaignCode.substring(0, campaignCode.length() - 1);
-			return campaignCode;
-		}
+		if(uid.getIsNextPressed())
+			return uid.getUserInput().toUpperCase().trim();
 
 		return "";
 	}
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $5, enter 5)");
-		udid.getTextField().setText("5");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $25, enter 25)");
+		udid.getTextField().setText("25");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -750,11 +587,14 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	}
 	
 	// Convert the gift arrays to metrics
-	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {		
-		String less = "$%s helps provide a week of groceries for 1 family.";
-		String single = "$%s provides a week of groceries for 1 family.";
-		String plural = "$%s provides a week of groceries for %s families.";
-		String open = "$________ to provide groceries for as many families as possible!";
+	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
+		
+		int unitMultiplier = 2;
+		
+		String less = "$%s helps provide " + unitMultiplier + " meals a day for a child escaping life on the streets.";
+		String single = "$%s provides " + unitMultiplier + " meals a day for a child escaping life on the streets.";
+		String plural = "$%s provides %s meals a day for a child escaping life on the streets.";
+		String open = "$________ to provide as many meals as possible for children escaping life on the streets.";
 		
 		String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
 		
@@ -763,9 +603,15 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		plural = getGiftMetricLine("Enter the sentence to use when asks are > $" + formattedCostPerUnit, plural).trim();
 		open = getGiftMetricLine("Enter the sentence to use for open asks.", open).trim();
 		
-		DecimalFormat formatter = new DecimalFormat("#,###");
+		DecimalFormat formatter = new DecimalFormat("#,###.00");
+		DecimalFormat provides_formatter = new DecimalFormat("#,###");
 		
 		for(Record record : userData.getRecordList()) {
+			record.setProvide1("");
+			record.setProvide2("");
+			record.setProvide3("");
+			record.setProvide4("");
+			
 			if(Validators.isNumber(record.getDn1Amt())) {
 				double dn1 = Double.parseDouble(record.getDn1Amt());
 				double dn2 = Double.parseDouble(record.getDn2Amt());
@@ -778,38 +624,38 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				
 				// Donation 1
 				if(difference1 < 1) {
-					record.setDn1Amt(String.format(less, formatter.format(dn1)));
+					record.setProvide1(String.format(less, formatter.format(dn1).replaceAll("\\.0+$", "")));
 				} else if(difference1 < 2) {
-					record.setDn1Amt(String.format(single, formatter.format(dn1)));
+					record.setProvide1(String.format(single, formatter.format(dn1).replaceAll("\\.0+$", "")));
 				} else if(difference1 >= 2) {
-					record.setDn1Amt(String.format(plural, formatter.format(dn1), formatter.format(difference1)));
+					record.setProvide1(String.format(plural, formatter.format(dn1).replaceAll("\\.0+$", ""), provides_formatter.format(difference1 * unitMultiplier)));
 				}
 				
 				// Donation 2
 				if(difference2 < 1) {
-					record.setDn2Amt(String.format(less, formatter.format(dn2)));
+					record.setProvide2(String.format(less, formatter.format(dn2).replaceAll("\\.0+$", "")));
 				} else if(difference2 < 2) {
-					record.setDn2Amt(String.format(single, formatter.format(dn2)));
+					record.setProvide2(String.format(single, formatter.format(dn2).replaceAll("\\.0+$", "")));
 				} else if(difference2 >= 2) {
-					record.setDn2Amt(String.format(plural, formatter.format(dn2), formatter.format(difference2)));
+					record.setProvide2(String.format(plural, formatter.format(dn2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2 * unitMultiplier)));
 				}
 				
 				// Donation 3
 				if(difference3 < 1) {
-					record.setDn3Amt(String.format(less, formatter.format(dn3)));
+					record.setProvide3(String.format(less, formatter.format(dn3).replaceAll("\\.0+$", "")));
 				} else if(difference3 < 2) {
-					record.setDn3Amt(String.format(single, formatter.format(dn3)));
+					record.setProvide3(String.format(single, formatter.format(dn3).replaceAll("\\.0+$", "")));
 				} else if(difference3 >= 2) {
-					record.setDn3Amt(String.format(plural, formatter.format(dn3), formatter.format(difference3)));
+					record.setProvide3(String.format(plural, formatter.format(dn3).replaceAll("\\.0+$", ""), provides_formatter.format(difference3 * unitMultiplier)));
 				}
 				
 				// Donation 4
 				if(difference4 < 1) {
-					record.setDn4Amt(String.format(less, formatter.format(dn4)));
+					record.setProvide4(String.format(less, formatter.format(dn4).replaceAll("\\.0+$", "")));
 				} else if(difference4 < 2) {
-					record.setDn4Amt(String.format(single, formatter.format(dn4)));
+					record.setProvide4(String.format(single, formatter.format(dn4).replaceAll("\\.0+$", "")));
 				} else if(difference4 >= 2) {
-					record.setDn4Amt(String.format(plural, formatter.format(dn4), formatter.format(difference4)));
+					record.setProvide4(String.format(plural, formatter.format(dn4).replaceAll("\\.0+$", ""), provides_formatter.format(difference4 * unitMultiplier)));
 				}
 				
 			}
@@ -818,10 +664,93 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		}
 	}
 	
+	// Convert the gift arrays to metrics
+		private void setMatchedGiftArrayMetrics(UserData userData, double costPerUnit) {
+			
+			String less = "$%s DOUBLES to $%s to help provide Emergency Supplies to 1 Family.";
+			String single = "$%s DOUBLES to $%s to provide Emergency Supplies to 1 Family.";
+			String plural = "$%s DOUBLES to $%s to provide Emergency Supplies to %s Families.";
+			String open = "$________ DOUBLES to help as many Families as possible.";
+			
+			String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
+			
+			less = getGiftMetricLine("Enter the sentence to use when asks are < $" + formattedCostPerUnit, less).trim();
+			single = getGiftMetricLine("Enter the sentence to use when asks are = $" + formattedCostPerUnit, single).trim();
+			plural = getGiftMetricLine("Enter the sentence to use when asks are > $" + formattedCostPerUnit, plural).trim();
+			open = getGiftMetricLine("Enter the sentence to use for open asks.", open).trim();
+			
+			DecimalFormat formatter = new DecimalFormat("#,###.00");
+			DecimalFormat provides_formatter = new DecimalFormat("#,###");
+			
+			for(Record record : userData.getRecordList()) {
+				
+				record.setProvide1("");
+				record.setProvide2("");
+				record.setProvide3("");
+				record.setProvide4("");
+				
+				if(Validators.isNumber(record.getDn1Amt())) {
+					double dn1 = Double.parseDouble(record.getDn1Amt());
+					double dn2 = Double.parseDouble(record.getDn2Amt());
+					double dn3 = Double.parseDouble(record.getDn3Amt());
+					double dn4 = Double.parseDouble(record.getDn4Amt());
+					
+					double dn1X2 = Double.parseDouble(record.getDn1Amt()) * 2;
+					double dn2X2 = Double.parseDouble(record.getDn2Amt()) * 2;
+					double dn3X2 = Double.parseDouble(record.getDn3Amt()) * 2;
+					double dn4X2 = Double.parseDouble(record.getDn4Amt()) * 2;
+					
+					int difference1 = (int) (dn1X2 / costPerUnit);
+					int difference2 = (int) (dn2X2 / costPerUnit);
+					int difference3 = (int) (dn3X2 / costPerUnit);
+					int difference4 = (int) (dn4X2 / costPerUnit);
+					
+					// Donation 1
+					if(difference1 < 1) {
+						record.setProvide1(String.format(less, formatter.format(dn1).replaceAll("\\.0+$", ""), formatter.format(dn1X2).replaceAll("\\.0+$", "")));
+					} else if(difference1 < 2) {
+						record.setProvide1(String.format(single, formatter.format(dn1).replaceAll("\\.0+$", ""), formatter.format(dn1X2).replaceAll("\\.0+$", "")));
+					} else if(difference1 >= 2) {
+						record.setProvide1(String.format(plural, formatter.format(dn1).replaceAll("\\.0+$", ""), formatter.format(dn1X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference1)));
+					}
+					
+					// Donation 2
+					if(difference2 < 1) {
+						record.setProvide2(String.format(less, formatter.format(dn2).replaceAll("\\.0+$", ""), formatter.format(dn2X2).replaceAll("\\.0+$", "")));
+					} else if(difference2 < 2) {
+						record.setProvide2(String.format(single, formatter.format(dn2).replaceAll("\\.0+$", ""), formatter.format(dn2X2).replaceAll("\\.0+$", "")));
+					} else if(difference2 >= 2) {
+						record.setProvide2(String.format(plural, formatter.format(dn2).replaceAll("\\.0+$", ""), formatter.format(dn2X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2)));
+					}
+					
+					// Donation 3
+					if(difference3 < 1) {
+						record.setProvide3(String.format(less, formatter.format(dn3).replaceAll("\\.0+$", ""), formatter.format(dn3X2).replaceAll("\\.0+$", "")));
+					} else if(difference3 < 2) {
+						record.setProvide3(String.format(single, formatter.format(dn3).replaceAll("\\.0+$", ""), formatter.format(dn3X2).replaceAll("\\.0+$", "")));
+					} else if(difference3 >= 2) {
+						record.setProvide3(String.format(plural, formatter.format(dn3).replaceAll("\\.0+$", ""), formatter.format(dn3X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference3)));
+					}
+					
+					// Donation 4
+					if(difference4 < 1) {
+						record.setProvide4(String.format(less, formatter.format(dn4).replaceAll("\\.0+$", ""), formatter.format(dn4X2).replaceAll("\\.0+$", "")));
+					} else if(difference4 < 2) {
+						record.setProvide4(String.format(single, formatter.format(dn4).replaceAll("\\.0+$", ""), formatter.format(dn4X2).replaceAll("\\.0+$", "")));
+					} else if(difference4 >= 2) {
+						record.setProvide4(String.format(plural, formatter.format(dn4).replaceAll("\\.0+$", ""), formatter.format(dn4X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference4)));
+					}
+					
+				}
+				
+				record.setODnAmt(open);
+			}
+		}
+	
 	// Set the gift arrays
-	private void setGiftArrays(UserData userData) {
+	private void setGiftArrays(UserData userData, double defaultAskAmount) {
 		final BigDecimal LAST_GIFT_ROUNDING_AMOUNT = new BigDecimal("5.00");
-		
+
 		for(Record record : userData.getRecordList()) {
 			// initialize default values
 			record.setDn1Amt("");
@@ -842,169 +771,321 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
 			if(donorSegment.equalsIgnoreCase(segment.LAPSED.getName())) // set lapsed gifts
-				setLapsedGiftArray(record, lastDonationRoundedUpByFive);
+				setLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
 			else if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())) // set non-monthly gifts, leave monthly blank
-				setNonLapsedGiftArray(record, lastDonationRoundedUpByFive);
+				setNonLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
 
 		}
 	}
 	
 	// Logic to build lapsed gift arrays
 	private void setLapsedGiftArray(Record record, Double lastDonationRoundedUpByFive) {
-	
-		if(lastDonationRoundedUpByFive < 90.0) {
+		int askTier = 1;
+		
+		if(lastDonationRoundedUpByFive < 85.0) {
 			record.setDn1Amt("20");
 			record.setDn2Amt("50");
 			record.setDn3Amt("100");
 			record.setDn4Amt("200");
-		} else if(lastDonationRoundedUpByFive < 180.0) {
-			record.setDn1Amt("50");
+			askTier = 11;
+		} else if(lastDonationRoundedUpByFive < 115.0) {
+			record.setDn1Amt("60");
 			record.setDn2Amt("100");
-			record.setDn3Amt("150");
-			record.setDn4Amt("250");
-		} else if(lastDonationRoundedUpByFive < 240.0) {
+			record.setDn3Amt("160");
+			record.setDn4Amt("240");
+			askTier = 10;
+		} else if(lastDonationRoundedUpByFive < 175.0) {
+			record.setDn1Amt("60");
+			record.setDn2Amt("160");
+			record.setDn3Amt("240");
+			record.setDn4Amt("320");
+			askTier = 9;
+		} else if(lastDonationRoundedUpByFive < 225.0) {
 			record.setDn1Amt("100");
-			record.setDn2Amt("150");
+			record.setDn2Amt("160");
 			record.setDn3Amt("200");
-			record.setDn4Amt("250");
-		} else if(lastDonationRoundedUpByFive < 270.0) {
+			record.setDn4Amt("260");
+			askTier = 8;
+		} else if(lastDonationRoundedUpByFive < 275.0) {
 			record.setDn1Amt("100");
 			record.setDn2Amt("200");
-			record.setDn3Amt("250");
+			record.setDn3Amt("260");
 			record.setDn4Amt("350");
-		} else if(lastDonationRoundedUpByFive < 450.0) {
+			askTier = 7;
+		} else if(lastDonationRoundedUpByFive < 425.0) {
+			record.setDn1Amt("100");
+			record.setDn2Amt("200");
+			record.setDn3Amt("300");
+			record.setDn4Amt("400");
+			askTier = 6;
+		} else if(lastDonationRoundedUpByFive < 775.0) {
 			record.setDn1Amt("200");
 			record.setDn2Amt("300");
-			record.setDn3Amt("400");
-			record.setDn4Amt("500");
-		} else if(lastDonationRoundedUpByFive < 900.0) {
-			record.setDn1Amt("300");
-			record.setDn2Amt("400");
-			record.setDn3Amt("600");
-			record.setDn4Amt("800");
+			record.setDn3Amt("520");
+			record.setDn4Amt("750");
+			askTier = 5;
+		} else if(lastDonationRoundedUpByFive < 1125.0) {
+			record.setDn1Amt("260");
+			record.setDn2Amt("520");
+			record.setDn3Amt("1040");
+			record.setDn4Amt("1560");
+			askTier = 4;
+		} else if(lastDonationRoundedUpByFive < 1525.0) {
+			record.setDn1Amt("520");
+			record.setDn2Amt("1040");
+			record.setDn3Amt("1560");
+			record.setDn4Amt("2080");
+			askTier = 3;
+		} else if(lastDonationRoundedUpByFive < 2125.0) {
+			record.setDn1Amt("1040");
+			record.setDn2Amt("1560");
+			record.setDn3Amt("2080");
+			record.setDn4Amt("2600");
+			askTier = 2;
 		}
+		
+		if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
+			record.setSegCode(record.getSegCode() + askTier);
+	}
+	
+	// Logic to build lapsed gift arrays
+	private void setLapsedGiftArray2(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
+		int askTier = 1;
+
+		if(lastDonationRoundedUpByFive < defaultAskAmount * 2) {
+			record.setDn1Amt(String.valueOf(Math.ceil(defaultAskAmount / 2.0))); // Round up to nearest dollar
+			record.setDn2Amt(String.valueOf(defaultAskAmount));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 2));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 3));
+			askTier = 11;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 3) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 2));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 3));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 4));
+			askTier = 10;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 4) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 3));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 4));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 5));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 6));
+			askTier = 9;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 6) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 4));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 5));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 6));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 7));
+			askTier = 8;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 7) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 5));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 6));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 7));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 8));
+			askTier = 7;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 10) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 6));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 7));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 8));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 10));
+			askTier = 6;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 18) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 8));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 12));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 16));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 20));
+			askTier = 5;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 22) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 12));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 16));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 20));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 24));
+			askTier = 4;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 32) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 16));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 24));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 32));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 40));
+			askTier = 3;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 44) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 24));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 32));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 40));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 48));
+			askTier = 2;
+		}
+
+		if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
+			record.setSegCode(record.getSegCode() + askTier);
 	}
 	
 	// logic to build non lapsed gift arrays
 	private void setNonLapsedGiftArray(Record record, Double lastDonationRoundedUpByFive) {
-		
 		int askTier = 1;
 		
-		if(lastDonationRoundedUpByFive < 90.0) {
+		if(lastDonationRoundedUpByFive < 85.0) {
 			record.setDn1Amt("25");
 			record.setDn2Amt("50");
 			record.setDn3Amt("100");
 			record.setDn4Amt("200");
-			
-			askTier = 7;
-			
-		} else if(lastDonationRoundedUpByFive < 180.0) {
-			record.setDn1Amt("75");
+			askTier = 11;
+		} else if(lastDonationRoundedUpByFive < 115.0) {
+			record.setDn1Amt("80");
 			record.setDn2Amt("100");
-			record.setDn3Amt("150");
-			record.setDn4Amt("250");
-			
-			askTier = 6;
-			
-		} else if(lastDonationRoundedUpByFive < 240.0) {
-			record.setDn1Amt("150");
+			record.setDn3Amt("160");
+			record.setDn4Amt("240");
+			askTier = 10;
+		} else if(lastDonationRoundedUpByFive < 175.0) {
+			record.setDn1Amt("120");
+			record.setDn2Amt("160");
+			record.setDn3Amt("240");
+			record.setDn4Amt("320");
+			askTier = 9;
+		} else if(lastDonationRoundedUpByFive < 225.0) {
+			record.setDn1Amt("160");
 			record.setDn2Amt("200");
-			record.setDn3Amt("250");
-			record.setDn4Amt("500");
-			
-			askTier = 5; 
-			
-		} else if(lastDonationRoundedUpByFive < 270.0) {
+			record.setDn3Amt("260");
+			record.setDn4Amt("400");
+			askTier = 8;
+		} else if(lastDonationRoundedUpByFive < 275.0) {
+			record.setDn1Amt("200");
+			record.setDn2Amt("260");
+			record.setDn3Amt("350");
+			record.setDn4Amt("520");
+			askTier = 7;
+		} else if(lastDonationRoundedUpByFive < 425.0) {
 			record.setDn1Amt("200");
 			record.setDn2Amt("300");
 			record.setDn3Amt("400");
 			record.setDn4Amt("500");
-			
-			askTier = 4; 
-			
-		} else if(lastDonationRoundedUpByFive < 450.0) {
-			record.setDn1Amt("250");
-			record.setDn2Amt("400");
-			record.setDn3Amt("550");
-			record.setDn4Amt("700");
-			
-			askTier = 3;
-			
-		} else if(lastDonationRoundedUpByFive < 900.0) {
+			askTier = 6;
+		} else if(lastDonationRoundedUpByFive < 775.0) {
 			record.setDn1Amt("300");
-			record.setDn2Amt("500");
+			record.setDn2Amt("520");
 			record.setDn3Amt("750");
-			record.setDn4Amt("1000");
-			
-			askTier = 2; 
+			record.setDn4Amt("1040");
+			askTier = 5;
+		} else if(lastDonationRoundedUpByFive < 1525.0) {
+			record.setDn1Amt("520");
+			record.setDn2Amt("1040");
+			record.setDn3Amt("1560");
+			record.setDn4Amt("2080");
+			askTier = 4;
+		} else if(lastDonationRoundedUpByFive < 2000.0) {
+			record.setDn1Amt("1040");
+			record.setDn2Amt("1560");
+			record.setDn3Amt("2080");
+			record.setDn4Amt("2600");
+			askTier = 3;
+		} else if(lastDonationRoundedUpByFive < 2125.0) {
+			record.setDn1Amt("1560");
+			record.setDn2Amt("2080");
+			record.setDn3Amt("2600");
+			record.setDn4Amt("3120");
+			askTier = 2;
 		}
 		
-		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
-			record.setSegCode(record.getSegCode() + askTier);
-		
+		record.setSegCode(record.getSegCode() + askTier);
 	}
+	
+	// logic to build non lapsed gift arrays
+	private void setNonLapsedGiftArray2(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
+		int askTier = 1;
+
+		if(lastDonationRoundedUpByFive < defaultAskAmount * 2) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 2));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 3));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 4));
+			askTier = 11;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 3) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 2));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 3));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 4));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 5));
+			askTier = 10;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 4) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 3));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 4));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 5));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 6));
+			askTier = 9;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 6) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 4));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 5));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 6));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 7));
+			askTier = 8;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 7) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 5));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 6));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 7));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 8));
+			askTier = 7;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 10) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 8));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 9));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 10));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 11));
+			askTier = 6;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 18) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 9));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 12));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 14));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 16));
+			askTier = 5;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 34) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 20));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 24));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 28));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 32));
+			askTier = 4;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 45) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 36));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 42));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 48));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 54));
+			askTier = 3;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 48) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * 46));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * 52));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * 58));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * 64));
+			askTier = 2;
+		}
+
+		if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
+			record.setSegCode(record.getSegCode() + askTier);
+	}
+	
 	
 	// Logic to categorize donors into segments
 	private void setSegment(UserData userData) {
-		final int DONATION_MONTHS_WINDOW = 13;
-		final int MIN_TOP_DONATION = 900;
-		final int MIN_TOP_TOTAL_DONATION = 3000;
-		
-		for(Record record : userData.getRecordList()) {
-			String monthlyDonorIndicator = record.getRecType().toLowerCase().trim();
-			
-			long lifetimeMonths = getMonthsBetween(record.getFstDnDat(), record.getLstDnDat());
-			String now = String.valueOf(LocalDate.now());
-			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
-			
-			if(record.getInId().toLowerCase().contains("seed"))
-				record.setSeg(segment.ACTIVE.getName());
-			else if(monthlyDonorIndicator.contains("y") || monthlyDonorIndicator.contains("true"))
-				record.setSeg(segment.MONTHLY.getName());
-			else if(TOP_PATTERN.matcher(record.getRfmScore()).find()
-					&& (Double.parseDouble(record.getLstDnAmt()) >= MIN_TOP_DONATION || (Double.parseDouble(record.getTtlDnAmt()) >= MIN_TOP_TOTAL_DONATION))
-					&& monthsFromLastDonation <= DONATION_MONTHS_WINDOW)
-				record.setSeg(segment.TOP.getName());
-			else if(NEW_PATTERN.matcher(record.getRfmScore()).find() 
-					&& Double.parseDouble(record.getNumDn()) <= 2 
-					&& lifetimeMonths >= 0 && lifetimeMonths <= DONATION_MONTHS_WINDOW)
-				record.setSeg(segment.NEW.getName());
-			else if(LAPSED_PATTERN.matcher(record.getRfmScore()).find() || monthsFromLastDonation > DONATION_MONTHS_WINDOW)
-				record.setSeg(segment.LAPSED.getName());
-			else if(FREQUENT_PATTERN.matcher(record.getRfmScore()).find() && Double.parseDouble(record.getNumDn()) > 3)
-				record.setSeg(segment.FREQUENT.getName());
-			else 
-				record.setSeg(segment.ACTIVE.getName());
-			
-		}
-			
-	}
-	
-	private void setSegment2(UserData userData) {
-		final int MAJOR_DONATION_AMOUNT = 5000;
-		final int NEW_DONOR_MONTHS_CRITERIA = 6;
+		final int MAJOR_DONATION_AMOUNT = 500;
 		final int FREQUENT_DONATIONS_CRITERIA = 3;
+		final int NEW_DONOR_MONTHS_CRITERIA = 6;
+		final int LAPSED_DONATIONS_CRITERIA = 24;
+
 		String now = String.valueOf(LocalDate.now());
 		for(Record record : userData.getRecordList()) {
-			String monthlyDonorIndicator = record.getRecType().toLowerCase().trim();
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
-			
+			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
+
 			if(record.getInId().toLowerCase().contains("seed"))
-				record.setSeg(segment.ACTIVE.getName());
-			else if(monthlyDonorIndicator.contains("y") || monthlyDonorIndicator.contains("true"))
+				record.setSeg(segment.GENERAL.getName());
+			else if(record.getSeg() != null && record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
 				record.setSeg(segment.MONTHLY.getName());
-			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT)
+			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
 				record.setSeg(segment.TOP.getName());
 			else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
 				record.setSeg(segment.NEW.getName());
-			else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA)
+			else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
 				record.setSeg(segment.FREQUENT.getName());
-			else if(Double.parseDouble(record.getYear()) == 0)
+			else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
 				record.setSeg(segment.LAPSED.getName());
 			else
-				record.setSeg(segment.ACTIVE.getName());
-			}
+				record.setSeg(segment.GENERAL.getName());
 		}
+	}
 
 	// Sets the R, F, and M scores
 	private void setRFM(UserData userData) {
@@ -1023,10 +1104,10 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				counter = 0;
 				--currentScore;
 			}
-			
+
 			record.setRfmScore(String.valueOf(currentScore));
 		}
-		
+
 		counter = 0;
 		currentScore = 5;
 
@@ -1040,7 +1121,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			}
 			record.setRfmScore(record.getRfmScore() + "_" + String.valueOf(currentScore));
 		}
-		
+
 		counter = 0;
 		currentScore = 5;
 
@@ -1055,7 +1136,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			}
 			record.setRfmScore(record.getRfmScore() + "_" + String.valueOf(currentScore));
 		}
-		
+
 		counter = 0;
 		currentScore = 5;
 
@@ -1063,18 +1144,20 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	
 	// calculates the months between two dates
 	private long getMonthsBetween(String startDate, String endDate) {
-		startDate = startDate.replaceAll("[^0-9]", "-");
-		endDate = endDate.replaceAll("[^0-9]", "-");
 		
-		if(!Validators.isStringOfDateFormat(startDate, "yyyy-MM-dd")) {
-			System.out.println("Invalid startdate of " + startDate);
-			return -1;
-		} if(!Validators.isStringOfDateFormat(endDate, "yyyy-MM-dd")) {
-			System.out.println("Invalid enddate of " + endDate);
+		startDate = startDate.replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/");
+		endDate = endDate.replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/");
+		
+		if(!Validators.isStringOfDateFormat(startDate, "yyyy/MM/dd")) {
+			System.out.println("Invalid date of " + startDate);
 			return -1;
 		}
-			
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		if(!Validators.isStringOfDateFormat(endDate, "yyyy/MM/dd")) {
+			System.out.println("Invalid date of " + endDate);
+			return -1;
+		}
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 		LocalDate start = LocalDate.parse(startDate, formatter);
 		LocalDate end = LocalDate.parse(endDate, formatter);
 		
@@ -1086,7 +1169,6 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		return monthsBetween;
 
 	}
-
 
 	/*
 	 * (non-Javadoc)

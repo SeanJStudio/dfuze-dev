@@ -587,7 +587,11 @@ public class ItIsWritten implements RunGenerosityXBehavior {
 					record.setLetVer("General");
 				}*/
 				
-				record.setMScore(String.valueOf(calculateMedian(giftAmounts)));
+				double monetarySum = giftAmounts.stream()
+                        .mapToDouble(Double::doubleValue)
+                        .sum();
+				
+				record.setMScore(String.valueOf(monetarySum));
 				record.setFScore(String.valueOf(totalGifts));
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
 				record.setNumDn(String.valueOf(totalGifts));
