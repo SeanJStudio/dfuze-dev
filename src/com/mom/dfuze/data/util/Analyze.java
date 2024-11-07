@@ -67,9 +67,10 @@ public class Analyze {
 	public static void prioritizeRFM(UserData userData) {
 		for(Record record : userData.getRecordList()) {
 			double sum = 0;
-			sum += Double.parseDouble(record.getRScore()) * 10.0;
-			sum += Double.parseDouble(record.getMScore());
-			sum += Double.parseDouble(record.getFScore()) * 2.0;
+			sum += Double.parseDouble(record.getRScore()) * 100.0;
+			sum += Double.parseDouble(record.getTtlDnAmtLst12Mnths()) / 100000.0;
+			sum += Double.parseDouble(record.getMScore()) * 11.0;
+			sum += Double.parseDouble(record.getFScore());
 			record.setPriority(String.valueOf(sum));
 		}
 	}
