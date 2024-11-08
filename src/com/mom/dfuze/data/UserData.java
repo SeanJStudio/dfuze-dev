@@ -123,6 +123,8 @@ public class UserData {
 	private int numDnIndex = DEFAULT_INDEX; // # of donations given
 	private int ttlDnAmtIndex = DEFAULT_INDEX; // total donation amount given in $
 	private int ttlDnAmtLst12MnthsIndex = DEFAULT_INDEX; // total donation amount given in $ from last 12 months
+	private int ttlDnAmtCrntYrIndex = DEFAULT_INDEX; // total donation amount given in the current year
+	private int ttlDnAmtLstYrIndex = DEFAULT_INDEX; // total donation amount given in last year
 	private int fstDnAmtIndex = DEFAULT_INDEX; // first donation amount give
 	private int lstDnAmtIndex = DEFAULT_INDEX; // last donation amount given
 	private int lrgDnAmtIndex = DEFAULT_INDEX; // largest donation amount given
@@ -270,6 +272,8 @@ public class UserData {
 		NUMBER_OF_DONATIONS("dfNumDn"), // # of donations given
 		TOTAL_DONATION_AMOUNT("dfTtlDnAmt"), // total donation amount given in $
 		TOTAL_DONATION_AMOUNT_LAST_12_MONTHS("dfTtlDnAmtLst12Mnths"), // total donation amount given in $ from last 12 months
+		TOTAL_DONATION_AMOUNT_CURRENT_YEAR("dfTtlDnAmtCrntYr"), // total donation amount given in the current year
+		TOTAL_DONATION_AMOUNT_LAST_YEAR("dfTtlDnAmtLstYr"), // total donation amount given in the last year
 		FIRST_DONATION_AMOUNT("dfFstDnAmt"), // first donation amount given
 		LAST_DONATION_AMOUNT("dfLstDnAmt"), // last donation amount given
 		LARGEST_DONATION_AMOUNT("dfLrgDnAmt"), // largest donation amount given
@@ -421,6 +425,8 @@ public class UserData {
 			fieldName.NUMBER_OF_DONATIONS.getName(),
 			fieldName.TOTAL_DONATION_AMOUNT.getName(),
 			fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName(),
+			fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName(),
+			fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName(),
 			fieldName.FIRST_DONATION_AMOUNT.getName(),
 			fieldName.LAST_DONATION_AMOUNT.getName(),
 			fieldName.LARGEST_DONATION_AMOUNT.getName(),
@@ -807,8 +813,16 @@ public class UserData {
 		return ttlDnAmtIndex;
 	}
 	
-	public int getTtlDnaMTLst12Mnths() {
+	public int getTtlDnAmtLst12MnthsIndex() {
 		return ttlDnAmtLst12MnthsIndex;
+	}
+	
+	public int getTtlDnAmtCrntYrIndex() {
+		return ttlDnAmtCrntYrIndex;
+	}
+	
+	public int getTtlDnAmtLstYrIndex() {
+		return ttlDnAmtLstYrIndex;
 	}
 
 	public int getFstDnAmtIndex() {
@@ -1307,7 +1321,15 @@ public class UserData {
 	public void setTtlDnAmtLst12MnthsIndex(int ttlDnAmtLst12MnthsIndex) {
 		this.ttlDnAmtLst12MnthsIndex = ttlDnAmtLst12MnthsIndex;
 	}
-
+	
+	public void setTtlDnAmtCrntYrIndex(int ttlDnAmtCrntYrIndex) {
+		this.ttlDnAmtCrntYrIndex = ttlDnAmtCrntYrIndex;
+	}
+	
+	public void setTtlDnAmtLstYrIndex(int ttlDnAmtLstYrIndex) {
+		this.ttlDnAmtLstYrIndex = ttlDnAmtLstYrIndex;
+	}
+	
 	public void setFstDnAmtIndex(int fstDnAmtIndex) {
 		this.fstDnAmtIndex = fstDnAmtIndex;
 	}
@@ -1821,6 +1843,10 @@ public class UserData {
 			return record.getTtlDnAmt();
 		else if (fieldToGet.equals(fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName()))
 			return record.getTtlDnAmtLst12Mnths();
+		else if (fieldToGet.equals(fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName()))
+			return record.getTtlDnAmtCrntYr();
+		else if (fieldToGet.equals(fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName()))
+			return record.getTtlDnAmtLstYr();
 		else if (fieldToGet.equals(fieldName.FIRST_DONATION_AMOUNT.getName()))
 			return record.getFstDnAmt();
 		else if (fieldToGet.equals(fieldName.LAST_DONATION_AMOUNT.getName()))
@@ -2078,6 +2104,10 @@ public class UserData {
 			record.setTtlDnAmt(valueToSet);
 		else if (fieldToSet.equals(fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName()))
 			record.setTtlDnAmtLst12Mnths(valueToSet);
+		else if (fieldToSet.equals(fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName()))
+			record.setTtlDnAmtCrntYr(valueToSet);
+		else if (fieldToSet.equals(fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName()))
+			record.setTtlDnAmtLstYr(valueToSet);
 		else if (fieldToSet.equals(fieldName.FIRST_DONATION_AMOUNT.getName()))
 			record.setFstDnAmt(valueToSet);
 		else if (fieldToSet.equals(fieldName.LAST_DONATION_AMOUNT.getName()))
@@ -2335,6 +2365,10 @@ public class UserData {
 			record.setTtlDnAmt(inData[ttlDnAmtIndex]);
 		else if (fieldToSet.equals(fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName()))
 			record.setTtlDnAmtLst12Mnths(inData[ttlDnAmtLst12MnthsIndex]);
+		else if (fieldToSet.equals(fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName()))
+			record.setTtlDnAmtCrntYr(inData[ttlDnAmtCrntYrIndex]);
+		else if (fieldToSet.equals(fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName()))
+			record.setTtlDnAmtLstYr(inData[ttlDnAmtLstYrIndex]);
 		else if (fieldToSet.equals(fieldName.FIRST_DONATION_AMOUNT.getName()))
 			record.setFstDnAmt(inData[fstDnAmtIndex]);
 		else if (fieldToSet.equals(fieldName.LAST_DONATION_AMOUNT.getName()))

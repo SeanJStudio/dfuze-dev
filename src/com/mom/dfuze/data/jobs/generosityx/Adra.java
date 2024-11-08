@@ -522,7 +522,7 @@ public class Adra implements RunGenerosityXBehavior {
 				record.setRScore("99999");
 				record.setFScore("0");
 				record.setMScore("0");
-				record.setQuantity("0"); // Using this to hold the number of gifts in last 18 months
+				record.setQuantity("0"); // Using this to hold the number of gifts in last 12 months
 				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
 			}
 			
@@ -1196,20 +1196,20 @@ public class Adra implements RunGenerosityXBehavior {
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
 			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
 
-			if(record.getInId().toLowerCase().contains("seed"))
-				record.setSeg(segment.GENERAL.getName());
-			else if(record.getSeg() != null && record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
-				record.setSeg(segment.MONTHLY.getName());
-			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
-				record.setSeg(segment.TOP.getName());
-			else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
-				record.setSeg(segment.NEW.getName());
-			else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
-				record.setSeg(segment.FREQUENT.getName());
-			else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
-				record.setSeg(segment.LAPSED.getName());
-			else
-				record.setSeg(segment.GENERAL.getName());
+			if(record.getSeg() == null) {
+				if(record.getInId().toLowerCase().contains("seed"))
+					record.setSeg(segment.GENERAL.getName());
+				else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
+					record.setSeg(segment.TOP.getName());
+				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
+					record.setSeg(segment.NEW.getName());
+				else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
+					record.setSeg(segment.FREQUENT.getName());
+				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
+					record.setSeg(segment.LAPSED.getName());
+				else
+					record.setSeg(segment.GENERAL.getName());
+			}
 		}
 	}
 

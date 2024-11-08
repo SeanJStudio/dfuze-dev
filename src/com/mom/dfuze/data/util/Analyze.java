@@ -68,9 +68,9 @@ public class Analyze {
 		for(Record record : userData.getRecordList()) {
 			double sum = 0;
 			sum += Double.parseDouble(record.getRScore()) * 100.0;
-			sum += Double.parseDouble(record.getTtlDnAmtLst12Mnths()) / 100000.0;
+			sum += Double.parseDouble(record.getTtlDnAmtLst12Mnths()) / 1000.0;
 			sum += Double.parseDouble(record.getMScore()) * 11.0;
-			sum += Double.parseDouble(record.getFScore());
+			sum += Double.parseDouble(record.getFScore()) * 6.0;
 			record.setPriority(String.valueOf(sum));
 		}
 	}

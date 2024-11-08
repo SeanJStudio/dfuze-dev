@@ -113,6 +113,8 @@ public class Record {
   private String numDn; // # of donations given
   private String ttlDnAmt; // total donation amount given in $
   private String ttlDnAmtLst12Mnths; // total donation amount given in $ from last 12 months
+  private String ttlDnAmtCrntYr; // total donation amount given in current year
+  private String ttlDnAmtLstYr; // total donation amount given in last year
   private String fstDnAmt; // first donation amount given
   private String lstDnAmt; // last donation amount given
   private String lMDnAmt; // last monthly donation amount give
@@ -260,6 +262,8 @@ public class Record {
     numDn = builder.numDn;
     ttlDnAmt = builder.ttlDnAmt;
     ttlDnAmtLst12Mnths = builder.ttlDnAmtLst12Mnths;
+    ttlDnAmtCrntYr = builder.ttlDnAmtCrntYr;
+    ttlDnAmtLstYr = builder.ttlDnAmtLstYr;
     fstDnAmt = builder.fstDnAmt;
     lstDnAmt = builder.lstDnAmt;
     lMDnAmt = builder.lMDnAmt;
@@ -403,6 +407,8 @@ public class Record {
     private String numDn;
     private String ttlDnAmt;
     private String ttlDnAmtLst12Mnths;
+    private String ttlDnAmtCrntYr;
+    private String ttlDnAmtLstYr;
     private String fstDnAmt;
     private String lstDnAmt;
     private String lrgDnAmt;
@@ -891,7 +897,17 @@ public class Record {
     public Builder setTtlDnAmtLst12Mnths(String ttlDnAmtLst12Mnths) {
         this.ttlDnAmtLst12Mnths = ttlDnAmtLst12Mnths;
         return this;
-      }
+    }
+    
+    public Builder setTtlDnAmtCrntYr(String ttlDnAmtCrntYr) {
+        this.ttlDnAmtCrntYr = ttlDnAmtCrntYr;
+        return this;
+    }
+    
+    public Builder setTtlDnAmtLstYr(String ttlDnAmtLstYr) {
+        this.ttlDnAmtLstYr = ttlDnAmtLstYr;
+        return this;
+    }
 
     public Builder setFstDnAmt(String fstDnAmt) {
       this.fstDnAmt = fstDnAmt;
@@ -1317,33 +1333,33 @@ public class Record {
     return nam2_2;
   }
 
-  public String getSpousePrefix() {
-	    return spousePrefix;
-	  }
+	public String getSpousePrefix() {
+		return spousePrefix;
+	}
 
-	  public String getSpouseSuffix() {
-	    return spouseSuffix;
-	  }
+	public String getSpouseSuffix() {
+		return spouseSuffix;
+	}
 
-	  public String getSpouseFstName() {
-	    return spouseFstName;
-	  }
+	public String getSpouseFstName() {
+		return spouseFstName;
+	}
 
-	  public String getSpouseMidName() {
-	    return spouseMidName;
-	  }
+	public String getSpouseMidName() {
+		return spouseMidName;
+	}
 
-	  public String getSpouseLstName() {
-	    return spouseLstName;
-	  }
+	public String getSpouseLstName() {
+		return spouseLstName;
+	}
 
-	  public String getSpouseNam1() {
-	    return spouseNam1;
-	  }
+	public String getSpouseNam1() {
+		return spouseNam1;
+	}
 
-	  public String getSpouseNam2() {
-	    return spouseNam2;
-	  }
+	public String getSpouseNam2() {
+		return spouseNam2;
+	}
 
   public String getCmpny() {
     return cmpny;
@@ -1439,6 +1455,14 @@ public class Record {
   
   public String getTtlDnAmtLst12Mnths() {
 	  return ttlDnAmtLst12Mnths;
+  }
+  
+  public String getTtlDnAmtCrntYr() {
+	  return ttlDnAmtCrntYr;
+  }
+  
+  public String getTtlDnAmtLstYr() {
+	  return ttlDnAmtLstYr;
   }
 
   public String getFstDnAmt() {
@@ -1944,6 +1968,14 @@ public class Record {
   public void setTtlDnAmtLst12Mnths(String ttlDnAmtLst12Mnths) {
 	  this.ttlDnAmtLst12Mnths = ttlDnAmtLst12Mnths;
   }
+  
+  public void setTtlDnAmtCrntYr(String ttlDnAmtCrntYr) {
+	  this.ttlDnAmtCrntYr = ttlDnAmtCrntYr;
+  }
+  
+  public void setTtlDnAmtLstYr(String ttlDnAmtLstYr) {
+	  this.ttlDnAmtLstYr = ttlDnAmtLstYr;
+  }
 
   public void setFstDnAmt(String fstDnAmt) {
     this.fstDnAmt = fstDnAmt;
@@ -2138,18 +2170,18 @@ public String toString() {
 			+ cmpnyAdd2 + ", add1=" + add1 + ", add1_2=" + add1_2 + ", add2=" + add2 + ", add2_2=" + add2_2 + ", city="
 			+ city + ", prov=" + prov + ", pCode=" + pCode + ", cntry=" + cntry + ", ncoa=" + ncoa + ", dnm=" + dnm
 			+ ", deceased=" + deceased + ", dnAmtArr=" + dnAmtArr + ", dnDatArr=" + dnDatArr + ", numDn=" + numDn
-			+ ", ttlDnAmt=" + ttlDnAmt + ", ttlDnAmtLst12Mnths=" + ttlDnAmtLst12Mnths + ", fstDnAmt=" + fstDnAmt
-			+ ", lstDnAmt=" + lstDnAmt + ", lMDnAmt=" + lMDnAmt + ", lrgDnAmt=" + lrgDnAmt + ", smlDnAmt=" + smlDnAmt
-			+ ", fstDnDat=" + fstDnDat + ", lstDnDat=" + lstDnDat + ", lMDnDat=" + lMDnDat + ", dn1Amt=" + dn1Amt
-			+ ", dn2Amt=" + dn2Amt + ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt=" + oDnAmt + ", mDn1Amt="
-			+ mDn1Amt + ", mDn2Amt=" + mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt + ", mODnAmt="
-			+ mODnAmt + ", provide1=" + provide1 + ", provide2=" + provide2 + ", provide3=" + provide3 + ", provide4="
-			+ provide4 + ", priority=" + priority + ", abGroup=" + abGroup + ", appeal=" + appeal + ", seg=" + seg
-			+ ", segCode=" + segCode + ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer=" + repVer
-			+ ", codeLine=" + codeLine + ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt
-			+ ", rScore=" + rScore + ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore
-			+ ", length=" + length + ", width=" + width + ", height=" + height + ", weight=" + weight + "]";
+			+ ", ttlDnAmt=" + ttlDnAmt + ", ttlDnAmtLst12Mnths=" + ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr="
+			+ ttlDnAmtCrntYr + ", ttlDnAmtLstYr=" + ttlDnAmtLstYr + ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt
+			+ ", lMDnAmt=" + lMDnAmt + ", lrgDnAmt=" + lrgDnAmt + ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat
+			+ ", lstDnDat=" + lstDnDat + ", lMDnDat=" + lMDnDat + ", dn1Amt=" + dn1Amt + ", dn2Amt=" + dn2Amt
+			+ ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt=" + oDnAmt + ", mDn1Amt=" + mDn1Amt + ", mDn2Amt="
+			+ mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt + ", mODnAmt=" + mODnAmt + ", provide1="
+			+ provide1 + ", provide2=" + provide2 + ", provide3=" + provide3 + ", provide4=" + provide4 + ", priority="
+			+ priority + ", abGroup=" + abGroup + ", appeal=" + appeal + ", seg=" + seg + ", segCode=" + segCode
+			+ ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer=" + repVer + ", codeLine=" + codeLine
+			+ ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt + ", rScore=" + rScore
+			+ ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore + ", length=" + length + ", width="
+			+ width + ", height=" + height + ", weight=" + weight + "]";
 }
-  
 
 }

@@ -79,8 +79,8 @@ public class RemoveBadAddresses implements RunUtilityBehavior {
 	public ArrayList<Record> recordsRemoved;
 	public int recordsInNum = 0;
 	
-	private static Pattern PC_PATTERN = Pattern.compile("(?i)[a-zA-Z]\\d[a-zA-Z][ -]?\\d[a-zA-Z]\\d", Pattern.CASE_INSENSITIVE);
-	private static Pattern ZIP_PATTERN = Pattern.compile("(?i)[0-9]{5}(?:-[0-9]{4})?", Pattern.CASE_INSENSITIVE);
+	private static Pattern PC_PATTERN = Pattern.compile("(?i)[a-zA-Z]\\d[a-zA-Z]\\d[a-zA-Z]\\d", Pattern.CASE_INSENSITIVE);
+	private static Pattern ZIP_PATTERN = Pattern.compile("(?i)[0-9]{5}(?:[0-9]{4})?", Pattern.CASE_INSENSITIVE);
 	private static Pattern GD_PATTERN = Pattern.compile("general delivery|gd|(^|\\s+)gen(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	private static Pattern SANTA_PATTERN = Pattern.compile("h(o|0)h(o|0)", Pattern.CASE_INSENSITIVE);
 	//private static Pattern UNKNOWN_PATTERN = Pattern.compile("(^|\\s+)(unknown|unk|address|null|blank|need new)(\\s+|$)", Pattern.CASE_INSENSITIVE);
@@ -194,7 +194,7 @@ public class RemoveBadAddresses implements RunUtilityBehavior {
 	}
 	
 	private boolean hasPC(Record record) {
-		Matcher pCodeMatcher = PC_PATTERN.matcher(record.getPCode());
+		Matcher pCodeMatcher = PC_PATTERN.matcher(record.getPCode().replaceAll("[^A-Za-z0-9]", ""));
 		
 		if(pCodeMatcher.find())
 			return true;

@@ -742,6 +742,10 @@ public class DataMappingDialog extends JDialog {
 			labelName = "TOTAL GIFT AMOUNT";
 		else if (field.equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName()))
 			labelName = "TOTAL GIFT AMOUNT LAST 12 MONTHS";
+		else if (field.equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName()))
+			labelName = "TOTAL GIFT AMOUNT CURRENT YEAR";
+		else if (field.equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName()))
+			labelName = "TOTAL GIFT AMOUNT LAST YEAR";
 		else if (field.equals(UserData.fieldName.FIRST_DONATION_AMOUNT.getName()))
 			labelName = "FIRST GIFT AMOUNT";
 		else if (field.equals(UserData.fieldName.LAST_DONATION_AMOUNT.getName()))
@@ -1315,6 +1319,10 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setTtlDnAmtIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName()))
 					UiController.getUserData().setTtlDnAmtLst12MnthsIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName()))
+					UiController.getUserData().setTtlDnAmtCrntYrIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName()))
+					UiController.getUserData().setTtlDnAmtLstYrIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.FIRST_DONATION_AMOUNT.getName()))
 					UiController.getUserData().setFstDnAmtIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.LAST_DONATION_AMOUNT.getName()))
