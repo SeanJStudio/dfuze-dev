@@ -408,7 +408,7 @@ public class UiController {
 					String[] previewLines = previewText.split("\r");
 
 					String headerLine = previewLines[0].replaceAll("\"", "");
-					String[] headerLines = headerLine.split(String.valueOf(delimiterSelectDialog.getDelimiterField()));
+					String[] headerLines = headerLine.split(Pattern.quote(String.valueOf(delimiterSelectDialog.getDelimiterField())));
 					
 					boolean hasHeaders = false;
 					
