@@ -30,6 +30,7 @@ import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
+import com.mom.dfuze.data.jobs.generosityx.Adra.segment;
 import com.mom.dfuze.data.util.Analyze;
 import com.mom.dfuze.data.util.Common;
 import com.mom.dfuze.data.util.DateTimeInferer;
@@ -55,16 +56,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 
 	private final String BEHAVIOR_NAME = "Wildlife Rescue Association";
 	private String[] REQUIRED_FIELDS = {
-			UserData.fieldName.IN_ID.getName(),
-			//UserData.fieldName.DEAR_SALUTATION.getName(),
-			UserData.fieldName.FIRSTNAME.getName(),
-			UserData.fieldName.LASTNAME.getName(),
-			//UserData.fieldName.NAME1.getName(),
-			UserData.fieldName.ADDRESS1.getName(),
-			UserData.fieldName.CITY.getName(),
-			UserData.fieldName.PROVINCE.getName(),
-			UserData.fieldName.POSTALCODE.getName(),
-			UserData.fieldName.RECORD_TYPE.getName() // Use this to hold the monthly identifier
+			UserData.fieldName.IN_ID.getName()
 	};
 	
 	private String DESCRIPTION = 
@@ -77,7 +69,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 					+ "<ol>"
 					+ "<li>Load the supplied data file</li>"
 					+ "<li>Map Reference Number to the " + getIdName() + " field.</li>"
-					+ "<li>Map record type to the monthly identifier (Recurring donor status)</li>"
+					//+ "<li>Map record type to the monthly identifier (Recurring donor status)</li>"
 					+ "<li>Enter the campaign code when prompted</li>"
 					+ "<li>Enter the cost per unit metric when prompted</li>"
 					+ "<li>Enter gift metrics for &lt;1, ==1, &gt;1, and open when prompted</li>"
@@ -99,6 +91,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 	public enum segment {
 		NEW("New"),
 		LAPSED("Lapsed"),
+		DEEP_LAPSED("Deep Lapsed"),
 		FREQUENT("Frequent"),
 		TOP("Top"),
 		GENERAL("General"),
@@ -133,10 +126,10 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 		removeLeadingZeroFromDataId(userData);
 		
 		// create the full name field
-		setName(userData);
+		//setName(userData);
 		
 		// create the salutation
-		setSalutation(userData);
+		//setSalutation(userData);
 		
 		// Add the seeds
 		//addSeeds(userData);
@@ -217,14 +210,16 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 		userData.getRecordList().sort(new RecordSorters.CompareByFieldDescAsNumber(UserData.fieldName.PRIORITY.getName()));
 
 		userData.setDfHeaders(new String[] {
-				UserData.fieldName.NAME1.getName(),
-				UserData.fieldName.DEAR_SALUTATION.getName(),
+				//UserData.fieldName.NAME1.getName(),
+				//UserData.fieldName.DEAR_SALUTATION.getName(),
 				UserData.fieldName.LAST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.LAST_DONATION_DATE.getName(),
 				UserData.fieldName.FIRST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.FIRST_DONATION_DATE.getName(),
 				UserData.fieldName.TOTAL_DONATION_AMOUNT.getName(),
+				UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS.getName(),
+				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.DONATION_AMOUNT_ARRAY.getName(),
 				UserData.fieldName.RECENCY.getName(),
 				UserData.fieldName.FREQUENCY.getName(),
@@ -446,8 +441,10 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 	}
 	
 	private void processGifts(UserData userData, HashMap<String, List<WRAGiftHistory>> giftHistoryMap) {
-		final int MONTHS24 = 24;
+		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
+		final int MONTHS24 = 24;
+		
 		String now = String.valueOf(LocalDate.now());
 		
 		for(int i = 0; i < userData.getRecordList().size(); ++i) {
@@ -460,7 +457,9 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 				record.setFstDnAmt("0.0");
 				record.setFstDnDat("1900-01-01");
 				record.setTtlDnAmt("0.0");
+				record.setTtlDnAmtLst12Mnths("0");
 				record.setNumDn("0");
+				record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
 				record.setDnAmtArr("");
 				record.setRScore("99999");
 				record.setFScore("0");
@@ -475,8 +474,10 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
 				
-				double totalGiftAmountLast24Months = 0.0;
+				double totalGiftAmountLast6Months = 0.0;
+				double totalGiftAmountLast12Months = 0.0;
 				int totalGiftsLast12Months = 0;
+				double largestGiftMadeLast24Months = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
 				
@@ -493,12 +494,19 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 					
 					long monthsFromDonation = getMonthsBetween(giftHistory.getGiftDate().toString(), now);
 					
-					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
-						totalGiftAmountLast24Months += giftHistory.getGiftAmount();
+					if(monthsFromDonation <= MONTHS6 && monthsFromDonation > -1)
+						totalGiftAmountLast6Months += giftHistory.getGiftAmount();
 					
-					if(monthsFromDonation <= MONTHS12 && monthsFromDonation > -1)
+					if(monthsFromDonation <= MONTHS12 && monthsFromDonation > -1) {
 						++totalGiftsLast12Months;
+						totalGiftAmountLast12Months += giftHistory.getGiftAmount();
+					}
 					
+					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
+						if(giftHistory.getGiftAmount() > largestGiftMadeLast24Months)
+							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
+					
+					// This is the last donation made
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
@@ -506,6 +514,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 						record.setRScore(String.valueOf(daysBetween));
 					}
 					
+					// This is the first donation made
 					if(j == giftHistoryList.size() - 1) {
 						record.setFstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setFstDnDat(giftHistory.getGiftDate().toString());
@@ -513,13 +522,19 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 
 				}
 				
-				record.setMScore(String.valueOf(calculateMedian(giftAmounts)));
+				double monetarySum = giftAmounts.stream()
+                        .mapToDouble(Double::doubleValue)
+                        .sum();
+				
+				record.setMScore(String.valueOf(monetarySum));
 				record.setFScore(String.valueOf(totalGifts));
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
+				record.setTtlDnAmtLst12Mnths(String.valueOf(totalGiftAmountLast12Months));
 				record.setNumDn(String.valueOf(totalGifts));
+				record.setLrgDnAmt(String.valueOf(largestGiftMadeLast24Months));
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setQuantity(String.valueOf(totalGiftsLast12Months)); // Using this to hold the number of gifts of last 12 months
-				record.setYear(String.valueOf(totalGiftAmountLast24Months)); // Using this to hold the total donation amount of last 24 months
+				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			
@@ -656,7 +671,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 				record.setSegCode(campaignCode + "M1");
 			else if(record.getSeg().equalsIgnoreCase(segment.FREQUENT.getName()))
 				record.setSegCode(campaignCode + "Q");
-			else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName()))
+			else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName()) || record.getSeg().equalsIgnoreCase(segment.DEEP_LAPSED.getName()))
 				record.setSegCode(campaignCode + "L");
 			else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName()))
 				record.setSegCode(campaignCode + "N");
@@ -673,7 +688,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 				record.setSegCode(campaignCode + "M");
 			else if(record.getSeg().equalsIgnoreCase(segment.FREQUENT.getName()))
 				record.setSegCode(campaignCode + "Q");
-			else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName()))
+			else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName()) || record.getSeg().equalsIgnoreCase(segment.DEEP_LAPSED.getName()))
 				record.setSegCode(campaignCode + "L");
 			else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName()))
 				record.setSegCode(campaignCode + "N");
@@ -1211,31 +1226,34 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 	
 	// Logic to categorize donors into segments
 	private void setSegment(UserData userData) {
-		final int MAJOR_DONATION_AMOUNT = 3000;
-		final int NEW_DONOR_MONTHS_CRITERIA = 6;
+		final int MAJOR_DONATION_AMOUNT = 500;
 		final int FREQUENT_DONATIONS_CRITERIA = 3;
-		final String MONTHLY_DONOR_ACTIVE = "active";
-		final String MONTHLY_DONOR_LAPSED = "lapsed";
+		final int NEW_DONOR_MONTHS_CRITERIA = 6;
+		final int LAPSED_DONATIONS_CRITERIA = 24;
+		final int DEEP_LAPSED_DONATIONS_CRITERIA = 48;
 
 		String now = String.valueOf(LocalDate.now());
 		for(Record record : userData.getRecordList()) {
-			String monthlyDonorIndicator = record.getRecType().toLowerCase().trim();
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
+			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
 
-			if(record.getInId().toLowerCase().contains("seed"))
-				record.setSeg(segment.GENERAL.getName());
-			else if(monthlyDonorIndicator.equalsIgnoreCase(MONTHLY_DONOR_ACTIVE) || monthlyDonorIndicator.equalsIgnoreCase(MONTHLY_DONOR_LAPSED))
-				record.setSeg(segment.MONTHLY.getName());
-			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT)
-				record.setSeg(segment.TOP.getName());
-			else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
-				record.setSeg(segment.NEW.getName());
-			else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA)
-				record.setSeg(segment.FREQUENT.getName());
-			else if(Double.parseDouble(record.getYear()) == 0)
-				record.setSeg(segment.LAPSED.getName());
-			else
-				record.setSeg(segment.GENERAL.getName());
+			if(record.getSeg() == null) {
+				if(record.getInId().toLowerCase().contains("seed"))
+					record.setSeg(segment.GENERAL.getName());
+				else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
+					record.setSeg(segment.TOP.getName());
+				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
+					record.setSeg(segment.NEW.getName());
+				else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
+					record.setSeg(segment.FREQUENT.getName());
+				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
+					if(monthsFromLastDonation < DEEP_LAPSED_DONATIONS_CRITERIA)
+						record.setSeg(segment.LAPSED.getName());
+					else
+						record.setSeg(segment.DEEP_LAPSED.getName());
+				else
+					record.setSeg(segment.GENERAL.getName());
+			}
 		}
 	}
 

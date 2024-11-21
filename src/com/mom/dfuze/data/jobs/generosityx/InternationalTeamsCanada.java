@@ -429,7 +429,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				record.setRScore("99999");
 				record.setFScore("0");
 				record.setMScore("0");
-				record.setQuantity("0"); // Using this to hold the number of gifts in last 18 months
+				record.setQuantity("0"); // Using this to hold the number of gifts in last 12 months
 				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
 			}
 			
