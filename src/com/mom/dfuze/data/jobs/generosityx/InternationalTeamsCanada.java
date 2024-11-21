@@ -608,10 +608,6 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		DecimalFormat provides_formatter = new DecimalFormat("#,###");
 		
 		for(Record record : userData.getRecordList()) {
-			record.setProvide1("");
-			record.setProvide2("");
-			record.setProvide3("");
-			record.setProvide4("");
 			
 			if(Validators.isNumber(record.getDn1Amt())) {
 				double dn1 = Double.parseDouble(record.getDn1Amt());
@@ -684,12 +680,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			DecimalFormat provides_formatter = new DecimalFormat("#,###");
 			
 			for(Record record : userData.getRecordList()) {
-				
-				record.setProvide1("");
-				record.setProvide2("");
-				record.setProvide3("");
-				record.setProvide4("");
-				
+
 				if(Validators.isNumber(record.getDn1Amt())) {
 					double dn1 = Double.parseDouble(record.getDn1Amt());
 					double dn2 = Double.parseDouble(record.getDn2Amt());
@@ -758,6 +749,10 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			record.setDn2Amt("");
 			record.setDn3Amt("");
 			record.setDn4Amt("");
+			record.setProvide1("");
+			record.setProvide2("");
+			record.setProvide3("");
+			record.setProvide4("");
 			record.setODnAmt("");
 			
 			String donorSegment = record.getSeg();

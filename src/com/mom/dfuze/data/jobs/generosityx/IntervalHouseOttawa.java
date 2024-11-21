@@ -577,10 +577,6 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 		DecimalFormat provides_formatter = new DecimalFormat("#,###");
 		
 		for(Record record : userData.getRecordList()) {
-			record.setProvide1("");
-			record.setProvide2("");
-			record.setProvide3("");
-			record.setProvide4("");
 			
 			String tempLastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
 			double lastGift = 0;
@@ -665,6 +661,10 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 			record.setDn2Amt("");
 			record.setDn3Amt("");
 			record.setDn4Amt("");
+			record.setProvide1("");
+			record.setProvide2("");
+			record.setProvide3("");
+			record.setProvide4("");
 			record.setODnAmt("");
 			
 			String donorSegment = record.getSeg();

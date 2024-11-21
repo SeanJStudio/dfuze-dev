@@ -16,7 +16,6 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -604,26 +603,7 @@ public class Adra implements RunGenerosityXBehavior {
 			
 			
 		}
-	}
-	
-	private double calculateMedian(ArrayList<Double> numArrayList) {
-		double defaultValue = 0.0;
-		
-		if(numArrayList.size() == 0)
-			return defaultValue;
-		
-		Double[] numArray = numArrayList.toArray(new Double[0]);
-		Arrays.sort(numArray);
-		double median;
-		
-		if (numArray.length % 2 == 0)
-		    median = ((double)numArray[numArray.length/2] + (double)numArray[numArray.length/2 - 1])/2;
-		else
-		    median = (double) numArray[numArray.length/2];
-		
-		return median;
-	}
-	
+	}	
 	
 	private void setCampaignCode(UserData userData, String campaignCode) {
 		for(Record record : userData.getRecordList()) {
@@ -699,11 +679,7 @@ public class Adra implements RunGenerosityXBehavior {
 		DecimalFormat provides_formatter = new DecimalFormat("#,###");
 		
 		for(Record record : userData.getRecordList()) {
-			record.setProvide1("");
-			record.setProvide2("");
-			record.setProvide3("");
-			record.setProvide4("");
-			
+
 			if(Validators.isNumber(record.getDn1Amt())) {
 				double dn1 = Double.parseDouble(record.getDn1Amt());
 				double dn2 = Double.parseDouble(record.getDn2Amt());
@@ -776,11 +752,6 @@ public class Adra implements RunGenerosityXBehavior {
 			
 			for(Record record : userData.getRecordList()) {
 				
-				record.setProvide1("");
-				record.setProvide2("");
-				record.setProvide3("");
-				record.setProvide4("");
-				
 				if(Validators.isNumber(record.getDn1Amt())) {
 					double dn1 = Double.parseDouble(record.getDn1Amt());
 					double dn2 = Double.parseDouble(record.getDn2Amt());
@@ -849,6 +820,10 @@ public class Adra implements RunGenerosityXBehavior {
 			record.setDn2Amt("");
 			record.setDn3Amt("");
 			record.setDn4Amt("");
+			record.setProvide1("");
+			record.setProvide2("");
+			record.setProvide3("");
+			record.setProvide4("");
 			record.setODnAmt("");
 			
 			String donorSegment = record.getSeg();
