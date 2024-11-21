@@ -155,6 +155,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				UserData.fieldName.TOTAL_DONATION_AMOUNT.getName(),
 				UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS.getName(),
+				UserData.fieldName.NUMBER_OF_DONATIONS_LAST_12_MONTHS.getName(),
 				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.DONATION_AMOUNT_ARRAY.getName(),
 				UserData.fieldName.RECENCY.getName(),
@@ -466,7 +467,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				record.setRScore("99999");
 				record.setFScore("0");
 				record.setMScore("0");
-				record.setQuantity("0"); // Using this to hold the number of gifts in last 18 months
+				record.setNumDnLst12Mnths("0");
 				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
 			}
 			
@@ -556,7 +557,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 				record.setNumDn(String.valueOf(totalGifts));
 				record.setLrgDnAmt(String.valueOf(largestGiftMadeLast24Months));
 				record.setDnAmtArr(commaSeparatedHistory);
-				record.setQuantity(String.valueOf(totalGiftsLast12Months)); // Using this to hold the number of gifts of last 12 months
+				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months));
 				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
 			}
 			
@@ -901,7 +902,7 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 					record.setSeg(segment.TOP.getName());
 				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
 					record.setSeg(segment.NEW.getName());
-				else if(Integer.parseInt(record.getQuantity()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
+				else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA)
 					record.setSeg(segment.FREQUENT.getName());
 				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
 					record.setSeg(segment.LAPSED.getName());

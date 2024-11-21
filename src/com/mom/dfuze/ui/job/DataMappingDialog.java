@@ -738,6 +738,8 @@ public class DataMappingDialog extends JDialog {
 			labelName = "GIFT DATE ARRAY";
 		else if (field.equals(UserData.fieldName.NUMBER_OF_DONATIONS.getName()))
 			labelName = "TOTAL NUMBER OF GIFTS";
+		else if (field.equals(UserData.fieldName.NUMBER_OF_DONATIONS_LAST_12_MONTHS.getName()))
+			labelName = "TOTAL NUMBER OF GIFTS LAST 12 MONTHS";
 		else if (field.equals(UserData.fieldName.TOTAL_DONATION_AMOUNT.getName()))
 			labelName = "TOTAL GIFT AMOUNT";
 		else if (field.equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName()))
@@ -1315,6 +1317,8 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setDnDatArrIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.NUMBER_OF_DONATIONS.getName()))
 					UiController.getUserData().setNumDnIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.NUMBER_OF_DONATIONS_LAST_12_MONTHS.getName()))
+					UiController.getUserData().setNumDnLst12MnthsIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.TOTAL_DONATION_AMOUNT.getName()))
 					UiController.getUserData().setTtlDnAmtIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName()))
