@@ -244,7 +244,7 @@ public class Parcel implements RunUtilityBehavior {
 				parcelData[i][parcelField.PHONE.getIndex()] = getInDataValue(parcelDialog.getComboBoxTelephone().getSelectedIndex(), record);
 				parcelData[i][parcelField.FAX.getIndex()] = getInDataValue(parcelDialog.getComboBoxFax().getSelectedIndex(), record);
 				parcelData[i][parcelField.EMAIL.getIndex()] = getInDataValue(parcelDialog.getComboBoxEmail().getSelectedIndex(), record);
-				
+
 				parcelData[i][parcelField.ADDRESS1.getIndex()] = record.getAdd1();
 				parcelData[i][parcelField.ADDRESS2.getIndex()] = record.getAdd2();
 				parcelData[i][parcelField.CITY.getIndex()] = record.getCity();
@@ -252,7 +252,13 @@ public class Parcel implements RunUtilityBehavior {
 				parcelData[i][parcelField.PC.getIndex()] = record.getPCode();
 				parcelData[i][parcelField.COUNTRY.getIndex()] = record.getCntry();
 				
-				// update USA records
+				// Place add2 in add1 if add1 is blank
+				if(record.getAdd1().isBlank()) {
+					parcelData[i][parcelField.ADDRESS1.getIndex()] = record.getAdd2();
+					parcelData[i][parcelField.ADDRESS2.getIndex()] = "";
+				}
+				
+				// USA records must have a phone number
 				if(record.getCntry().equalsIgnoreCase(US)) {
 					parcelData[i][parcelField.SERVICE.getIndex()] = serviceCodeUSA;
 					if(parcelData[i][parcelField.PHONE.getIndex()].length() == 0)
