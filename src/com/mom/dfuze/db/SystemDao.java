@@ -101,8 +101,10 @@ public class SystemDao {
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.IntervalHouseOttawa()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.InternationalTeamsCanada()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.ItIsWritten()),
+		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.MBA()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.UnfoldingWord()),
           new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.WildlifeRescueAssociation()),
+          
 		  new GFFinancialJob(new com.mom.dfuze.data.jobs.gffinancial.VRM()),
 		  
 		  
