@@ -111,6 +111,7 @@ public class Record {
   private String dnAmtArr; // donation amount supplied as a delimited array
   private String dnDatArr; // donation dates supplied as a delimited array
   private String numDn; // # of donations given
+  private String numDnLst12Mnths; // # of donations given from last 12 months
   private String ttlDnAmt; // total donation amount given in $
   private String ttlDnAmtLst12Mnths; // total donation amount given in $ from last 12 months
   private String ttlDnAmtCrntYr; // total donation amount given in current year
@@ -260,6 +261,7 @@ public class Record {
     dnAmtArr = builder.dnAmtArr;
     dnDatArr = builder.dnDatArr;
     numDn = builder.numDn;
+    numDnLst12Mnths = builder.numDnLst12Mnths;
     ttlDnAmt = builder.ttlDnAmt;
     ttlDnAmtLst12Mnths = builder.ttlDnAmtLst12Mnths;
     ttlDnAmtCrntYr = builder.ttlDnAmtCrntYr;
@@ -405,6 +407,7 @@ public class Record {
     private String dnAmtArr;
     private String dnDatArr;
     private String numDn;
+    private String numDnLst12Mnths;
     private String ttlDnAmt;
     private String ttlDnAmtLst12Mnths;
     private String ttlDnAmtCrntYr;
@@ -888,6 +891,11 @@ public class Record {
       this.numDn = numDn;
       return this;
     }
+    
+    public Builder setNumDnLst12Mnths(String numDnLst12Mnths) {
+        this.numDnLst12Mnths = numDnLst12Mnths;
+        return this;
+      }
 
     public Builder setTtlDnAmt(String ttlDnAmt) {
       this.ttlDnAmt = ttlDnAmt;
@@ -1448,6 +1456,10 @@ public class Record {
   public String getNumDn() {
     return numDn;
   }
+  
+  public String getNumDnLst12Mnths() {
+	  return numDnLst12Mnths;
+  }
 
   public String getTtlDnAmt() {
     return ttlDnAmt;
@@ -1960,6 +1972,10 @@ public class Record {
   public void setNumDn(String numDn) {
     this.numDn = numDn;
   }
+  
+  public void setNumDnLst12Mnths(String numDnLst12Mnths) {
+	  this.numDnLst12Mnths = numDnLst12Mnths;
+  }
 
   public void setTtlDnAmt(String ttlDnAmt) {
     this.ttlDnAmt = ttlDnAmt;
@@ -2170,18 +2186,18 @@ public String toString() {
 			+ cmpnyAdd2 + ", add1=" + add1 + ", add1_2=" + add1_2 + ", add2=" + add2 + ", add2_2=" + add2_2 + ", city="
 			+ city + ", prov=" + prov + ", pCode=" + pCode + ", cntry=" + cntry + ", ncoa=" + ncoa + ", dnm=" + dnm
 			+ ", deceased=" + deceased + ", dnAmtArr=" + dnAmtArr + ", dnDatArr=" + dnDatArr + ", numDn=" + numDn
-			+ ", ttlDnAmt=" + ttlDnAmt + ", ttlDnAmtLst12Mnths=" + ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr="
-			+ ttlDnAmtCrntYr + ", ttlDnAmtLstYr=" + ttlDnAmtLstYr + ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt
-			+ ", lMDnAmt=" + lMDnAmt + ", lrgDnAmt=" + lrgDnAmt + ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat
-			+ ", lstDnDat=" + lstDnDat + ", lMDnDat=" + lMDnDat + ", dn1Amt=" + dn1Amt + ", dn2Amt=" + dn2Amt
-			+ ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt=" + oDnAmt + ", mDn1Amt=" + mDn1Amt + ", mDn2Amt="
-			+ mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt + ", mODnAmt=" + mODnAmt + ", provide1="
-			+ provide1 + ", provide2=" + provide2 + ", provide3=" + provide3 + ", provide4=" + provide4 + ", priority="
-			+ priority + ", abGroup=" + abGroup + ", appeal=" + appeal + ", seg=" + seg + ", segCode=" + segCode
-			+ ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer=" + repVer + ", codeLine=" + codeLine
-			+ ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt + ", rScore=" + rScore
-			+ ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore + ", length=" + length + ", width="
-			+ width + ", height=" + height + ", weight=" + weight + "]";
+			+ ", numDnLst12Mnths=" + numDnLst12Mnths + ", ttlDnAmt=" + ttlDnAmt + ", ttlDnAmtLst12Mnths="
+			+ ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr=" + ttlDnAmtCrntYr + ", ttlDnAmtLstYr=" + ttlDnAmtLstYr
+			+ ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt + ", lMDnAmt=" + lMDnAmt + ", lrgDnAmt=" + lrgDnAmt
+			+ ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat + ", lstDnDat=" + lstDnDat + ", lMDnDat=" + lMDnDat
+			+ ", dn1Amt=" + dn1Amt + ", dn2Amt=" + dn2Amt + ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt="
+			+ oDnAmt + ", mDn1Amt=" + mDn1Amt + ", mDn2Amt=" + mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt
+			+ ", mODnAmt=" + mODnAmt + ", provide1=" + provide1 + ", provide2=" + provide2 + ", provide3=" + provide3
+			+ ", provide4=" + provide4 + ", priority=" + priority + ", abGroup=" + abGroup + ", appeal=" + appeal
+			+ ", seg=" + seg + ", segCode=" + segCode + ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer="
+			+ repVer + ", codeLine=" + codeLine + ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt
+			+ ", rScore=" + rScore + ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore
+			+ ", length=" + length + ", width=" + width + ", height=" + height + ", weight=" + weight + "]";
 }
 
 }
