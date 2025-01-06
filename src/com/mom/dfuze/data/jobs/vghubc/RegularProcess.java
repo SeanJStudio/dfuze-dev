@@ -131,12 +131,14 @@ public class RegularProcess implements RunVGHUBCBehavior {
 
 			// version has been determined, now we can update placeholder values
 			letVer = letVer.replaceAll("\\$",""); // data comes inconsistent, solution is to remove dollar signs and add in after
-
-			letVer = letVer.replaceAll("(?i)(<)?Ask(\\s+)?1(>)?", Matcher.quoteReplacement("$"+ask1)).replaceAll("(?i)(<)?Ask(\\s+)?2(>)?", Matcher.quoteReplacement("$"+ask2)).replaceAll("(?i)(<)?Ask(\\s+)?3(>)?", Matcher.quoteReplacement("$"+ask3)).replaceAll("  ", " ").trim();
+			letVer = letVer.replaceAll("(?i)(<)*Ask(\\s+)*1(>)*", Matcher.quoteReplacement("$"+ask1)).replaceAll("(?i)(<)*Ask(\\s+)*2(>)*", Matcher.quoteReplacement("$"+ask2)).replaceAll("(?i)(<)*Ask(\\s+)*3(>)*", Matcher.quoteReplacement("$"+ask3)).replaceAll("  ", " ").trim();
 			
+			// Remove the placeholder and add the replacement
+			repVer = repVer.replaceFirst("(?i)(\\()?\\$*(<)*\\s*last(\\s+)*gift(>)*", Matcher.quoteReplacement("$"+decimalFormat.format(newLG).replaceAll("\\.00", "")));	
+			ask1 = ask1.replaceFirst("(?i)(\\()?\\$*(<)*\\$*last(\\s+)*gift(>)*", Matcher.quoteReplacement("$"+decimalFormat.format(newLG).replaceAll("\\.00", "")));
 			
-			repVer = repVer.replaceFirst("(?i)(\\()?(<)?last(\\s+)?gift(>)?", decimalFormat.format(newLG).replaceAll("\\.00", ""));
-			ask1 = ask1.replaceFirst("(?i)(\\()?(<)?last(\\s+)?gift(>)?", decimalFormat.format(newLG).replaceAll("\\.00", ""));
+			// Replace multiple dollar signs with one
+			ask1 = ask1.replaceAll("\\$+", "\\$");
 
 			// add dollar signs
 			if(Validators.isNumber(ask4))
