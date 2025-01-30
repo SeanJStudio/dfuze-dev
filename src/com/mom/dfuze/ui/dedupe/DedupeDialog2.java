@@ -850,7 +850,7 @@ public class DedupeDialog2 extends JDialog {
 						                allDupeRecordsList.addAll(allDupeRecordsList4);
 						                
 						                // reset the groupIds
-						                fixFinalDupeGoupId(allDupeRecordsList);
+						                fixFinalDupeGroupIdAndSize(allDupeRecordsList);
 						                
 									} catch (Exception e) {
 										UiController.handle(e);
@@ -1369,7 +1369,6 @@ public class DedupeDialog2 extends JDialog {
 			Hashtable<String, String> streetDirectionSuffixes = Lookup.getStreetDirectionSuffixes();
 			Hashtable<String, String> unitSuffixes = Lookup.getUnitSuffixes();
 			
-			@SuppressWarnings("deprecation")
 			RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(new Locale("EN", "US"), 1);
 
 			for (int i = 0; i < recordList.size(); i++) {
@@ -2553,7 +2552,7 @@ public class DedupeDialog2 extends JDialog {
 		} 
 	}
 	
-	private void fixFinalDupeGoupId(ArrayList<Record> dupes) {
+	private void fixFinalDupeGroupIdAndSize(ArrayList<Record> dupes) {
 		int dupeGroupId = 1;
 		boolean isEnd = false;
 		
@@ -2570,6 +2569,23 @@ public class DedupeDialog2 extends JDialog {
 				record.setDupeGroupId(dupeGroupId);
 				isEnd = true;
 			}
+		}
+		
+		// Fix the group size
+		HashMap<Integer, Integer> groupSizeMap = new HashMap<>();
+		for(int i = 0; i < dupes.size(); ++i) {
+			Record record = dupes.get(i);
+			int id = record.getDupeGroupId();
+			if(!groupSizeMap.containsKey(id))
+				groupSizeMap.put(id, 1);
+			else
+				groupSizeMap.put(id, groupSizeMap.get(id) + 1);
+		}
+		
+		for(int i = 0; i < dupes.size(); ++i) {
+			Record record = dupes.get(i);
+			int id = record.getDupeGroupId();
+			record.setDupeGroupSize(groupSizeMap.get(id));
 		}
 		
 	}
@@ -2615,6 +2631,7 @@ public class DedupeDialog2 extends JDialog {
 				Record record = entry.getValue().get(j);
 				record.setDupeGroupId(dupeGroupId);
 				record.setDupeGroupSize(entry.getValue().size());
+				//System.out.println(record.toString());
 			}
 		}
 
