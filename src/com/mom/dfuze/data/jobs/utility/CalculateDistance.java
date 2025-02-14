@@ -41,7 +41,7 @@ public class CalculateDistance implements RunUtilityBehavior {
 			"<html>"
 			+ "Description<br/>"
 			+ "<ul>"
-			+ "<li>Calculates distance and determines how many addresses are within 2km</li>"
+			+ "<li>Calculates distance and determines how many addresses are within 10km</li>"
 			+ "</ul>"
 			+ "Instructions<br/>"
 			+ "<li>Load multiples data files together and run</li>"
@@ -183,7 +183,7 @@ public class CalculateDistance implements RunUtilityBehavior {
 				String secKey = secRec.getAdd1() + secRec.getAdd2() + secRec.getPCode();
 				
 				if(!mainKey.equals(secKey)) {
-					if(distance <= 2.00) {
+					if(distance <= 10.00) {
 						if(mainRec.getWeight().equals(""))
 							mainRec.setWeight((secRec.getAdd1() + " ").trim() + secRec.getAdd2());
 						else

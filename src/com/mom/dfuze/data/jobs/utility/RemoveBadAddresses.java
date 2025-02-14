@@ -53,7 +53,8 @@ public class RemoveBadAddresses implements RunUtilityBehavior {
 			+ "</ul>"
 			+ "Instructions<br/>"
 			+ "<ol>"
-			+ "<li>Load data and run</li>"
+			+ "<li>Correct data in iAddress before running</li>"
+			+ "<li>Load corrected data and run</li>"
 			+ "</ol>"
 			+ Common.arrayFieldsToHTMLList(REQUIRED_FIELDS)
 			+ "</html>";

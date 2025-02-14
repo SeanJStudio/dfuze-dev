@@ -50,7 +50,7 @@ import com.mom.dfuze.data.jobs.vghubc.VGHUBCJob;
 public class SystemDao {
   public static Job[] jobs = { 
 		  
-		 // new UtilityJob(new com.mom.dfuze.data.jobs.utility.CalculateDistance()),
+		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.CalculateDistance()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.DataDump()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.Dedupe()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.FixApartmentHyphens()),
@@ -97,6 +97,7 @@ public class SystemDao {
 		  
 		  //G
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.Adra()),
+		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.AdraUkraine()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.CaminoWellbeingMentalHealth()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.IntervalHouseOttawa()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.InternationalTeamsCanada()),

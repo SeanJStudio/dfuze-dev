@@ -49,7 +49,7 @@ public class Record {
   private int dupeGroupId; // the id for the group of dupes
   private int dupeGroupSize; // the size of the group
 
-  // Miscelaneous
+  // Miscellaneous
   private String inId; // supplied id in data
   private String lang; // language indicator
   private String barCode; // barcode
