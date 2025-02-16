@@ -523,7 +523,7 @@ public class Adra implements RunGenerosityXBehavior {
 				record.setFScore("0");
 				record.setMScore("0");
 				record.setNumDnLst12Mnths("0");
-				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
+				record.setYear("0"); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
@@ -1162,7 +1162,7 @@ public class Adra implements RunGenerosityXBehavior {
 	
 	// Logic to categorize donors into segments
 	private void setSegment(UserData userData) {
-		final int MAJOR_DONATION_AMOUNT = 500;
+		final int MAJOR_DONATION_AMOUNT = 1000;
 		final int FREQUENT_DONATIONS_CRITERIA = 3;
 		final int NEW_DONOR_MONTHS_CRITERIA = 6;
 		final int LAPSED_DONATIONS_CRITERIA = 24;

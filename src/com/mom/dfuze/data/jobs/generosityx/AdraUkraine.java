@@ -528,7 +528,7 @@ public class AdraUkraine implements RunGenerosityXBehavior {
 				record.setFScore("0");
 				record.setMScore("0");
 				record.setNumDnLst12Mnths("0");
-				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
+				record.setYear("0"); // Using this to hold the total donation amount of last 6 months
 				record.setMonth("");
 				record.setAppeal("");
 			}
@@ -644,8 +644,8 @@ public class AdraUkraine implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. 2025-EAS-BRE-LD)");
-		uid.getTextField().setText("2025-EAS-BRE-LD");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. EAST25-01-DM)");
+		uid.getTextField().setText("EAST25-01-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -656,8 +656,8 @@ public class AdraUkraine implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $30, enter 30)");
-		udid.getTextField().setText("30");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $6, enter 6)");
+		udid.getTextField().setText("6");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -683,9 +683,9 @@ public class AdraUkraine implements RunGenerosityXBehavior {
 	// Convert the gift arrays to metrics
 	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
 		
-		String less = "$%s helps provide support to 1 family facing hardship.";
-		String single = "$%s provides support to 1 family facing hardship.";
-		String plural = "$%s provides support to %s families facing hardship.";
+		String less = "$%s DOUBLES to help provide 1 night of safe and warm shelter for families in need.";
+		String single = "$%s DOUBLES to provide 1 night of safe and warm shelter for families in need.";
+		String plural = "$%s DOUBLES to provide %s nights of safe and warm shelter for families in need.";
 		String open = "$________ to support as many families facing hardship as possible.";
 		
 		String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
