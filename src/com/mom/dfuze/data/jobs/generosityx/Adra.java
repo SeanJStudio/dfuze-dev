@@ -93,7 +93,7 @@ public class Adra implements RunGenerosityXBehavior {
 		NEW("New"),
 		LAPSED("Lapsed"),
 		FREQUENT("Frequent"),
-		TOP("Top"),
+		TOP("HVD"),
 		GENERAL("General"),
 		MONTHLY("Monthly");
 		
@@ -191,6 +191,8 @@ public class Adra implements RunGenerosityXBehavior {
 				UserData.fieldName.NUMBER_OF_DONATIONS.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS_LAST_12_MONTHS.getName(),
 				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
+				UserData.fieldName.PENULTIMATE_AMOUNT.getName(),
+				UserData.fieldName.PENULTIMATE_DATE.getName(),
 				UserData.fieldName.DONATION_AMOUNT_ARRAY.getName(),
 				UserData.fieldName.RECENCY.getName(),
 				UserData.fieldName.FREQUENCY.getName(),
@@ -442,7 +444,7 @@ public class Adra implements RunGenerosityXBehavior {
 			
 			if(Validators.isNumber(giftAmount)) {
 				BigDecimal giftAmountBD = new BigDecimal(giftAmount);
-				if (giftAmountBD.equals(BigDecimal.ZERO))
+				if (giftAmountBD.compareTo(BigDecimal.ZERO) == 0)
 					isGiftZero = true;
 			} else {
 				isGiftZero = true;
@@ -508,22 +510,28 @@ public class Adra implements RunGenerosityXBehavior {
 		for(int i = 0; i < userData.getRecordList().size(); ++i) {
 			Record record = userData.getRecordList().get(i);
 			
+			// Default values
+			record.setLstDnAmt("0");
+			record.setLstDnDat("1900-01-01");
+			record.setFstDnAmt("0");
+			record.setFstDnDat("1900-01-01");
+			record.setTtlDnAmt("0");
+			record.setTtlDnAmtLst12Mnths("0");
+			record.setNumDn("0");
+			record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
+			record.setDnAmtArr("");
+			record.setRScore("99999");
+			record.setFScore("0");
+			record.setMScore("0");
+			record.setNumDnLst12Mnths("0");
+			record.setYear("0"); // Using this to hold the total donation amount of last 6 months
+			record.setMonth("");
+			record.setAppeal("");
+			record.setPenultAmt("0");
+			record.setPenultDat("1900-01-01");
+			
 			if(!giftHistoryMap.containsKey(record.getInId())) {
 				System.out.println("No ID for " + record.getInId());
-				record.setLstDnAmt("0");
-				record.setLstDnDat("1900-01-01");
-				record.setFstDnAmt("0");
-				record.setFstDnDat("1900-01-01");
-				record.setTtlDnAmt("0");
-				record.setTtlDnAmtLst12Mnths("0");
-				record.setNumDn("0");
-				record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
-				record.setDnAmtArr("");
-				record.setRScore("99999");
-				record.setFScore("0");
-				record.setMScore("0");
-				record.setNumDnLst12Mnths("0");
-				record.setYear("0"); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
@@ -573,15 +581,25 @@ public class Adra implements RunGenerosityXBehavior {
 							record.setSeg(segment.MONTHLY.getName());
 					}
 					
+					// this is the last donation
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
 						record.setRScore(String.valueOf(daysBetween));
+						// Set the months from last donation
+						record.setMonth(String.valueOf(monthsFromDonation));
 					}
 					
+					// this is the first donation
 					if(j == giftHistoryList.size() - 1) {
 						record.setFstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setFstDnDat(giftHistory.getGiftDate().toString());
+					}
+					
+					// set penultimates (second last gift)
+					if(j == 1 && giftHistoryList.size() > 1) {
+						record.setPenultAmt(String.valueOf(giftHistory.getGiftAmount()));
+						record.setPenultDat(giftHistory.getGiftDate().toString());
 					}
 
 				}
@@ -608,7 +626,7 @@ public class Adra implements RunGenerosityXBehavior {
 	private void setCampaignCode(UserData userData, String campaignCode) {
 		for(Record record : userData.getRecordList()) {
 			if(record.getSeg().equalsIgnoreCase(segment.TOP.getName()))
-				record.setSegCode(campaignCode + "-MD1");
+				record.setSegCode(campaignCode + "-HVD");
 			else if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
 				record.setSegCode(campaignCode + "-A");
 			else if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))

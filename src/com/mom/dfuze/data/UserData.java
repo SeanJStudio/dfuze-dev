@@ -134,6 +134,8 @@ public class UserData {
 	private int fstDnDatIndex = DEFAULT_INDEX; // date of the first donation
 	private int lstDnDatIndex = DEFAULT_INDEX; // date of the last donation
 	private int lMDnDatIndex = DEFAULT_INDEX; // last monthly donation date given
+	private int penultAmtIndex = DEFAULT_INDEX; // second last donation amount given
+	private int penultDatIndex = DEFAULT_INDEX; // second last donation date
 	private int dn1AmtIndex = DEFAULT_INDEX; // first suggested donation amount
 	private int dn2AmtIndex = DEFAULT_INDEX; // second suggested donation amount
 	private int dn3AmtIndex = DEFAULT_INDEX; // third suggested donation amount
@@ -284,6 +286,8 @@ public class UserData {
 		FIRST_DONATION_DATE("dfFstDnDat"), // date of the first donation
 		LAST_DONATION_DATE("dfLstDnDat"), // date of the last donation
 		LAST_MONTHLY_DONATION_DATE("dfLMDnDat"), // date of the last monthly donation
+		PENULTIMATE_AMOUNT("dfPenultAmt"), // second last donation amount
+		PENULTIMATE_DATE("dfPenultDat"), //second last donation date
 		DONATION1_AMOUNT("dfDn1Amt"), // first suggested donation amount
 		DONATION2_AMOUNT("dfDn2Amt"), // second suggested donation amount
 		DONATION3_AMOUNT("dfDn3Amt"), // third suggested donation amount
@@ -438,6 +442,8 @@ public class UserData {
 			fieldName.FIRST_DONATION_DATE.getName(),
 			fieldName.LAST_DONATION_DATE.getName(),
 			fieldName.LAST_MONTHLY_DONATION_DATE.getName(),
+			fieldName.PENULTIMATE_AMOUNT.getName(),
+			fieldName.PENULTIMATE_DATE.getName(),
 			fieldName.DONATION1_AMOUNT.getName(),
 			fieldName.DONATION2_AMOUNT.getName(),
 			fieldName.DONATION3_AMOUNT.getName(),
@@ -862,6 +868,14 @@ public class UserData {
 
 	public int getLMDnDatIndex() {
 		return lMDnDatIndex;
+	}
+	
+	public int getPenultAmtIndex() {
+		return penultAmtIndex;
+	}
+	
+	public int getPenultDatIndex() {
+		return penultDatIndex;
 	}
 
 	public int getDn1AmtIndex() {
@@ -1372,6 +1386,14 @@ public class UserData {
 	public void setLMDnDatIndex(int lMDnDatIndex) {
 		this.lMDnDatIndex = lMDnDatIndex;
 	}
+	
+	public void setPenultAmtIndex(int penultAmtIndex) {
+		this.penultAmtIndex = penultAmtIndex;
+	}
+	
+	public void setPenultDatIndex(int penultDatIndex) {
+		this.penultDatIndex = penultDatIndex;
+	}
 
 	public void setDn1AmtIndex(int dn1AmtIndex) {
 		this.dn1AmtIndex = dn1AmtIndex;
@@ -1876,6 +1898,10 @@ public class UserData {
 			return record.getLstDnDat();
 		else if (fieldToGet.equals(fieldName.LAST_MONTHLY_DONATION_DATE.getName()))
 			return record.getLMDnDat();
+		else if (fieldToGet.equals(fieldName.PENULTIMATE_AMOUNT.getName()))
+			return record.getPenultAmt();
+		else if (fieldToGet.equals(fieldName.PENULTIMATE_DATE.getName()))
+			return record.getPenultDat();
 		else if (fieldToGet.equals(fieldName.DONATION1_AMOUNT.getName()))
 			return record.getDn1Amt();
 		else if (fieldToGet.equals(fieldName.DONATION2_AMOUNT.getName()))
@@ -2139,6 +2165,10 @@ public class UserData {
 			record.setLstDnDat(valueToSet);
 		else if (fieldToSet.equals(fieldName.LAST_MONTHLY_DONATION_DATE.getName()))
 			record.setLMDnDat(valueToSet);
+		else if (fieldToSet.equals(fieldName.PENULTIMATE_AMOUNT.getName()))
+			record.setPenultAmt(valueToSet);
+		else if (fieldToSet.equals(fieldName.PENULTIMATE_DATE.getName()))
+			record.setPenultDat(valueToSet);
 		else if (fieldToSet.equals(fieldName.DONATION1_AMOUNT.getName()))
 			record.setDn1Amt(valueToSet);
 		else if (fieldToSet.equals(fieldName.DONATION2_AMOUNT.getName()))
@@ -2402,6 +2432,10 @@ public class UserData {
 			record.setLstDnDat(inData[lstDnDatIndex]);
 		else if (fieldToSet.equals(fieldName.LAST_MONTHLY_DONATION_DATE.getName()))
 			record.setLMDnDat(inData[lMDnDatIndex]);
+		else if (fieldToSet.equals(fieldName.PENULTIMATE_AMOUNT.getName()))
+			record.setPenultAmt(inData[penultAmtIndex]);
+		else if (fieldToSet.equals(fieldName.PENULTIMATE_DATE.getName()))
+			record.setPenultDat(inData[penultDatIndex]);
 		else if (fieldToSet.equals(fieldName.DONATION1_AMOUNT.getName()))
 			record.setDn1Amt(inData[dn1AmtIndex]);
 		else if (fieldToSet.equals(fieldName.DONATION2_AMOUNT.getName()))

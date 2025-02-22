@@ -124,6 +124,8 @@ public class Record {
   private String fstDnDat; // date of the first donation
   private String lstDnDat; // date of the last donation
   private String lMDnDat; // date of the last monthly donation
+  private String penultAmt; // second last donation amount
+  private String penultDat; // second last donation date
   private String dn1Amt; // first suggested donation amount
   private String dn2Amt; // second suggested donation amount
   private String dn3Amt; // third suggested donation amount
@@ -274,6 +276,8 @@ public class Record {
     fstDnDat = builder.fstDnDat;
     lstDnDat = builder.lstDnDat;
     lMDnDat = builder.lMDnDat;
+    penultAmt = builder.penultAmt;
+    penultDat = builder.penultDat;
     dn1Amt = builder.dn1Amt;
     dn2Amt = builder.dn2Amt;
     dn3Amt = builder.dn3Amt;
@@ -420,6 +424,8 @@ public class Record {
     private String fstDnDat;
     private String lstDnDat;
     private String lMDnDat;
+    private String penultAmt;
+    private String penultDat;
     private String dn1Amt;
     private String dn2Amt;
     private String dn3Amt;
@@ -954,6 +960,16 @@ public class Record {
     
     public Builder setLMDnDat(String lMDnDat) {
     	this.lMDnDat = lMDnDat;
+    	return this;
+    }
+    
+    public Builder setPenultAmt(String penultAmt) {
+    	this.penultAmt = penultAmt;
+    	return this;
+    }
+    
+    public Builder setPenultDat(String penultDat) {
+    	this.penultDat = penultDat;
     	return this;
     }
 
@@ -1508,6 +1524,14 @@ public class Record {
   public String getLMDnDat() {
 	  return lMDnDat;
   }
+  
+  public String getPenultAmt() {
+	  return penultAmt;
+  }
+  
+  public String getPenultDat() {
+	  return penultDat;
+  }
 
   public String getDn1Amt() {
     return dn1Amt;
@@ -2024,6 +2048,14 @@ public class Record {
   public void setLMDnDat(String lMDnDat) {
 	  this.lMDnDat = lMDnDat;
   }
+  
+  public void setPenultAmt(String penultAmt) {
+	  this.penultAmt = penultAmt;
+  }
+  
+  public void setPenultDat(String penultDat) {
+	  this.penultDat = penultDat;
+  }
 
   public void setDn1Amt(String dn1Amt) {
     this.dn1Amt = dn1Amt;
@@ -2190,14 +2222,15 @@ public String toString() {
 			+ ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr=" + ttlDnAmtCrntYr + ", ttlDnAmtLstYr=" + ttlDnAmtLstYr
 			+ ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt + ", lMDnAmt=" + lMDnAmt + ", lrgDnAmt=" + lrgDnAmt
 			+ ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat + ", lstDnDat=" + lstDnDat + ", lMDnDat=" + lMDnDat
-			+ ", dn1Amt=" + dn1Amt + ", dn2Amt=" + dn2Amt + ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt="
-			+ oDnAmt + ", mDn1Amt=" + mDn1Amt + ", mDn2Amt=" + mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt
-			+ ", mODnAmt=" + mODnAmt + ", provide1=" + provide1 + ", provide2=" + provide2 + ", provide3=" + provide3
-			+ ", provide4=" + provide4 + ", priority=" + priority + ", abGroup=" + abGroup + ", appeal=" + appeal
-			+ ", seg=" + seg + ", segCode=" + segCode + ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer="
-			+ repVer + ", codeLine=" + codeLine + ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt
-			+ ", rScore=" + rScore + ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore
-			+ ", length=" + length + ", width=" + width + ", height=" + height + ", weight=" + weight + "]";
+			+ ", penultAmt=" + penultAmt + ", penultDat=" + penultDat + ", dn1Amt=" + dn1Amt + ", dn2Amt=" + dn2Amt
+			+ ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt=" + oDnAmt + ", mDn1Amt=" + mDn1Amt + ", mDn2Amt="
+			+ mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt + ", mODnAmt=" + mODnAmt + ", provide1="
+			+ provide1 + ", provide2=" + provide2 + ", provide3=" + provide3 + ", provide4=" + provide4 + ", priority="
+			+ priority + ", abGroup=" + abGroup + ", appeal=" + appeal + ", seg=" + seg + ", segCode=" + segCode
+			+ ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer=" + repVer + ", codeLine=" + codeLine
+			+ ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt + ", rScore=" + rScore
+			+ ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore + ", length=" + length + ", width="
+			+ width + ", height=" + height + ", weight=" + weight + "]";
 }
 
 }

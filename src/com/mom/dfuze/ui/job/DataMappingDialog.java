@@ -764,6 +764,10 @@ public class DataMappingDialog extends JDialog {
 			labelName = "LAST GIFT DATE";
 		else if (field.equals(UserData.fieldName.LAST_MONTHLY_DONATION_DATE.getName()))
 			labelName = "LAST MONTHLY GIFT DATE";
+		else if (field.equals(UserData.fieldName.PENULTIMATE_AMOUNT.getName()))
+			labelName = "PENULTIMATE AMOUNT";
+		else if (field.equals(UserData.fieldName.PENULTIMATE_DATE.getName()))
+			labelName = "PENULTIMATE DATE";
 		else if (field.equals(UserData.fieldName.DONATION1_AMOUNT.getName()))
 			labelName = "GIFT ASK1";
 		else if (field.equals(UserData.fieldName.DONATION2_AMOUNT.getName()))
@@ -1343,6 +1347,10 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setLstDnDatIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.LAST_MONTHLY_DONATION_DATE.getName()))
 					UiController.getUserData().setLMDnDatIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.PENULTIMATE_AMOUNT.getName()))
+					UiController.getUserData().setPenultAmtIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.PENULTIMATE_DATE.getName()))
+					UiController.getUserData().setPenultDatIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.DONATION1_AMOUNT.getName()))
 					UiController.getUserData().setDn1AmtIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.DONATION2_AMOUNT.getName()))

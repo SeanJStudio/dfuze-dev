@@ -350,7 +350,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			
 			if(Validators.isNumber(giftAmount)) {
 				BigDecimal giftAmountBD = new BigDecimal(giftAmount);
-				if (giftAmountBD.equals(BigDecimal.ZERO))
+				if (giftAmountBD.compareTo(BigDecimal.ZERO) == 0)
 					isGiftZero = true;
 			} else {
 				isGiftZero = true;
