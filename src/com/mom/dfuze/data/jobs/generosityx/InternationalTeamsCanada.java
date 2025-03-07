@@ -31,6 +31,7 @@ import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
+import com.mom.dfuze.data.jobs.generosityx.AdraUkraine.segment;
 import com.mom.dfuze.data.util.Analyze;
 import com.mom.dfuze.data.util.Common;
 import com.mom.dfuze.data.util.DateTimeInferer;
@@ -847,66 +848,74 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	// Logic to build lapsed gift arrays
 	private void setLapsedGiftArray2(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
 		int askTier = 1;
+		
+		// Small default amount multiplier
+		int sdam = 1;
+				
+		if(defaultAskAmount < 10)
+			sdam = 4;
+		else if(defaultAskAmount < 20)
+			sdam = 2;
 
-		if(lastDonationRoundedUpByFive < defaultAskAmount * 2) {
-			record.setDn1Amt(String.valueOf(Math.ceil(defaultAskAmount / 2.0))); // Round up to nearest dollar
-			record.setDn2Amt(String.valueOf(defaultAskAmount));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 2));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 3));
+		if(lastDonationRoundedUpByFive < defaultAskAmount * (2 * sdam)) {
+			record.setDn1Amt(String.valueOf(Math.ceil((defaultAskAmount * sdam) / 2.0))); // Round up to nearest dollar
+			record.setDn2Amt(String.valueOf(defaultAskAmount * sdam));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
 			askTier = 11;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 3) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 2));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 3));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 4));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
 			askTier = 10;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 4) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 3));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 4));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 5));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 6));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (4 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
 			askTier = 9;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 6) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 4));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 5));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 6));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 7));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (6 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
 			askTier = 8;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 7) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 5));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 6));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 7));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 8));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
 			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 10) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 6));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 7));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 8));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 10));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (10 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
 			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 18) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 8));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 12));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 16));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 20));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
 			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 22) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 12));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 16));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 20));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 24));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (22 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
 			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 32) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 16));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 24));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 32));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 40));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (32 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (32 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (40 * sdam)));
 			askTier = 3;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 44) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 24));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 32));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 40));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 48));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (44 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (32 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (40 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (48 * sdam)));
 			askTier = 2;
 		}
 
@@ -986,66 +995,74 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	// logic to build non lapsed gift arrays
 	private void setNonLapsedGiftArray2(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
 		int askTier = 1;
+		
+		// Small default amount multiplier
+		int sdam = 1;
+		
+		if(defaultAskAmount < 10)
+			sdam = 4;
+		else if(defaultAskAmount < 20)
+			sdam = 2;
 
-		if(lastDonationRoundedUpByFive < defaultAskAmount * 2) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 2));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 3));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 4));
+		if(lastDonationRoundedUpByFive < defaultAskAmount * (2 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
 			askTier = 11;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 3) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 2));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 3));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 4));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 5));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
 			askTier = 10;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 4) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 3));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 4));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 5));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 6));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (4 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
 			askTier = 9;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 6) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 4));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 5));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 6));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 7));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (6 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
 			askTier = 8;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 7) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 5));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 6));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 7));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 8));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
 			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 10) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 8));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 9));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 10));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 11));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (10 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (9 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (11 * sdam)));
 			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 18) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 9));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 12));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 14));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 16));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (9 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
 			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 34) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 20));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 24));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 28));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 32));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (34 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (28 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (32 * sdam)));
 			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 45) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 36));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 42));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 48));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 54));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (45 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (36 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (42 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (48 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (54 * sdam)));
 			askTier = 3;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * 48) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * 46));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * 52));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * 58));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * 64));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (48 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (52 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (58 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (64 * sdam)));
 			askTier = 2;
 		}
 
