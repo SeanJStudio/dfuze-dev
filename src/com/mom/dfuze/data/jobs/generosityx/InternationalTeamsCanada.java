@@ -81,20 +81,38 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	public final Pattern NEW_PATTERN = Pattern.compile("(4|5)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	public final Pattern LAPSED_PATTERN = Pattern.compile("(1)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)contact(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)date(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)designation(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("contact.*id$", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("amount", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("date", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("designation", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_RECURRING_PATTERN = Pattern.compile("recurring", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)monthly(\\s+|$)", Pattern.CASE_INSENSITIVE);
-
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("yes", Pattern.CASE_INSENSITIVE);
+	public final Pattern GENERAL_DESIGNATION_PATTERN = Pattern.compile("general", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_DESIGNATION_PATTERN = Pattern.compile("impact", Pattern.CASE_INSENSITIVE);
+	
+	public final Pattern IMPACT_BURKINA_FASO = Pattern.compile("burkina faso", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_DR = Pattern.compile("(^|\\s+)dr(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_ECUADOR = Pattern.compile("ecuador", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_GUATEMALA = Pattern.compile("guatemala", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_HAITI = Pattern.compile("haiti", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_KENYA = Pattern.compile("kenya", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_ROMANIA = Pattern.compile("romania", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_SOUTH_SUDAN = Pattern.compile("south sudan", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_UGANDA = Pattern.compile("uganda", Pattern.CASE_INSENSITIVE);
+	public final Pattern IMPACT_ZAMBIA = Pattern.compile("zambia", Pattern.CASE_INSENSITIVE);
+	
+	
+	
 	public enum segment {
 		NEW("New"),
 		LAPSED("Lapsed"),
+		SUPER_LAPSED("Super Lapsed"),
 		FREQUENT("Frequent"),
 		TOP("Top"),
 		GENERAL("General"),
-		MONTHLY("Monthly");
+		MONTHLY("Monthly"),
+		IMPACT("Impact");
 		
 		String name;
 
@@ -250,7 +268,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		List<List<String>> giftFile = FileIngestor.ingest();	// get the gift file	
 		HashSet<Integer> indexSet = new HashSet<>();
 	
-		int idIndex, amountIndex, giftDateIndex, appealIndex = -1;
+		int idIndex, amountIndex, giftDateIndex, appealIndex, isRecurringIndex = -1;
 		
 		String[] headers = giftFile.get(0).toArray(new String[0]);
 
@@ -337,6 +355,27 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		if(!indexSet.add(appealIndex))
 			throw new Exception("The appeal name field has been mapped more than once.");
 		
+		// isRecurring
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Recurring field.");
+		dsd.setValues(headers);
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_RECURRING_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		isRecurringIndex = dsd.getSelectedValueIndex();
+				
+		if(!indexSet.add(amountIndex))
+			throw new Exception("The recurring field has been mapped more than once.");
+		
 		List<Record> giftsList = new ArrayList<>();
 		
 		giftFile.remove(0); // remove header row
@@ -346,6 +385,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
 			String giftDesignation = giftFile.get(i).get(appealIndex).trim();
+			String isRecurring = giftFile.get(i).get(isRecurringIndex).toLowerCase().trim();
 			
 			boolean isGiftZero = false;
 			
@@ -362,6 +402,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 					.setLstDnAmt(giftAmount)
 					.setLstDnDat(giftDate)
 					.setSeg(giftDesignation)
+					.setRecType(isRecurring)
 					.build();
 			
 			if(giftAmount.contains("-")) // Skip negative dollar amounts
@@ -387,14 +428,15 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			double giftAmount = (Validators.isNumber(record.getLstDnAmt())) ? Double.parseDouble(record.getLstDnAmt()) : 0.0;
 
 			if(Validators.isStringOfDateFormat(record.getLstDnDat(), giftDateFormat)) {
-				//System.out.println(record.getLstDnDat() + " vs " + giftDateFormat);
+
 				LocalDate giftDate = LocalDate.parse(record.getLstDnDat(), formatter);
-				//System.out.println(giftDate.toString());
+
 				ITCGiftHistory history = new ITCGiftHistory(
 						record.getInId(),
 						giftAmount,
 						giftDate,
-						record.getSeg()
+						record.getSeg(),
+						record.getRecType()
 						);
 
 				if(!giftHistoryMap.containsKey(record.getInId()))
@@ -411,6 +453,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
+		final int MONTHS36 = 36;
 
 		String now = String.valueOf(LocalDate.now());
 		
@@ -428,11 +471,13 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				record.setNumDn("0");
 				record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
 				record.setDnAmtArr("");
+				record.setPkgVer("General");
+				record.setLetVer("General");
 				record.setRScore("99999");
 				record.setFScore("0");
 				record.setMScore("0");
 				record.setNumDnLst12Mnths("0");
-				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
+				record.setYear("0"); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
@@ -447,6 +492,8 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				double largestGiftMadeLast24Months = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
+				HashSet<String> impactSet = new HashSet<>();
+				int generalJobsNum = 0;
 				
 				String commaSeparatedHistory = giftHistoryList
 				        .stream()
@@ -475,11 +522,25 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 					
-					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
+					// identify monthly donors if last gift is within 60 days and recurring pattern is matched
 					if(daysBetween <= 60) {
-						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftDesignation());
+						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getIsRecurring());
 						if(monthlyMatcher.find())
 							record.setSeg(segment.MONTHLY.getName());
+							record.setLetVer(segment.MONTHLY.getName());
+							record.setPkgVer(segment.MONTHLY.getName());
+					}
+					
+					// identify how many general or impact gifts have been made
+					if(IMPACT_DESIGNATION_PATTERN.matcher(giftHistory.getGiftDesignation()).find()) {
+						if(monthsFromDonation <= MONTHS36) {
+							String impactVersion = getImpactVersion(giftHistory.getGiftDesignation());
+							
+							if(impactVersion.length() > 0)
+								impactSet.add(impactVersion);
+						}
+					} else {
+						++generalJobsNum;
 					}
 					
 					if(j == 0) {
@@ -494,6 +555,17 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 					}
 
 				}
+				
+				// update non monthly letter and package versions
+				if(record.getSeg() == null)
+					if(impactSet.size() == 1) {
+						record.setLetVer(segment.IMPACT.getName() + " " + impactSet.iterator().next());
+						record.setPkgVer(segment.IMPACT.getName());
+					} else {
+						record.setLetVer(segment.GENERAL.getName());
+						record.setPkgVer(segment.GENERAL.getName());
+					}
+
 				
 				double monetarySum = giftAmounts.stream()
                         .mapToDouble(Double::doubleValue)
@@ -512,6 +584,33 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			
 			
 		}
+	}
+	
+	private String getImpactVersion(String impact) {
+		String impactVersion = "";
+		
+		if (IMPACT_BURKINA_FASO.matcher(impact).find())
+			impactVersion = "Burkina Faso";
+		else if (IMPACT_DR.matcher(impact).find())
+			impactVersion = "Dominican Republic";
+		else if (IMPACT_ECUADOR.matcher(impact).find())
+			impactVersion = "Ecuador";
+		else if (IMPACT_GUATEMALA.matcher(impact).find())
+			impactVersion = "Guatemala";
+		else if (IMPACT_HAITI.matcher(impact).find())
+			impactVersion = "Haiti";
+		else if (IMPACT_KENYA.matcher(impact).find())
+			impactVersion = "Kenya";
+		else if (IMPACT_ROMANIA.matcher(impact).find())
+			impactVersion = "Romania";
+		else if (IMPACT_SOUTH_SUDAN.matcher(impact).find())
+			impactVersion = "South Sudan";
+		else if (IMPACT_UGANDA.matcher(impact).find())
+			impactVersion = "Uganda";
+		else if (IMPACT_ZAMBIA.matcher(impact).find())
+			impactVersion = "Zambia";
+		
+		return impactVersion;
 	}
 	
 	private double calculateMedian(ArrayList<Double> numArrayList) {
@@ -552,8 +651,8 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. NOV24-01-DM)");
-		uid.getTextField().setText("NOV24-01-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. APR-01-NL-DM)");
+		uid.getTextField().setText("APR-01-NL-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -1077,6 +1176,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		final int FREQUENT_DONATIONS_CRITERIA = 3;
 		final int NEW_DONOR_MONTHS_CRITERIA = 6;
 		final int LAPSED_DONATIONS_CRITERIA = 24;
+		final int SUPER_LAPSED_DONATIONS_CRITERIA = 48;
 
 		String now = String.valueOf(LocalDate.now());
 		for(Record record : userData.getRecordList()) {
@@ -1085,14 +1185,14 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 
 			if(record.getInId().toLowerCase().contains("seed"))
 				record.setSeg(segment.GENERAL.getName());
-			else if(record.getSeg() != null && record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
-				record.setSeg(segment.MONTHLY.getName());
 			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
 				record.setSeg(segment.TOP.getName());
 			else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
 				record.setSeg(segment.NEW.getName());
 			else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
 				record.setSeg(segment.FREQUENT.getName());
+			else if(monthsFromLastDonation >= SUPER_LAPSED_DONATIONS_CRITERIA)
+				record.setSeg(segment.SUPER_LAPSED.getName());
 			else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
 				record.setSeg(segment.LAPSED.getName());
 			else
