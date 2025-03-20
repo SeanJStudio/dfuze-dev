@@ -76,6 +76,8 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 	final static String SEG_LEADER = "Leader";
 	final static String SEG_ORGANIZATION = "Organization";
 	final static String SEG_MONTHLY = "Monthly";
+	final static String SEG_NEW_MONTHLY = "New Monthly";
+	final static String SEG_PRM = "PRM";
 	final static String SEG_SEED = "Seed";
 	final static String SEG_ACQ = "Acquisition";
 	
@@ -102,6 +104,8 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 	Pattern leaderPattern = Pattern.compile("[l][d][r]", Pattern.CASE_INSENSITIVE);									//leadership
 	Pattern orgPattern = Pattern.compile("[o][r][g]", Pattern.CASE_INSENSITIVE);									//corporate
 	Pattern monthlyPattern = Pattern.compile("[m][o][n](?!.*[u][p][g][d])|^[M][A]", Pattern.CASE_INSENSITIVE);		//monthly
+	Pattern newMonthlyPattern = Pattern.compile("^[n][m]", Pattern.CASE_INSENSITIVE);								//new monthly
+	Pattern PRMPattern = Pattern.compile("[p][r][m]", Pattern.CASE_INSENSITIVE);									//PRM
 	Pattern seedPattern = Pattern.compile("[s][e][e][d]", Pattern.CASE_INSENSITIVE);								//seed
 	Pattern acquisitionPattern = Pattern.compile("(^|\\s)[a][c][q](\\s|$)", Pattern.CASE_INSENSITIVE);				//acquisition
 	
@@ -174,6 +178,10 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 				seg = SEG_ORGANIZATION;
 			else if (monthlyPattern.matcher(segCode).find())
 				seg = SEG_MONTHLY;
+			else if (newMonthlyPattern.matcher(segCode).find())
+				seg = SEG_NEW_MONTHLY;
+			else if (PRMPattern.matcher(segCode).find())
+				seg = SEG_PRM;
 			else if (seedPattern.matcher(segCode).find() || segCode.length() == 0)
 				seg = SEG_SEED;
 			else if (acquisitionPattern.matcher(segCode).find())
@@ -279,9 +287,9 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 				dn3Amt = "40";
 				oDnAmt = "$ ________";
 			} else if (lastGiftAmountAsBigDecimal.doubleValue() < 500.00) {
-				dn1Amt = String.valueOf(Math.round(newRoundedLastDonationAmount.intValue() / 5.0) * 5); // ROUNDING outputs, not floor or ceiling
-				dn2Amt = String.valueOf(Math.round((newRoundedLastDonationAmount.intValue() * 1.2) / 5.0) * 5);
-				dn3Amt = String.valueOf(Math.round((newRoundedLastDonationAmount.intValue() * 1.4) / 5.0) * 5);
+				dn1Amt = String.valueOf(Math.ceil(newRoundedLastDonationAmount.intValue() / 5.0) * 5); // ROUNDING outputs, not floor or ceiling
+				dn2Amt = String.valueOf(Math.ceil((newRoundedLastDonationAmount.intValue() * 1.2) / 5.0) * 5);
+				dn3Amt = String.valueOf(Math.ceil((newRoundedLastDonationAmount.intValue() * 1.4) / 5.0) * 5);
 				oDnAmt = "$ ________";
 			} else {
 				dn1Amt = "";
@@ -327,7 +335,7 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 			double roundedLMG = Math.round(lastGiftAmountAsBigDecimal.doubleValue());
 			
 			// Update the monthly gift array for the monthly segment
-			if(seg.equalsIgnoreCase(SEG_MONTHLY)) {
+			if(seg.equalsIgnoreCase(SEG_MONTHLY) || seg.equalsIgnoreCase(SEG_NEW_MONTHLY)) {
 				mDn1Amt =  String.valueOf(5 * (Math.round((double) roundedLMG / 5)));
 				mDn2Amt = String.valueOf(5 * (Math.round((double) (roundedLMG + (roundedLMG * 0.25)) / 5)));
 				mDn3Amt = String.valueOf(5 * (Math.round((double) (roundedLMG + (roundedLMG * 0.50)) / 5)));
@@ -380,7 +388,7 @@ public class RegularProcess implements RunCanuckPlaceChildrensHospiceBehavior {
 			
 			if (segCode.equalsIgnoreCase("SEED"))
 				priority = "99999999";
-			else if (seg.equalsIgnoreCase(SEG_MONTHLY) || seg.equalsIgnoreCase(SEG_MONTHLY_UPGRADE))
+			else if (seg.equalsIgnoreCase(SEG_MONTHLY) || seg.equalsIgnoreCase(SEG_MONTHLY_UPGRADE) || seg.equalsIgnoreCase(SEG_NEW_MONTHLY))
 				priority = "88888888";
 			
 
