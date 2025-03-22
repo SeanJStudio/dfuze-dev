@@ -552,10 +552,12 @@ public class Larche implements RunGenerosityXBehavior {
 					if(monthsFromDonation <= MONTHS36 && monthsFromDonation > -1) {
 						if(giftHistory.getGiftAmount() > largestGiftMadeLast36Months)
 							largestGiftMadeLast36Months = giftHistory.getGiftAmount();
-						
-						if(INTERNATIONAL_DESIGNATION_PATTERN.matcher(giftHistory.getGiftFund()).find())
-							record.setRecType("International");
+
 					}
+					
+					// look for international records
+					if(INTERNATIONAL_DESIGNATION_PATTERN.matcher(giftHistory.getGiftFund()).find())
+						record.setRecType("International");
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 					
