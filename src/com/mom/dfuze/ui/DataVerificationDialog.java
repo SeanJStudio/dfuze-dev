@@ -33,9 +33,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.swing.JSeparator;
 import javax.swing.JComboBox;
@@ -83,15 +86,10 @@ public class DataVerificationDialog extends JDialog {
 	private JLabel lblCountry;
 	private JLabel lblListOrder;
 	
-	// lineHeaders
-	private ArrayList<String> lineHeaders = new ArrayList<>();
-	// nameHeaders
-	private ArrayList<String> nameHeaders = new ArrayList<>();
-	// lineComboBoxes
-	private ArrayList<JComboBox<String>> lineComboBoxes = new ArrayList<>();
-	// nameComboBoxes
-	private ArrayList<JComboBox<String>> nameComboBoxes = new ArrayList<>();
-
+	private LinkedHashMap<String, JComboBox<String>> lineMap = new LinkedHashMap<>();
+	private LinkedHashMap<String, JComboBox<String>> nameMap = new LinkedHashMap<>();
+	private LinkedHashMap<String, JComboBox<String>> addressMap = new LinkedHashMap<>();
+	
 	// buttons
 	private JButton btnReset;
 	private JButton btnMake;
@@ -111,9 +109,6 @@ public class DataVerificationDialog extends JDialog {
 	private JSeparator separatorSettingsBottom;
 	private JSeparator separatorSettingsTop;
 	
-	private final String CITY_PROV_PC = "CITY PROV PC";
-	
-	private HashSet<String> addressFields = new HashSet<>();
 	private JLabel lblOptions;
 	private JLabel lblTitle;
 	
@@ -123,7 +118,36 @@ public class DataVerificationDialog extends JDialog {
 	
 	private JLabel lblJobName;
 	private JTextField textFieldJobName;
+	
+	// patterns
+	private final static Pattern COUNTRY_CAN_PATTERN = Pattern.compile("canada|canad|canda|cdn|(^|\\s+)can(\\s+|$)|(^|\\s+)ca(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	private final static Pattern COUNTRY_USA_PATTERN = Pattern.compile("estados|america|states|(^|\\s+)usa(\\s+|$)|(^|\\s+)us(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	private final static Pattern ZIP_PATTERN = Pattern.compile("\\d\\d\\d\\d\\d-\\d\\d\\d\\d|\\d\\d\\d\\d-\\d\\d\\d\\d|\\d\\d\\d\\d\\d\\d\\d\\d\\d$|\\d\\d\\d\\d\\d$|\\d\\d\\d\\d$", Pattern.CASE_INSENSITIVE);
+	private final static Pattern STATE_PATTERN = Pattern.compile("alabama|alaska|american samoa|arizona|arkansas|california|colorado|connecticut|delaware|district of columbia|federated states of micronesia|florida|georgia|guam|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|maine|marshall islands|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|nebraska|nevada|new hampshire|new jersey|new mexico|new york|north carolina|north dakota|northern marianais|ohio|oklahoma|oregon|palau|pennsylvania|puerto rico|rhode island|south carolina|south dakota|tennessee|texas|utah|vermont|virginia|virgin islands|washington|west virginia|wisconsin|wyoming|(?<=\\s|^|,|\\.)(a(\\s\\.|\\.\\s|\\.|\\s)?l|a(\\s\\.|\\.\\s|\\.|\\s)?k|a(\\s\\.|\\.\\s|\\.|\\s)?s|a(\\s\\.|\\.\\s|\\.|\\s)?z|a(\\s\\.|\\.\\s|\\.|\\s)?r|c(\\s\\.|\\.\\s|\\.|\\s)?a|c(\\s\\.|\\.\\s|\\.|\\s)?o|c(\\s\\.|\\.\\s|\\.|\\s)?t|d(\\s\\.|\\.\\s|\\.|\\s)?e|d(\\s\\.|\\.\\s|\\.|\\s)?c|f(\\s\\.|\\.\\s|\\.|\\s)?m|f(\\s\\.|\\.\\s|\\.|\\s)?l|g(\\s\\.|\\.\\s|\\.|\\s)?a|g(\\s\\.|\\.\\s|\\.|\\s)?u|h(\\s\\.|\\.\\s|\\.|\\s)?i|i(\\s\\.|\\.\\s|\\.|\\s)?d|i(\\s\\.|\\.\\s|\\.|\\s)?l|i(\\s\\.|\\.\\s|\\.|\\s)?n|i(\\s\\.|\\.\\s|\\.|\\s)?a|k(\\s\\.|\\.\\s|\\.|\\s)?s|k(\\s\\.|\\.\\s|\\.|\\s)?y|l(\\s\\.|\\.\\s|\\.|\\s)?a|m(\\s\\.|\\.\\s|\\.|\\s)?e|m(\\s\\.|\\.\\s|\\.|\\s)?h|m(\\s\\.|\\.\\s|\\.|\\s)?d|m(\\s\\.|\\.\\s|\\.|\\s)?a|m(\\s\\.|\\.\\s|\\.|\\s)?i|m(\\s\\.|\\.\\s|\\.|\\s)?n|m(\\s\\.|\\.\\s|\\.|\\s)?s|m(\\s\\.|\\.\\s|\\.|\\s)?o|m(\\s\\.|\\.\\s|\\.|\\s)?t|n(\\s\\.|\\.\\s|\\.|\\s)?e|n(\\s\\.|\\.\\s|\\.|\\s)?v|n(\\s\\.|\\.\\s|\\.|\\s)?h|n(\\s\\.|\\.\\s|\\.|\\s)?j|n(\\s\\.|\\.\\s|\\.|\\s)?m|n(\\s\\.|\\.\\s|\\.|\\s)?y|n(\\s\\.|\\.\\s|\\.|\\s)?c|n(\\s\\.|\\.\\s|\\.|\\s)?d|m(\\s\\.|\\.\\s|\\.|\\s)?p|o(\\s\\.|\\.\\s|\\.|\\s)?h|o(\\s\\.|\\.\\s|\\.|\\s)?k|o(\\s\\.|\\.\\s|\\.|\\s)?r|p(\\s\\.|\\.\\s|\\.|\\s)?w|p(\\s\\.|\\.\\s|\\.|\\s)?a|p(\\s\\.|\\.\\s|\\.|\\s)?r|r(\\s\\.|\\.\\s|\\.|\\s)?i|s(\\s\\.|\\.\\s|\\.|\\s)?c|s(\\s\\.|\\.\\s|\\.|\\s)?d|t(\\s\\.|\\.\\s|\\.|\\s)?n|t(\\s\\.|\\.\\s|\\.|\\s)?x|u(\\s\\.|\\.\\s|\\.|\\s)?t|v(\\s\\.|\\.\\s|\\.|\\s)?t|v(\\s\\.|\\.\\s|\\.|\\s)?a|v(\\s\\.|\\.\\s|\\.|\\s)?i|w(\\s\\.|\\.\\s|\\.|\\s)?a|w(\\s\\.|\\.\\s|\\.|\\s)?v|w(\\s\\.|\\.\\s|\\.|\\s)?i|w(\\s\\.|\\.\\s|\\.|\\s)?y)(?=,|\\.|\\s|$)", Pattern.CASE_INSENSITIVE);
+	
+	public enum reason {
+		FIRST_RECORD("First Record"),
+		LAST_RECORD("Last Record"),
+		MIN_LINES("Min Lines"),
+		MAX_LINES("Max Lines"),
+		SHORTEST_ADDRESS("Shortest Address"),
+		LONGEST_ADDRESS("Longest Address"),
+		SHORTEST_NAME("Shortest Name"),
+		LONGEST_NAME("Longest Name"),
+		RANDOM("Random");
+		
+		String name;
 
+		private reason(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+	};
+	
+	
 	public DataVerificationDialog(JFrame frame) {
 
 		setResizable(false);
@@ -428,18 +452,40 @@ public class DataVerificationDialog extends JDialog {
 				lblSubTitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 				contentPanel.add(lblSubTitle, "cell 4 24 2 1,alignx right");
 		contentPanel.add(btnMake, "cell 7 24 5 1,grow");
-
-		fillComboBoxList();
-		setAddressFields();
 		
-		fillLineHeaders();
-		fillNameHeaders();
-		fillLineComboBoxes();
-		fillNameComboBoxes();
+		fillComboBoxList();
+		fillLineMap();
+		fillNameMap();
+		fillAddressMap();
 		
 		pack();
 	    setLocationRelativeTo(frame);
 		getContentPane().requestFocusInWindow();
+	}
+	
+	private void fillLineMap() {
+		lineMap.put(lblLine1.getText(), comboBoxLine1); 
+		lineMap.put(lblLine2.getText(), comboBoxLine2);
+		lineMap.put(lblLine3.getText(), comboBoxLine3);
+		lineMap.put(lblLine4.getText(), comboBoxLine4);
+	}
+	
+	private void fillNameMap() {
+		nameMap.put(lblName1.getText(), comboBoxName1); 
+		nameMap.put(lblName2.getText(), comboBoxName2);
+		nameMap.put(lblName3.getText(), comboBoxName3);
+		nameMap.put(lblName4.getText(), comboBoxName4);
+	}
+	
+	private void fillAddressMap() {
+		addressMap.put(lblAddress1.getText(), comboBoxAddress1); 
+		addressMap.put(lblAddress2.getText(), comboBoxAddress2);
+		addressMap.put(lblAddress3.getText(), comboBoxAddress3);
+		addressMap.put(lblAddress4.getText(), comboBoxAddress4);
+		addressMap.put(lblCity.getText(), comboBoxCity);
+		addressMap.put(lblProv.getText(), comboBoxProv);
+		addressMap.put(lblPC.getText(), comboBoxPC);
+		addressMap.put(lblCountry.getText(), comboBoxCountry);
 	}
 
 	private void fillComboBoxList() {
@@ -460,42 +506,6 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxList.add(comboBoxPC);
 		comboBoxList.add(comboBoxCountry);
 		comboBoxList.add(comboBoxListOrder);
-	}
-	
-	private void setAddressFields() {
-		addressFields.add(lblAddress1.getText());
-		addressFields.add(lblAddress2.getText());
-		addressFields.add(lblAddress3.getText());
-		addressFields.add(lblAddress4.getText());
-		addressFields.add(CITY_PROV_PC);
-	}
-	
-	private void fillLineHeaders() {
-		lineHeaders.add(lblLine1.getText());
-		lineHeaders.add(lblLine2.getText());
-		lineHeaders.add(lblLine3.getText());
-		lineHeaders.add(lblLine4.getText());
-	}
-	
-	private void fillNameHeaders() {
-		nameHeaders.add(lblName1.getText());
-		nameHeaders.add(lblName2.getText());
-		nameHeaders.add(lblName3.getText());
-		nameHeaders.add(lblName4.getText());
-	}
-	
-	private void fillLineComboBoxes() {
-		lineComboBoxes.add(comboBoxLine1);
-		lineComboBoxes.add(comboBoxLine2);
-		lineComboBoxes.add(comboBoxLine3);
-		lineComboBoxes.add(comboBoxLine4);
-	}
-	
-	private void fillNameComboBoxes() {
-		nameComboBoxes.add(comboBoxName1);
-		nameComboBoxes.add(comboBoxName2);
-		nameComboBoxes.add(comboBoxName3);
-		nameComboBoxes.add(comboBoxName4);
 	}
 
 	private void disableUi() {
@@ -702,17 +712,64 @@ public class DataVerificationDialog extends JDialog {
 		return recordLists;
 	}
 	
-	private ArrayList<String> getOrderedMappedFieldsList() {
-		ArrayList<String> orderedMappedFieldsList = new ArrayList<>();
-		if(comboBoxLine1.getSelectedIndex() > -1)
-			;
-		return orderedMappedFieldsList;
+	private ArrayList<String> getLinesFromList(Record record, LinkedHashMap<String, JComboBox<String>> linesMap, HashMap<String, Integer> nonDfFieldIndexes) {
+		ArrayList<String> list = new ArrayList<>();
+		String cpp = "";
+		String country = "";
+		
+		for(Map.Entry<String, JComboBox<String>> entry : linesMap.entrySet()) {
+			String selectedField = entry.getValue().getSelectedItem().toString();
+			String value = getValueFromFieldName(record, selectedField, nonDfFieldIndexes).trim();
+			
+			// handle address fields separately
+			if(entry.getKey().equalsIgnoreCase(lblCity.getText()))
+				cpp += " " + value;
+			else if(entry.getKey().equalsIgnoreCase(lblProv.getText()))
+				cpp += " " + value;
+			else if(entry.getKey().equalsIgnoreCase(lblPC.getText()))
+				cpp += "  " + value;
+			else if(entry.getKey().equalsIgnoreCase(lblCountry.getText()))
+				country += value;
+			else
+				list.add(value);
+		}
+		
+		cpp = cpp.trim();
+		
+		if(cpp.length() > 0)
+			list.add(cpp);
+		if(country.length() > 0)
+			list.add(country);
+		
+		return list;		
 	}
+	
 	
 	private void verifyData(List<List<Record>> recordLists) {
 		HashMap<String, Integer> nonDfFieldIndexes = getNonDfFieldIndexes();
+		ArrayList<HashMap<Integer, String>> reasonList = new ArrayList<>();
+		
+		boolean hasCity = false;
+		boolean hasProv = false;
+		boolean hasPc = false;
+		boolean hasCPP = false;
+		boolean hasCountry = false;
+		
+		if(comboBoxCity.getSelectedIndex() > -1)
+			hasCity = true;
+		if(comboBoxProv.getSelectedIndex() > -1)
+			hasProv = true;
+		if(comboBoxPC.getSelectedIndex() > -1)
+			hasPc = true;
+		if(hasCity && hasProv && hasPc)
+			hasCPP = true;
+		if(comboBoxCountry.getSelectedIndex() > -1)
+			hasCountry = true;
+
 		
 		for(List<Record> recordList : recordLists) {
+			// track
+			int counter = 0;
 			
 			// Destination total
 			int recordNum = recordList.size();
@@ -720,9 +777,129 @@ public class DataVerificationDialog extends JDialog {
 			int usaNum = 0;
 			int intNum = 0;
 			
+			// reason
+			int firstRecordId = -1;
+			int lastRecordId = -1;
+			
+			int minLines = 999999;
+			int minLinesId = -1;
+			
+			int maxLines = 0;
+			int maxLinesId = -1;
+			
+			int shortestAddress = 999999;
+			int shortestAddressId = -1;
+			
+			int longestAddress = 0;
+			int longestAddressId = -1;
+			
+			int shortestName = 999999;
+			int shortestNameId = -1;
+			
+			int longestName = 0;
+			int longestNameId = -1;
+			
+			// key is the record id, value is a map of key reason and value arraylist (address block)
+			LinkedHashMap<Integer, HashMap<String, ArrayList<String>>> reasonMap = new LinkedHashMap<>();
+			
+			HashMap<Integer, ArrayList<String>> idAddressMap = new HashMap<>();
+			
 			for(Record record : recordList) {
+				// get the lineLists
+				ArrayList<String> lineList = getLinesFromList(record, lineMap, nonDfFieldIndexes);
+				ArrayList<String> nameList = getLinesFromList(record, nameMap, nonDfFieldIndexes);
+				ArrayList<String> addressList = getLinesFromList(record, addressMap, nonDfFieldIndexes);
+				ArrayList<String> combinedList = new ArrayList<>();
+				combinedList.addAll(lineList);
+				combinedList.addAll(nameList);
+				combinedList.addAll(addressList);
 				
+				int lines = combinedList.size();
+				
+				// Get the country
+				if(hasCountry) {
+					String country = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxCountry.getSelectedItem().toString(), nonDfFieldIndexes)).replaceAll("[^a-zA-Z]", "").trim();
+					if(country.length() > 0) {
+						if(COUNTRY_CAN_PATTERN.matcher(country).find())
+							++canadianNum;
+						else if(COUNTRY_USA_PATTERN.matcher(country).find())
+							++usaNum;
+						else
+							++intNum;
+					} else {
+						++canadianNum;
+					}
+				} else {
+					if(hasPc) {
+						String pc = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxPC.getSelectedItem().toString(), nonDfFieldIndexes)).replaceAll("[^a-zA-Z0-9]", "").trim();
+						if(ZIP_PATTERN.matcher(pc).find())
+							++usaNum;
+						else
+							++canadianNum;
+					} else if (hasProv) {
+						String prov = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxProv.getSelectedItem().toString(), nonDfFieldIndexes)).replaceAll("[^a-zA-Z0-9\\s]", "").trim();
+						if(STATE_PATTERN.matcher(prov).find())
+							++usaNum;
+						else
+							++canadianNum;
+					} else {
+						++canadianNum;
+					}
+				}
+				
+				// get reasons
+				
+				// first and last records
+				if(counter == 0)
+					firstRecordId = record.getDfId();
+				else if(counter == recordList.size() - 1)
+					lastRecordId = record.getDfId();
+				
+				// min lines
+				if(lines < minLines) {
+					minLines = lines;
+					minLinesId = record.getDfId();
+				}
+				
+				// max lines
+				if(lines > maxLines) {
+					maxLines = lines;
+					maxLinesId = record.getDfId();
+				}
+				
+				// shortest and longest address
+				for(String line : addressList) {
+					if(line.length() < shortestAddress) {
+						shortestAddress = line.length();
+						shortestAddressId = record.getDfId();
+					}
+					if(line.length() > longestAddress) {
+						longestAddress = line.length();
+						longestAddressId = record.getDfId();
+					}
+				}
+				
+				// shortest and longest name
+				for(String line : nameList) {
+					if(line.length() < shortestName) {
+						shortestName = line.length();
+						shortestNameId = record.getDfId();
+					}
+					if(line.length() > longestName) {
+						longestName = line.length();
+						longestNameId = record.getDfId();
+					}
+				}
+				
+				
+				idAddressMap.put(record.getDfId(), combinedList);
+				++counter;
 			}
+			
+			// add the records we have tracked
+			// if a record has been added, append to the reason like + " " + reason
+			// if the amount of records is less than 10, fill in with random records until 10 or no records left
+			// finally add to the master reason map of all lists
 			
 		}
 	}
