@@ -215,7 +215,9 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				UserData.fieldName.PROVIDE3.getName(),
 				UserData.fieldName.PROVIDE4.getName(),
 				UserData.fieldName.OPEN_DONATION_AMOUNT.getName(),
-				UserData.fieldName.PRIORITY.getName()
+				UserData.fieldName.PRIORITY.getName(),
+				UserData.fieldName.LETTER_VERSION.getName(),
+				UserData.fieldName.PACKAGE_VERSION.getName(),
 		});
 	}
 
@@ -373,7 +375,7 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 
 		isRecurringIndex = dsd.getSelectedValueIndex();
 				
-		if(!indexSet.add(amountIndex))
+		if(!indexSet.add(isRecurringIndex))
 			throw new Exception("The recurring field has been mapped more than once.");
 		
 		List<Record> giftsList = new ArrayList<>();
@@ -471,8 +473,8 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				record.setNumDn("0");
 				record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
 				record.setDnAmtArr("");
-				record.setPkgVer("General");
-				record.setLetVer("General");
+				record.setPkgVer(segment.GENERAL.getName());
+				record.setLetVer(segment.GENERAL.getName());
 				record.setRScore("99999");
 				record.setFScore("0");
 				record.setMScore("0");
@@ -557,14 +559,15 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				}
 				
 				// update non monthly letter and package versions
-				if(record.getSeg() == null)
+				if(record.getSeg() == null) {
 					if(impactSet.size() == 1) {
-						record.setLetVer(segment.IMPACT.getName() + " " + impactSet.iterator().next());
+						record.setLetVer(impactSet.iterator().next());
 						record.setPkgVer(segment.IMPACT.getName());
 					} else {
 						record.setLetVer(segment.GENERAL.getName());
 						record.setPkgVer(segment.GENERAL.getName());
 					}
+				}
 
 				
 				double monetarySum = giftAmounts.stream()
@@ -646,6 +649,8 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 				record.setSegCode(campaignCode + "-L0");
 			else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName()))
 				record.setSegCode(campaignCode + "-N0");
+			else
+				record.setSegCode("");
 		}
 	}
 	
@@ -866,12 +871,78 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
-			if(donorSegment.equalsIgnoreCase(segment.LAPSED.getName())) // set lapsed gifts
-				setLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
-			else if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())) // set non-monthly gifts, leave monthly blank
-				setNonLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
+			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName()) && !donorSegment.equalsIgnoreCase(segment.TOP.getName()))
+				if(lastDonationRoundedUpByFive < 2000)
+					setGiftArrays(record, lastDonationRoundedUpByFive, defaultAskAmount);
 
 		}
+	}
+	
+	private void setGiftArrays(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
+	    int askTier = 1;
+	    
+	    // Small default amount multiplier
+	    int sdam = 1;
+	    
+	    if (defaultAskAmount < 10)
+	        sdam = 4;
+	    else if (defaultAskAmount < 20)
+	        sdam = 2;
+
+	    // Ensure the scaled default amount is an increment of the actual default amount
+	    double scaledDefaultAmount = defaultAskAmount * sdam;
+	    if (scaledDefaultAmount < 20) {
+	        // Find the smallest multiple of defaultAskAmount that is >= 20
+	        scaledDefaultAmount = Math.ceil(20 / defaultAskAmount) * defaultAskAmount;
+	    }
+
+	    // Determine the tier based on the last donation
+	    if (lastDonationRoundedUpByFive >= 1000) {
+	        // A2: $1000-$2000
+	        record.setDn1Amt(String.valueOf(scaledDefaultAmount * 40)); // e.g., $1000
+	        record.setDn2Amt(String.valueOf(scaledDefaultAmount * 50)); // e.g., $1250
+	        record.setDn3Amt(String.valueOf(scaledDefaultAmount * 60)); // e.g., $1500
+	        record.setDn4Amt(String.valueOf(scaledDefaultAmount * 80)); // e.g., $2000
+	        askTier = 2; // A2
+	    } else if (lastDonationRoundedUpByFive >= 500) {
+	        // A3: $500-$1000
+	        record.setDn1Amt(String.valueOf(scaledDefaultAmount * 20)); // e.g., $500
+	        record.setDn2Amt(String.valueOf(scaledDefaultAmount * 30)); // e.g., $750
+	        record.setDn3Amt(String.valueOf(scaledDefaultAmount * 40)); // e.g., $1000
+	        record.setDn4Amt(String.valueOf(scaledDefaultAmount * 50)); // e.g., $1250
+	        askTier = 3; // A3
+	    } else if (lastDonationRoundedUpByFive >= 250) {
+	        // A4: $250-$500
+	        record.setDn1Amt(String.valueOf(scaledDefaultAmount * 10)); // e.g., $250
+	        record.setDn2Amt(String.valueOf(scaledDefaultAmount * 15)); // e.g., $375
+	        record.setDn3Amt(String.valueOf(scaledDefaultAmount * 20)); // e.g., $500
+	        record.setDn4Amt(String.valueOf(scaledDefaultAmount * 25)); // e.g., $625
+	        askTier = 4; // A4
+	    } else if (lastDonationRoundedUpByFive >= 100) {
+	        // A5: $100-$250
+	        record.setDn1Amt(String.valueOf(scaledDefaultAmount * 4)); // e.g., $100
+	        record.setDn2Amt(String.valueOf(scaledDefaultAmount * 6)); // e.g., $150
+	        record.setDn3Amt(String.valueOf(scaledDefaultAmount * 8)); // e.g., $200
+	        record.setDn4Amt(String.valueOf(scaledDefaultAmount * 10)); // e.g., $250
+	        askTier = 5; // A5
+	    } else if (lastDonationRoundedUpByFive >= 50) {
+	        // A6: $50-$100
+	        record.setDn1Amt(String.valueOf(scaledDefaultAmount * 2)); // e.g., $50
+	        record.setDn2Amt(String.valueOf(scaledDefaultAmount * 3)); // e.g., $75
+	        record.setDn3Amt(String.valueOf(scaledDefaultAmount * 4)); // e.g., $100
+	        record.setDn4Amt(String.valueOf(scaledDefaultAmount * 5)); // e.g., $125
+	        askTier = 6; // A6
+	    } else {
+	        // A7: Starts at scaled default amount (at least $20)
+	        record.setDn1Amt(String.valueOf(scaledDefaultAmount)); // e.g., $20
+	        record.setDn2Amt(String.valueOf(scaledDefaultAmount * 2)); // e.g., $40
+	        record.setDn3Amt(String.valueOf(scaledDefaultAmount * 3)); // e.g., $60
+	        record.setDn4Amt(String.valueOf(scaledDefaultAmount * 4)); // e.g., $80
+	        askTier = 7; // A7
+	    }
+
+	    if (record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
+	        record.setSegCode(record.getSegCode() + askTier);
 	}
 	
 	// Logic to build lapsed gift arrays
@@ -1182,21 +1253,23 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 		for(Record record : userData.getRecordList()) {
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
 			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
-
-			if(record.getInId().toLowerCase().contains("seed"))
-				record.setSeg(segment.GENERAL.getName());
-			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
-				record.setSeg(segment.TOP.getName());
-			else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
-				record.setSeg(segment.NEW.getName());
-			else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
-				record.setSeg(segment.FREQUENT.getName());
-			else if(monthsFromLastDonation >= SUPER_LAPSED_DONATIONS_CRITERIA)
-				record.setSeg(segment.SUPER_LAPSED.getName());
-			else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
-				record.setSeg(segment.LAPSED.getName());
-			else
-				record.setSeg(segment.GENERAL.getName());
+			
+			if(record.getSeg() == null) {
+				if(record.getInId().toLowerCase().contains("seed"))
+					record.setSeg(segment.GENERAL.getName());
+				else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
+					record.setSeg(segment.TOP.getName());
+				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
+					record.setSeg(segment.NEW.getName());
+				else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA) //getQuantity is total donations in last 12 months
+					record.setSeg(segment.FREQUENT.getName());
+				else if(monthsFromLastDonation >= SUPER_LAPSED_DONATIONS_CRITERIA)
+					record.setSeg(segment.SUPER_LAPSED.getName());
+				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
+					record.setSeg(segment.LAPSED.getName());
+				else
+					record.setSeg(segment.GENERAL.getName());
+			}
 		}
 	}
 
