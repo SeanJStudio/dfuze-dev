@@ -668,8 +668,8 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $25, enter 25)");
-		udid.getTextField().setText("25");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $5, enter 5)");
+		udid.getTextField().setText("5");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -695,12 +695,12 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	// Convert the gift arrays to metrics
 	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
 		
-		int unitMultiplier = 2;
+		int unitMultiplier = 1;
 		
-		String less = "$%s helps provide " + unitMultiplier + " meals a day for a child escaping life on the streets.";
-		String single = "$%s provides " + unitMultiplier + " meals a day for a child escaping life on the streets.";
-		String plural = "$%s provides %s meals a day for a child escaping life on the streets.";
-		String open = "$________ to provide as many meals as possible for children escaping life on the streets.";
+		String less = "$%s helps provides a week of groceries for " + unitMultiplier + " family.";
+		String single = "$%s provides a week of groceries for " + unitMultiplier + " family.";
+		String plural = "$%s provides a week of groceries for %s families.";
+		String open = "$________ to provide groceries for as many families as possible.";
 		
 		String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
 		
@@ -886,23 +886,23 @@ public class InternationalTeamsCanada implements RunGenerosityXBehavior {
 	    
 	    if (defaultAskAmount < 10)
 	        sdam = 4;
-	    else if (defaultAskAmount < 20)
+	    else if (defaultAskAmount < 25)
 	        sdam = 2;
 
 	    // Ensure the scaled default amount is an increment of the actual default amount
 	    double scaledDefaultAmount = defaultAskAmount * sdam;
-	    if (scaledDefaultAmount < 20) {
+	    if (scaledDefaultAmount < 25) {
 	        // Find the smallest multiple of defaultAskAmount that is >= 20
-	        scaledDefaultAmount = Math.ceil(20 / defaultAskAmount) * defaultAskAmount;
+	        scaledDefaultAmount = Math.ceil(25 / defaultAskAmount) * defaultAskAmount;
 	    }
 
 	    // Determine the tier based on the last donation
 	    if (lastDonationRoundedUpByFive >= 1000) {
 	        // A2: $1000-$2000
-	        record.setDn1Amt(String.valueOf(scaledDefaultAmount * 40)); // e.g., $1000
-	        record.setDn2Amt(String.valueOf(scaledDefaultAmount * 50)); // e.g., $1250
-	        record.setDn3Amt(String.valueOf(scaledDefaultAmount * 60)); // e.g., $1500
-	        record.setDn4Amt(String.valueOf(scaledDefaultAmount * 80)); // e.g., $2000
+	        //record.setDn1Amt(String.valueOf(scaledDefaultAmount * 40)); // e.g., $1000
+	        //record.setDn2Amt(String.valueOf(scaledDefaultAmount * 50)); // e.g., $1250
+	        //record.setDn3Amt(String.valueOf(scaledDefaultAmount * 60)); // e.g., $1500
+	        //record.setDn4Amt(String.valueOf(scaledDefaultAmount * 80)); // e.g., $2000
 	        askTier = 2; // A2
 	    } else if (lastDonationRoundedUpByFive >= 500) {
 	        // A3: $500-$1000
