@@ -125,6 +125,9 @@ public class DataVerificationDialog extends JDialog {
 	private final static Pattern ZIP_PATTERN = Pattern.compile("\\d\\d\\d\\d\\d-\\d\\d\\d\\d|\\d\\d\\d\\d-\\d\\d\\d\\d|\\d\\d\\d\\d\\d\\d\\d\\d\\d$|\\d\\d\\d\\d\\d$|\\d\\d\\d\\d$", Pattern.CASE_INSENSITIVE);
 	private final static Pattern STATE_PATTERN = Pattern.compile("alabama|alaska|american samoa|arizona|arkansas|california|colorado|connecticut|delaware|district of columbia|federated states of micronesia|florida|georgia|guam|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|maine|marshall islands|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|nebraska|nevada|new hampshire|new jersey|new mexico|new york|north carolina|north dakota|northern marianais|ohio|oklahoma|oregon|palau|pennsylvania|puerto rico|rhode island|south carolina|south dakota|tennessee|texas|utah|vermont|virginia|virgin islands|washington|west virginia|wisconsin|wyoming|(?<=\\s|^|,|\\.)(a(\\s\\.|\\.\\s|\\.|\\s)?l|a(\\s\\.|\\.\\s|\\.|\\s)?k|a(\\s\\.|\\.\\s|\\.|\\s)?s|a(\\s\\.|\\.\\s|\\.|\\s)?z|a(\\s\\.|\\.\\s|\\.|\\s)?r|c(\\s\\.|\\.\\s|\\.|\\s)?a|c(\\s\\.|\\.\\s|\\.|\\s)?o|c(\\s\\.|\\.\\s|\\.|\\s)?t|d(\\s\\.|\\.\\s|\\.|\\s)?e|d(\\s\\.|\\.\\s|\\.|\\s)?c|f(\\s\\.|\\.\\s|\\.|\\s)?m|f(\\s\\.|\\.\\s|\\.|\\s)?l|g(\\s\\.|\\.\\s|\\.|\\s)?a|g(\\s\\.|\\.\\s|\\.|\\s)?u|h(\\s\\.|\\.\\s|\\.|\\s)?i|i(\\s\\.|\\.\\s|\\.|\\s)?d|i(\\s\\.|\\.\\s|\\.|\\s)?l|i(\\s\\.|\\.\\s|\\.|\\s)?n|i(\\s\\.|\\.\\s|\\.|\\s)?a|k(\\s\\.|\\.\\s|\\.|\\s)?s|k(\\s\\.|\\.\\s|\\.|\\s)?y|l(\\s\\.|\\.\\s|\\.|\\s)?a|m(\\s\\.|\\.\\s|\\.|\\s)?e|m(\\s\\.|\\.\\s|\\.|\\s)?h|m(\\s\\.|\\.\\s|\\.|\\s)?d|m(\\s\\.|\\.\\s|\\.|\\s)?a|m(\\s\\.|\\.\\s|\\.|\\s)?i|m(\\s\\.|\\.\\s|\\.|\\s)?n|m(\\s\\.|\\.\\s|\\.|\\s)?s|m(\\s\\.|\\.\\s|\\.|\\s)?o|m(\\s\\.|\\.\\s|\\.|\\s)?t|n(\\s\\.|\\.\\s|\\.|\\s)?e|n(\\s\\.|\\.\\s|\\.|\\s)?v|n(\\s\\.|\\.\\s|\\.|\\s)?h|n(\\s\\.|\\.\\s|\\.|\\s)?j|n(\\s\\.|\\.\\s|\\.|\\s)?m|n(\\s\\.|\\.\\s|\\.|\\s)?y|n(\\s\\.|\\.\\s|\\.|\\s)?c|n(\\s\\.|\\.\\s|\\.|\\s)?d|m(\\s\\.|\\.\\s|\\.|\\s)?p|o(\\s\\.|\\.\\s|\\.|\\s)?h|o(\\s\\.|\\.\\s|\\.|\\s)?k|o(\\s\\.|\\.\\s|\\.|\\s)?r|p(\\s\\.|\\.\\s|\\.|\\s)?w|p(\\s\\.|\\.\\s|\\.|\\s)?a|p(\\s\\.|\\.\\s|\\.|\\s)?r|r(\\s\\.|\\.\\s|\\.|\\s)?i|s(\\s\\.|\\.\\s|\\.|\\s)?c|s(\\s\\.|\\.\\s|\\.|\\s)?d|t(\\s\\.|\\.\\s|\\.|\\s)?n|t(\\s\\.|\\.\\s|\\.|\\s)?x|u(\\s\\.|\\.\\s|\\.|\\s)?t|v(\\s\\.|\\.\\s|\\.|\\s)?t|v(\\s\\.|\\.\\s|\\.|\\s)?a|v(\\s\\.|\\.\\s|\\.|\\s)?i|w(\\s\\.|\\.\\s|\\.|\\s)?a|w(\\s\\.|\\.\\s|\\.|\\s)?v|w(\\s\\.|\\.\\s|\\.|\\s)?i|w(\\s\\.|\\.\\s|\\.|\\s)?y)(?=,|\\.|\\s|$)", Pattern.CASE_INSENSITIVE);
 	
+	private final static int MIN_RECORD_ID = -1;
+	private final static int MAX_LINE_NUM = 1000000000;
+	
 	public enum reason {
 		FIRST_RECORD("First Record"),
 		LAST_RECORD("Last Record"),
@@ -747,29 +750,20 @@ public class DataVerificationDialog extends JDialog {
 	
 	private void verifyData(List<List<Record>> recordLists) {
 		HashMap<String, Integer> nonDfFieldIndexes = getNonDfFieldIndexes();
-		ArrayList<HashMap<Integer, String>> reasonList = new ArrayList<>();
 		
-		boolean hasCity = false;
-		boolean hasProv = false;
-		boolean hasPc = false;
-		boolean hasCPP = false;
-		boolean hasCountry = false;
+		int fileNum = 0;
 		
-		if(comboBoxCity.getSelectedIndex() > -1)
-			hasCity = true;
-		if(comboBoxProv.getSelectedIndex() > -1)
-			hasProv = true;
-		if(comboBoxPC.getSelectedIndex() > -1)
-			hasPc = true;
-		if(hasCity && hasProv && hasPc)
-			hasCPP = true;
-		if(comboBoxCountry.getSelectedIndex() > -1)
-			hasCountry = true;
-
+		// List of LinkedHashMaps where the key is the record Id and the value is their address block 
+		ArrayList<LinkedHashMap<Integer, ArrayList<String>>> reasonList = new ArrayList<>();
+		
+		boolean hasProv = (comboBoxProv.getSelectedIndex() > -1) ? true : false;
+		boolean hasPc = (comboBoxPC.getSelectedIndex() > -1) ? true : false;
+		boolean hasCountry = (comboBoxCountry.getSelectedIndex() > -1) ? true : false;
 		
 		for(List<Record> recordList : recordLists) {
 			// track
 			int counter = 0;
+			++fileNum;
 			
 			// Destination total
 			int recordNum = recordList.size();
@@ -778,31 +772,35 @@ public class DataVerificationDialog extends JDialog {
 			int intNum = 0;
 			
 			// reason
-			int firstRecordId = -1;
-			int lastRecordId = -1;
+			int firstRecordId = MIN_RECORD_ID;
+			int lastRecordId = MIN_RECORD_ID;
 			
-			int minLines = 999999;
-			int minLinesId = -1;
+			int minLines = MAX_LINE_NUM;
+			int minLinesId = MIN_RECORD_ID;
 			
 			int maxLines = 0;
-			int maxLinesId = -1;
+			int maxLinesId = MIN_RECORD_ID;
 			
-			int shortestAddress = 999999;
-			int shortestAddressId = -1;
+			int shortestAddress = MAX_LINE_NUM;
+			int shortestAddressId = MIN_RECORD_ID;
 			
 			int longestAddress = 0;
-			int longestAddressId = -1;
+			int longestAddressId = MIN_RECORD_ID;
 			
-			int shortestName = 999999;
-			int shortestNameId = -1;
+			int shortestName = MAX_LINE_NUM;
+			int shortestNameId = MIN_RECORD_ID;
 			
 			int longestName = 0;
-			int longestNameId = -1;
+			int longestNameId = MIN_RECORD_ID;
 			
-			// key is the record id, value is a map of key reason and value arraylist (address block)
-			LinkedHashMap<Integer, HashMap<String, ArrayList<String>>> reasonMap = new LinkedHashMap<>();
+			// key is the record id, value is the address block in an array list
+			LinkedHashMap<Integer, ArrayList<String>> finalAddressMap = new LinkedHashMap<>();
 			
-			HashMap<Integer, ArrayList<String>> idAddressMap = new HashMap<>();
+			// key is the record id, value is the reason for adding it
+			HashMap<Integer, String> finalReasonMap = new HashMap<>();
+			
+			// Key is the record id and value is a list of each address line
+			HashMap<Integer, ArrayList<String>> allAddressMap = new HashMap<>();
 			
 			for(Record record : recordList) {
 				// get the lineLists
@@ -892,19 +890,68 @@ public class DataVerificationDialog extends JDialog {
 				}
 				
 				
-				idAddressMap.put(record.getDfId(), combinedList);
+				allAddressMap.put(record.getDfId(), combinedList);
 				++counter;
 			}
 			
-			// add the records we have tracked
-			// if a record has been added, append to the reason like + " " + reason
-			// if the amount of records is less than 10, fill in with random records until 10 or no records left
-			// finally add to the master reason map of all lists
+			// add the records that meet our requirements
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, firstRecordId, reason.FIRST_RECORD.getName());
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, lastRecordId, reason.LAST_RECORD.getName());
 			
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, minLinesId, reason.MIN_LINES.getName());
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, maxLinesId, reason.MAX_LINES.getName());
+			
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, shortestAddressId, reason.SHORTEST_ADDRESS.getName());
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, longestAddressId, reason.LONGEST_ADDRESS.getName());
+			
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, shortestNameId, reason.SHORTEST_NAME.getName());
+			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, longestNameId, reason.LONGEST_NAME.getName());
+			
+			// add as many random records as we can to hit 10 records
+			if(finalAddressMap.size() < 10) {
+				for(Record record : recordList) {
+					if(finalAddressMap.putIfAbsent(record.getDfId(), allAddressMap.get(record.getDfId())) == null) // key was NOT present, thus was added and returns null
+						finalReasonMap.put(record.getDfId(), reason.RANDOM.getName());
+					if(finalAddressMap.size() == 10)
+						break;
+				}
+			}
+			
+			
+			// finally generate the files and reports
+			// Ask the user to save a name prior to processing data
+			// lets just start by creating the reports
+			
+			File dvReportFile = new File("DV_" + fileNum + ".txt");
+			StringBuffer dvReport = new StringBuffer();
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(" Details").append("\n");
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Job Number", "x")).append("\n");
+
+		} // End of list loop
+	}
+	
+	
+	private void processRecordToReasonMap(
+			LinkedHashMap<Integer, ArrayList<String>> finalAddressMap,
+			HashMap<Integer, String> finalReasonMap,
+			HashMap<Integer, ArrayList<String>> allAddressMap,
+			int recordId,
+			String reasonValue
+			) {
+		
+		if(recordId > MIN_RECORD_ID && !finalAddressMap.containsKey(recordId)) {
+			finalAddressMap.put(recordId, allAddressMap.get(recordId));
+			finalReasonMap.put(recordId, reasonValue);
+		} else if(recordId > MIN_RECORD_ID) {
+			String recordReason = finalReasonMap.get(recordId) + " / " + reasonValue;
+			finalReasonMap.put(recordId, recordReason);
 		}
 	}
 	
-	String getValueFromFieldName(Record record, String fieldValueToGet, HashMap<String, Integer> nonDfFieldIndexes) {
+	
+	private String getValueFromFieldName(Record record, String fieldValueToGet, HashMap<String, Integer> nonDfFieldIndexes) {
 		if(nonDfFieldIndexes.containsKey(fieldValueToGet))
 			return record.getDfInData()[nonDfFieldIndexes.get(fieldValueToGet)];
 		

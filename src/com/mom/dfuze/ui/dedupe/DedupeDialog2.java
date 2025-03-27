@@ -1591,7 +1591,8 @@ public class DedupeDialog2 extends JDialog {
 						if (primaryStreetNames.contains(str))
 							newDupeAplha2 = newDupeAplha2.replaceAll(str, ""); 
 
-					}  
+					}
+				
 				record.setDupeMetaStreetAdd1(newDupeAplha1.replaceAll("s(?=\\s|$)", "").replaceAll("[^a-zA-Z0-9]", "").replaceAll("[aeiouyv]", "").replaceAll("(.)\\1+", "$1"));
 				record.setDupeMetaStreetAdd2(newDupeAplha2.replaceAll("s(?=\\s|$)", "").replaceAll("[^a-zA-Z0-9]", "").replaceAll("[aeiouyv]", "").replaceAll("(.)\\1+", "$1"));
 				
@@ -1672,6 +1673,8 @@ public class DedupeDialog2 extends JDialog {
 					record.setDupeMetaStreetAdd2(Common.rightPad(record.getDupeMetaStreetAdd2(), 15, 'X')); 
 				
 				//System.out.println(record.getDupeAdd1());
+				//System.out.println(newDupeAplha1);
+				//System.out.println(newDupeAplha2);
 				//System.out.println(record.getDupeMetaStreetAdd1());
 				//System.out.println();
 			} 

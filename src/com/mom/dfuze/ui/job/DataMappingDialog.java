@@ -662,6 +662,14 @@ public class DataMappingDialog extends JDialog {
 			labelName = "EMAIL";
 		else if (field.equals(UserData.fieldName.STORE_ID.getName()))
 			labelName = "STORE ID";
+		else if (field.equals(UserData.fieldName.DATE_FROM.getName()))
+			labelName = "DATE FROM";
+		else if (field.equals(UserData.fieldName.DATE_TO.getName()))
+			labelName = "DATE TO";
+		else if (field.equals(UserData.fieldName.TIME_FROM.getName()))
+			labelName = "TIME FROM";
+		else if (field.equals(UserData.fieldName.TIME_TO.getName()))
+			labelName = "TIME TO";
 		else if (field.equals(UserData.fieldName.PREFIX.getName()))
 			labelName = "PREFIX";
 		else if (field.equals(UserData.fieldName.SUFFIX.getName()))
@@ -1245,6 +1253,14 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setEmailIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.STORE_ID.getName()))
 					UiController.getUserData().setStoreIdIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.DATE_FROM.getName()))
+					UiController.getUserData().setDateFromIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.DATE_TO.getName()))
+					UiController.getUserData().setDateToIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.TIME_FROM.getName()))
+					UiController.getUserData().setTimeFromIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.TIME_TO.getName()))
+					UiController.getUserData().setTimeToIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.PREFIX.getName()))
 					UiController.getUserData().setPrefixIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.SUFFIX.getName()))

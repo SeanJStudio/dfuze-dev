@@ -77,6 +77,10 @@ public class UserData {
 	private int mobilePhoneIndex = DEFAULT_INDEX; // mobilePhone
 	private int emailIndex = DEFAULT_INDEX; // email
 	private int storeIdIndex = DEFAULT_INDEX; // store id
+	private int dateFromIndex = DEFAULT_INDEX;
+	private int dateToIndex = DEFAULT_INDEX;
+	private int timeFromIndex = DEFAULT_INDEX;
+	private int timeToIndex = DEFAULT_INDEX;
 
 	// Name and address members
 	private int prefixIndex = DEFAULT_INDEX; // ex. Mr.
@@ -113,6 +117,15 @@ public class UserData {
 	private int provIndex = DEFAULT_INDEX; // province
 	private int pCodeIndex = DEFAULT_INDEX; // postal code
 	private int cntryIndex = DEFAULT_INDEX; // country
+	private int streetNumIndex = DEFAULT_INDEX;
+	private int streetDirIndex = DEFAULT_INDEX;
+	private int streetNamIndex = DEFAULT_INDEX;
+	private int streetDefIndex = DEFAULT_INDEX;
+	private int aptNumIndex = DEFAULT_INDEX;
+	private int serviceAddIndex = DEFAULT_INDEX;
+	private int serviceCityIndex = DEFAULT_INDEX;
+	private int poBoxIndex = DEFAULT_INDEX;
+	private int careOfIndex = DEFAULT_INDEX;
 	private int ncoaIndex = DEFAULT_INDEX; // ncoa
 	private int dnmIndex = DEFAULT_INDEX; // dnm
 	private int deceasedIndex = DEFAULT_INDEX; // deceased
@@ -229,6 +242,10 @@ public class UserData {
 		MOBILE_PHONE("dfMobile"),
 		EMAIL("dfEmail"),
 		STORE_ID("dfStoreId"),
+		DATE_FROM("dfDateFrom"),
+		DATE_TO("dfDateTo"),
+		TIME_FROM("dfTimeFrom"),
+		TIME_TO("dfTimeTo"),
 
 		// Name and address members
 		PREFIX("dfPrefix"), // ex. Mr.
@@ -265,6 +282,15 @@ public class UserData {
 		PROVINCE("dfProv"), // province
 		POSTALCODE("dfPCode"), // postal code
 		COUNTRY("dfCntry"), // country
+		STREET_NUMBER("dfStreetNum"),
+		STREET_DIRECTION("dfStreetDir"),
+		STREET_NAME("dfStreetNam"),
+		STREET_DEFINER("dfStreetDef"),
+		APARTMENT_NUMBER("dfAptNum"),
+		SERVICE_ADDRESS("dfServiceAdd"),
+		SERVICE_CITY("dfServiceCity"),
+		PO_BOX("dfPoBox"),
+		CARE_OF("dfCareOf"),
 		NCOA("dfNcoa"), // ncoa
 		DNM("dfDnm"), // do not mail
 		DECEASED("dfDeceased"), // deceased
@@ -388,6 +414,10 @@ public class UserData {
 			fieldName.MOBILE_PHONE.getName(),
 			fieldName.EMAIL.getName(),
 			fieldName.STORE_ID.getName(),
+			fieldName.DATE_FROM.getName(),
+			fieldName.DATE_TO.getName(),
+			fieldName.TIME_FROM.getName(),
+			fieldName.TIME_TO.getName(),
 			
 			fieldName.PREFIX.getName(),
 			fieldName.SUFFIX.getName(),
@@ -422,6 +452,15 @@ public class UserData {
 			fieldName.PROVINCE.getName(),
 			fieldName.POSTALCODE.getName(),
 			fieldName.COUNTRY.getName(),
+			fieldName.STREET_NUMBER.getName(),
+			fieldName.STREET_DIRECTION.getName(),
+			fieldName.STREET_NAME.getName(),
+			fieldName.STREET_DEFINER.getName(),
+			fieldName.APARTMENT_NUMBER.getName(),
+			fieldName.SERVICE_ADDRESS.getName(),
+			fieldName.SERVICE_CITY.getName(),
+			fieldName.PO_BOX.getName(),
+			fieldName.CARE_OF.getName(),
 			fieldName.NCOA.getName(),
 			fieldName.DNM.getName(),
 			fieldName.DECEASED.getName(),
@@ -665,6 +704,22 @@ public class UserData {
 	public int getStoreIdIndex() {
 		return storeIdIndex;
 	}
+	
+	public int getDateFromIndex() {
+		return dateFromIndex;
+	}
+	
+	public int getDateToIndex() {
+		return dateToIndex;
+	}
+	
+	public int getTimeFromIndex() {
+		return timeFromIndex;
+	}
+	
+	public int getTimeToIndex() {
+		return timeToIndex;
+	}
 
 	public int getPrefixIndex() {
 		return prefixIndex;
@@ -792,6 +847,42 @@ public class UserData {
 
 	public int getCntryIndex() {
 		return cntryIndex;
+	}
+	
+	public int getStreetNumIndex() {
+		return streetNumIndex;
+	}
+	
+	public int getStreetDirIndex() {
+		return streetDirIndex;
+	}
+	
+	public int getStreetNamIndex() {
+		return streetNamIndex;
+	}
+	
+	public int getStreetDefIndex() {
+		return streetDefIndex;
+	}
+	
+	public int getAptNumIndex() {
+		return aptNumIndex;
+	}
+	
+	public int getServiceAddIndex() {
+		return serviceAddIndex;
+	}
+	
+	public int getServiceCityIndex() {
+		return serviceCityIndex;
+	}
+	
+	public int getPoBoxIndex() {
+		return poBoxIndex;
+	}
+	
+	public int getCareOfIndex() {
+		return careOfIndex;
 	}
 	
 	public int getNcoaIndex() {
@@ -1182,6 +1273,22 @@ public class UserData {
 	public void setStoreIdIndex(int storeIdIndex) {
 		this.storeIdIndex = storeIdIndex;
 	}
+	
+	public void setDateFromIndex(int dateFromIndex) {
+		this.dateFromIndex = dateFromIndex;
+	}
+	
+	public void setDateToIndex(int dateToIndex) {
+		this.dateToIndex = dateToIndex;
+	}
+	
+	public void setTimeFromIndex(int timeFromIndex) {
+		this.timeFromIndex = timeFromIndex;
+	}
+	
+	public void setTimeToIndex(int timeToIndex) {
+		this.timeToIndex = timeToIndex;
+	}
 
 	public void setPrefixIndex(int prefixIndex) {
 		this.prefixIndex = prefixIndex;
@@ -1309,6 +1416,42 @@ public class UserData {
 
 	public void setCntryIndex(int cntryIndex) {
 		this.cntryIndex = cntryIndex;
+	}
+	
+	public void setStreetNumIndex(int streetNumIndex) {
+		this.streetNumIndex = streetNumIndex;
+	}
+	
+	public void setStreetDirIndex(int streetDirIndex) {
+		this.streetDirIndex = streetDirIndex;
+	}
+	
+	public void setStreetNamIndex(int streetNamIndex) {
+		this.streetNamIndex = streetNamIndex;
+	}
+	
+	public void setStreetDefIndex(int streetDefIndex) {
+		this.streetDefIndex = streetDefIndex;
+	}
+	
+	public void setAptNumIndex(int aptNumIndex) {
+		this.aptNumIndex = aptNumIndex;
+	}
+	
+	public void setServiceAddIndex(int serviceAddIndex) {
+		this.serviceAddIndex = serviceAddIndex;
+	}
+	
+	public void setServiceCityIndex(int serviceCityIndex) {
+		this.serviceCityIndex = serviceCityIndex;
+	}
+	
+	public void setPoBoxIndex(int poBoxIndex) {
+		this.poBoxIndex = poBoxIndex;
+	}
+	
+	public void setCareOfIndex(int careOfIndex) {
+		this.careOfIndex = careOfIndex;
 	}
 	
 	public void setNcoaIndex(int ncoaIndex) {
@@ -1796,6 +1939,14 @@ public class UserData {
 			return record.getEmail();
 		else if (fieldToGet.equals(fieldName.STORE_ID.getName()))
 			return record.getStoreId();
+		else if (fieldToGet.equals(fieldName.DATE_FROM.getName()))
+			return record.getDateFrom();
+		else if (fieldToGet.equals(fieldName.DATE_TO.getName()))
+			return record.getDateTo();
+		else if (fieldToGet.equals(fieldName.TIME_FROM.getName()))
+			return record.getTimeFrom();
+		else if (fieldToGet.equals(fieldName.TIME_TO.getName()))
+			return record.getTimeTo();
 		else if (fieldToGet.equals(fieldName.PREFIX.getName()))
 			return record.getPrefix();
 		else if (fieldToGet.equals(fieldName.SUFFIX.getName()))
@@ -1860,6 +2011,27 @@ public class UserData {
 			return record.getPCode();
 		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
 			return record.getCntry();
+		
+		else if (fieldToGet.equals(fieldName.STREET_NUMBER.getName()))
+			return record.getStreetNum();
+		else if (fieldToGet.equals(fieldName.STREET_DIRECTION.getName()))
+			return record.getCntry();
+		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
+			return record.getCntry();
+		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
+			return record.getCntry();
+		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
+			return record.getCntry();
+		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
+			return record.getCntry();
+		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
+			return record.getCntry();
+		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
+			return record.getCntry();
+		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
+			return record.getCntry();
+		
+		
 		else if (fieldToGet.equals(fieldName.NCOA.getName()))
 			return record.getNcoa();
 		else if (fieldToGet.equals(fieldName.DNM.getName()))
@@ -2063,6 +2235,14 @@ public class UserData {
 			record.setEmail(valueToSet);
 		else if (fieldToSet.equals(fieldName.STORE_ID.getName()))
 			record.setStoreId(valueToSet);
+		else if (fieldToSet.equals(fieldName.DATE_FROM.getName()))
+			record.setDateFrom(valueToSet);
+		else if (fieldToSet.equals(fieldName.DATE_TO.getName()))
+			record.setDateTo(valueToSet);
+		else if (fieldToSet.equals(fieldName.TIME_FROM.getName()))
+			record.setTimeFrom(valueToSet);
+		else if (fieldToSet.equals(fieldName.TIME_TO.getName()))
+			record.setTimeTo(valueToSet);
 		else if (fieldToSet.equals(fieldName.PREFIX.getName()))
 			record.setPrefix(valueToSet);
 		else if (fieldToSet.equals(fieldName.SUFFIX.getName()))
@@ -2330,6 +2510,14 @@ public class UserData {
 			record.setEmail(inData[emailIndex]);
 		else if (fieldToSet.equals(fieldName.STORE_ID.getName()))
 			record.setStoreId(inData[storeIdIndex]);
+		else if (fieldToSet.equals(fieldName.DATE_FROM.getName()))
+			record.setDateFrom(inData[dateFromIndex]);
+		else if (fieldToSet.equals(fieldName.DATE_TO.getName()))
+			record.setDateTo(inData[dateToIndex]);
+		else if (fieldToSet.equals(fieldName.TIME_FROM.getName()))
+			record.setTimeFrom(inData[timeFromIndex]);
+		else if (fieldToSet.equals(fieldName.TIME_TO.getName()))
+			record.setTimeTo(inData[timeToIndex]);
 		else if (fieldToSet.equals(fieldName.PREFIX.getName()))
 			record.setPrefix(inData[prefixIndex]);
 		else if (fieldToSet.equals(fieldName.SUFFIX.getName()))

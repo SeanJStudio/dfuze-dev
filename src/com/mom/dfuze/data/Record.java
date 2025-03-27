@@ -67,6 +67,10 @@ public class Record {
   private String mobilePhone; // mobile phone
   private String email; // email
   private String storeId; // store id
+  private String dateFrom;
+  private String dateTo;
+  private String timeFrom;
+  private String timeTo;
 
   // Name and address members
   private String prefix; // ex. Mr.
@@ -103,6 +107,15 @@ public class Record {
   private String prov; // province
   private String pCode; // postal code
   private String cntry; // country
+  private String streetNum;
+  private String streetDir;
+  private String streetNam;
+  private String streetDef;
+  private String aptNum;
+  private String serviceAdd;
+  private String serviceCity;
+  private String poBox;
+  private String careOf;
   private String ncoa; // national change of address
   private String dnm; // do not mail
   private String deceased; // deceased
@@ -221,6 +234,10 @@ public class Record {
     mobilePhone = builder.mobilePhone;
     email = builder.email;
     storeId = builder.storeId;
+    dateFrom = builder.dateFrom;
+    dateTo = builder.dateTo;
+    timeFrom = builder.timeFrom;
+    timeTo = builder.timeTo;
 
     prefix = builder.prefix;
     suffix = builder.suffix;
@@ -256,6 +273,15 @@ public class Record {
     prov = builder.prov;
     pCode = builder.pCode;
     cntry = builder.cntry;
+    streetNum = builder.streetNum;
+    streetDir = builder.streetDir;
+    streetNam = builder.streetNam;
+    streetDef = builder.streetDef;
+    aptNum = builder.aptNum;
+    serviceAdd = builder.serviceAdd;
+    serviceCity = builder.serviceCity;
+    poBox = builder.poBox;
+    careOf = builder.careOf;
     ncoa = builder.ncoa;
     dnm = builder.dnm;
     deceased = builder.deceased;
@@ -369,6 +395,10 @@ public class Record {
     private String mobilePhone;
     private String email;
     private String storeId;
+    private String dateFrom;
+    private String dateTo;
+    private String timeFrom;
+    private String timeTo;
 
     private String prefix;
     private String suffix;
@@ -404,6 +434,15 @@ public class Record {
     private String prov;
     private String pCode;
     private String cntry;
+    private String streetNum;
+    private String streetDir;
+    private String streetNam;
+    private String streetDef;
+    private String aptNum;
+    private String serviceAdd;
+    private String serviceCity;
+    private String poBox;
+    private String careOf;
     private String ncoa;
     private String dnm;
     private String deceased;
@@ -706,6 +745,26 @@ public class Record {
     	this.storeId = storeId;
     	return this;
     }
+    
+    public Builder setDateFrom(String dateFrom) {
+    	this.dateFrom = dateFrom;
+    	return this;
+    }
+    
+    public Builder setDateTo(String dateTo) {
+    	this.dateTo = dateTo;
+    	return this;
+    }
+    
+    public Builder setTimeFrom(String timeFrom) {
+    	this.timeFrom = timeFrom;
+    	return this;
+    }
+    
+    public Builder setTimeTo(String timeTo) {
+    	this.timeTo = timeTo;
+    	return this;
+    }
 
     public Builder setPrefix(String prefix) {
       this.prefix = prefix;
@@ -863,10 +922,55 @@ public class Record {
       return this;
     }
     
-    public Builder setCntry(String cntry) {
-        this.cntry = cntry;
-        return this;
-      }
+	public Builder setCntry(String cntry) {
+    	this.cntry = cntry;
+    	return this;
+    }
+	
+	public Builder setStreetNum(String streetNum) {
+    	this.streetNum = streetNum;
+    	return this;
+    }
+	
+	public Builder setStreetDir(String streetDir) {
+    	this.streetDir = streetDir;
+    	return this;
+    }
+	
+	public Builder setStreetNam(String streetNam) {
+    	this.streetNam = streetNam;
+    	return this;
+    }
+	
+	public Builder setStreetDef(String streetDef) {
+    	this.streetDef = streetDef;
+    	return this;
+    }
+	
+	public Builder setAptNum(String aptNum) {
+    	this.aptNum = aptNum;
+    	return this;
+    }
+	
+	public Builder setServiceAdd(String serviceAdd) {
+    	this.serviceAdd = serviceAdd;
+    	return this;
+    }
+	
+	public Builder setServiceCity(String serviceCity) {
+    	this.serviceCity = serviceCity;
+    	return this;
+    }
+	
+	public Builder setPoBox(String poBox) {
+    	this.poBox = poBox;
+    	return this;
+    }
+	
+	public Builder setCareOf(String careOf) {
+    	this.careOf = careOf;
+    	return this;
+    }
 
     public Builder setNcoa(String ncoa) {
       this.ncoa = ncoa;
@@ -1320,6 +1424,22 @@ public class Record {
   public String getStoreId() {
 	  return storeId;
   }
+  
+  public String getDateFrom() {
+	  return dateFrom;
+  }
+  
+  public String getDateTo() {
+	  return dateTo;
+  }
+  
+  public String getTimeFrom() {
+	  return timeFrom;
+  }
+  
+  public String getTimeTo() {
+	  return timeTo;
+  }
 
   public String getPrefix() {
     return prefix;
@@ -1445,9 +1565,45 @@ public class Record {
     return pCode;
   }
 
-  public String getCntry() {
-    return cntry;
-  }
+	public String getCntry() {
+		return cntry;
+	}
+	
+	public String getStreetNum() {
+		return streetNum;
+	}
+	
+	public String getStreetDir() {
+		return streetDir;
+	}
+	
+	public String getStreetNam() {
+		return streetNam;
+	}
+	
+	public String getStreetDef() {
+		return streetDef;
+	}
+	
+	public String getAptNum() {
+		return aptNum;
+	}
+	
+	public String getServiceAdd() {
+		return serviceAdd;
+	}
+	
+	public String getServiceCity() {
+		return serviceCity;
+	}
+	
+	public String getPoBox() {
+		return poBox;
+	}
+	
+	public String getCareOf() {
+		return careOf;
+	}
   
   public String getNcoa() {
 	    return ncoa;
@@ -1844,6 +2000,22 @@ public class Record {
   public void setStoreId(String storeId) {
 	  this.storeId = storeId;
   }
+  
+  public void setDateFrom(String dateFrom) {
+	  this.dateFrom = dateFrom;
+  }
+  
+  public void setDateTo(String dateTo) {
+	  this.dateTo = dateTo;
+  }
+  
+  public void setTimeFrom(String timeFrom) {
+	  this.timeFrom = timeFrom;
+  }
+  
+  public void setTimeTo(String timeTo) {
+	  this.timeTo = timeTo;
+  }
 
   public void setPrefix(String prefix) {
     this.prefix = prefix;
@@ -1970,7 +2142,43 @@ public class Record {
   }
 
   public void setCntry(String cntry) {
-    this.cntry = cntry;
+	  this.cntry = cntry;
+  }
+  
+  public void setStreetNum(String streetNum) {
+	  this.streetNum = streetNum;
+  }
+  
+  public void setStreetDir(String streetDir) {
+	  this.streetDir = streetDir;
+  }
+  
+  public void setStreetNam(String streetNam) {
+	  this.streetNam = streetNam;
+  }
+  
+  public void setStreetDef(String streetDef) {
+	  this.streetDef = streetDef;
+  }
+  
+  public void setAptNum(String aptNum) {
+	  this.aptNum = aptNum;
+  }
+  
+  public void setServiceAdd(String serviceAdd) {
+	  this.serviceAdd = serviceAdd;
+  }
+  
+  public void setServiceCity(String serviceCity) {
+	  this.serviceCity = serviceCity;
+  }
+  
+  public void setPoBox(String poBox) {
+	  this.poBox = poBox;
+  }
+  
+  public void setCareOf(String careOf) {
+	  this.careOf = careOf;
   }
   
   public void setNcoa(String ncoa) {
