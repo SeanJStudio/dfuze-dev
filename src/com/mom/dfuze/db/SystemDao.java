@@ -17,6 +17,7 @@ import com.mom.dfuze.data.JobSorters;
 import com.mom.dfuze.data.jobs.abcprinting.ABCPrintingJob;
 import com.mom.dfuze.data.jobs.bcaa.BCAAJob;
 import com.mom.dfuze.data.jobs.bccancerfoundation.BCCancerFoundationJob;
+import com.mom.dfuze.data.jobs.bchydro.BCHydroJob;
 import com.mom.dfuze.data.jobs.belairinsurancecompany.BelairInsuranceCompanyJob;
 import com.mom.dfuze.data.jobs.calgarydreamcentre.CalgaryDreamCentreJob;
 import com.mom.dfuze.data.jobs.canadianceliacassociation.CanadianCeliacAssociationJob;
@@ -81,6 +82,8 @@ public class SystemDao {
 		  // new BCAAJob(new com.mom.dfuze.data.jobs.bcaa.PotSweetner()),
 		  
 		  new BCCancerFoundationJob(new com.mom.dfuze.data.jobs.bccancerfoundation.RegularProcess()),
+		  
+		  new BCHydroJob(new com.mom.dfuze.data.jobs.bchydro.PON()),
 		  
 		  //C
 		  new CalgaryDreamCentreJob(new com.mom.dfuze.data.jobs.calgarydreamcentre.RegularProcess()),

@@ -670,6 +670,12 @@ public class DataMappingDialog extends JDialog {
 			labelName = "TIME FROM";
 		else if (field.equals(UserData.fieldName.TIME_TO.getName()))
 			labelName = "TIME TO";
+		else if (field.equals(UserData.fieldName.REFERENCE.getName()))
+			labelName = "REFERENCE";
+		else if (field.equals(UserData.fieldName.MISC1.getName()))
+			labelName = "MISC 1";
+		else if (field.equals(UserData.fieldName.MISC2.getName()))
+			labelName = "MISC 2";
 		else if (field.equals(UserData.fieldName.PREFIX.getName()))
 			labelName = "PREFIX";
 		else if (field.equals(UserData.fieldName.SUFFIX.getName()))
@@ -734,6 +740,24 @@ public class DataMappingDialog extends JDialog {
 			labelName = "PCODE";
 		else if (field.equals(UserData.fieldName.COUNTRY.getName()))
 			labelName = "COUNTRY";
+		else if (field.equals(UserData.fieldName.STREET_NUMBER.getName()))
+			labelName = "STREET NUMBER";
+		else if (field.equals(UserData.fieldName.STREET_DIRECTION.getName()))
+			labelName = "STREET DIRECTION";
+		else if (field.equals(UserData.fieldName.STREET_NAME.getName()))
+			labelName = "STREET NAME";
+		else if (field.equals(UserData.fieldName.STREET_DEFINER.getName()))
+			labelName = "STREET DEFINER";
+		else if (field.equals(UserData.fieldName.APARTMENT_NUMBER.getName()))
+			labelName = "APARTMENT NUMBER";
+		else if (field.equals(UserData.fieldName.SERVICE_ADDRESS.getName()))
+			labelName = "SERVICE ADDRESS";
+		else if (field.equals(UserData.fieldName.SERVICE_CITY.getName()))
+			labelName = "SERVICE CITY";
+		else if (field.equals(UserData.fieldName.PO_BOX.getName()))
+			labelName = "PO BOX";
+		else if (field.equals(UserData.fieldName.CARE_OF.getName()))
+			labelName = "CARE OF";
 		else if (field.equals(UserData.fieldName.NCOA.getName()))
 			labelName = "NCOA";
 		else if (field.equals(UserData.fieldName.DNM.getName()))
@@ -1261,6 +1285,12 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setTimeFromIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.TIME_TO.getName()))
 					UiController.getUserData().setTimeToIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.REFERENCE.getName()))
+					UiController.getUserData().setRefIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.MISC1.getName()))
+					UiController.getUserData().setMisc1Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.MISC2.getName()))
+					UiController.getUserData().setMisc2Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.PREFIX.getName()))
 					UiController.getUserData().setPrefixIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.SUFFIX.getName()))
@@ -1325,6 +1355,24 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setPCodeIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.COUNTRY.getName()))
 					UiController.getUserData().setCntryIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.STREET_NUMBER.getName()))
+					UiController.getUserData().setStreetNumIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.STREET_DIRECTION.getName()))
+					UiController.getUserData().setStreetDirIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.STREET_NAME.getName()))
+					UiController.getUserData().setStreetNamIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.STREET_DEFINER.getName()))
+					UiController.getUserData().setStreetDefIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.APARTMENT_NUMBER.getName()))
+					UiController.getUserData().setAptNumIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.SERVICE_ADDRESS.getName()))
+					UiController.getUserData().setServiceAddIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.SERVICE_CITY.getName()))
+					UiController.getUserData().setServiceCityIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.PO_BOX.getName()))
+					UiController.getUserData().setPoBoxIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.CARE_OF.getName()))
+					UiController.getUserData().setCareOfIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.NCOA.getName()))
 					UiController.getUserData().setNcoaIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.DNM.getName()))

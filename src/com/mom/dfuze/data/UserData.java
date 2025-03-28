@@ -81,6 +81,9 @@ public class UserData {
 	private int dateToIndex = DEFAULT_INDEX;
 	private int timeFromIndex = DEFAULT_INDEX;
 	private int timeToIndex = DEFAULT_INDEX;
+	private int refIndex = DEFAULT_INDEX;
+	private int misc1Index = DEFAULT_INDEX;
+	private int misc2Index = DEFAULT_INDEX;
 
 	// Name and address members
 	private int prefixIndex = DEFAULT_INDEX; // ex. Mr.
@@ -246,6 +249,9 @@ public class UserData {
 		DATE_TO("dfDateTo"),
 		TIME_FROM("dfTimeFrom"),
 		TIME_TO("dfTimeTo"),
+		REFERENCE("dfRef"),
+		MISC1("dfMisc1"),
+		MISC2("dfMisc2"),
 
 		// Name and address members
 		PREFIX("dfPrefix"), // ex. Mr.
@@ -418,6 +424,9 @@ public class UserData {
 			fieldName.DATE_TO.getName(),
 			fieldName.TIME_FROM.getName(),
 			fieldName.TIME_TO.getName(),
+			fieldName.REFERENCE.getName(),
+			fieldName.MISC1.getName(),
+			fieldName.MISC2.getName(),
 			
 			fieldName.PREFIX.getName(),
 			fieldName.SUFFIX.getName(),
@@ -715,6 +724,18 @@ public class UserData {
 	
 	public int getTimeFromIndex() {
 		return timeFromIndex;
+	}
+	
+	public int getRefIndex() {
+		return refIndex;
+	}
+	
+	public int getMisc1Index() {
+		return misc1Index;
+	}
+	
+	public int getMisc2Index() {
+		return misc2Index;
 	}
 	
 	public int getTimeToIndex() {
@@ -1288,6 +1309,18 @@ public class UserData {
 	
 	public void setTimeToIndex(int timeToIndex) {
 		this.timeToIndex = timeToIndex;
+	}
+	
+	public void setRefIndex(int refIndex) {
+		this.refIndex = refIndex;
+	}
+	
+	public void setMisc1Index(int misc1Index) {
+		this.misc1Index = misc1Index;
+	}
+	
+	public void setMisc2Index(int misc2Index) {
+		this.misc2Index = misc2Index;
 	}
 
 	public void setPrefixIndex(int prefixIndex) {
@@ -1947,6 +1980,12 @@ public class UserData {
 			return record.getTimeFrom();
 		else if (fieldToGet.equals(fieldName.TIME_TO.getName()))
 			return record.getTimeTo();
+		else if (fieldToGet.equals(fieldName.REFERENCE.getName()))
+			return record.getRef();
+		else if (fieldToGet.equals(fieldName.MISC1.getName()))
+			return record.getMisc1();
+		else if (fieldToGet.equals(fieldName.MISC2.getName()))
+			return record.getMisc2();
 		else if (fieldToGet.equals(fieldName.PREFIX.getName()))
 			return record.getPrefix();
 		else if (fieldToGet.equals(fieldName.SUFFIX.getName()))
@@ -2011,27 +2050,24 @@ public class UserData {
 			return record.getPCode();
 		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
 			return record.getCntry();
-		
 		else if (fieldToGet.equals(fieldName.STREET_NUMBER.getName()))
 			return record.getStreetNum();
 		else if (fieldToGet.equals(fieldName.STREET_DIRECTION.getName()))
-			return record.getCntry();
-		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
-			return record.getCntry();
-		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
-			return record.getCntry();
-		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
-			return record.getCntry();
-		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
-			return record.getCntry();
-		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
-			return record.getCntry();
-		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
-			return record.getCntry();
-		else if (fieldToGet.equals(fieldName.COUNTRY.getName()))
-			return record.getCntry();
-		
-		
+			return record.getStreetDir();
+		else if (fieldToGet.equals(fieldName.STREET_NAME.getName()))
+			return record.getStreetNam();
+		else if (fieldToGet.equals(fieldName.STREET_DEFINER.getName()))
+			return record.getStreetDef();
+		else if (fieldToGet.equals(fieldName.APARTMENT_NUMBER.getName()))
+			return record.getAptNum();
+		else if (fieldToGet.equals(fieldName.SERVICE_ADDRESS.getName()))
+			return record.getServiceAdd();
+		else if (fieldToGet.equals(fieldName.SERVICE_CITY.getName()))
+			return record.getServiceCity();
+		else if (fieldToGet.equals(fieldName.PO_BOX.getName()))
+			return record.getPoBox();
+		else if (fieldToGet.equals(fieldName.CARE_OF.getName()))
+			return record.getCareOf();
 		else if (fieldToGet.equals(fieldName.NCOA.getName()))
 			return record.getNcoa();
 		else if (fieldToGet.equals(fieldName.DNM.getName()))
@@ -2243,6 +2279,12 @@ public class UserData {
 			record.setTimeFrom(valueToSet);
 		else if (fieldToSet.equals(fieldName.TIME_TO.getName()))
 			record.setTimeTo(valueToSet);
+		else if (fieldToSet.equals(fieldName.REFERENCE.getName()))
+			record.setRef(valueToSet);
+		else if (fieldToSet.equals(fieldName.MISC1.getName()))
+			record.setMisc1(valueToSet);
+		else if (fieldToSet.equals(fieldName.MISC2.getName()))
+			record.setMisc2(valueToSet);
 		else if (fieldToSet.equals(fieldName.PREFIX.getName()))
 			record.setPrefix(valueToSet);
 		else if (fieldToSet.equals(fieldName.SUFFIX.getName()))
@@ -2307,6 +2349,24 @@ public class UserData {
 			record.setPCode(valueToSet);
 		else if (fieldToSet.equals(fieldName.COUNTRY.getName()))
 			record.setCntry(valueToSet);
+		else if (fieldToSet.equals(fieldName.STREET_NUMBER.getName()))
+			record.setStreetNum(valueToSet);
+		else if (fieldToSet.equals(fieldName.STREET_DIRECTION.getName()))
+			record.setStreetDir(valueToSet);
+		else if (fieldToSet.equals(fieldName.STREET_NAME.getName()))
+			record.setStreetNam(valueToSet);
+		else if (fieldToSet.equals(fieldName.STREET_DEFINER.getName()))
+			record.setStreetDef(valueToSet);
+		else if (fieldToSet.equals(fieldName.APARTMENT_NUMBER.getName()))
+			record.setAptNum(valueToSet);
+		else if (fieldToSet.equals(fieldName.SERVICE_ADDRESS.getName()))
+			record.setServiceAdd(valueToSet);
+		else if (fieldToSet.equals(fieldName.SERVICE_CITY.getName()))
+			record.setServiceCity(valueToSet);
+		else if (fieldToSet.equals(fieldName.PO_BOX.getName()))
+			record.setPoBox(valueToSet);
+		else if (fieldToSet.equals(fieldName.CARE_OF.getName()))
+			record.setCareOf(valueToSet);
 		else if (fieldToSet.equals(fieldName.NCOA.getName()))
 			record.setNcoa(valueToSet);
 		else if (fieldToSet.equals(fieldName.DNM.getName()))
@@ -2518,6 +2578,12 @@ public class UserData {
 			record.setTimeFrom(inData[timeFromIndex]);
 		else if (fieldToSet.equals(fieldName.TIME_TO.getName()))
 			record.setTimeTo(inData[timeToIndex]);
+		else if (fieldToSet.equals(fieldName.REFERENCE.getName()))
+			record.setRef(inData[refIndex]);
+		else if (fieldToSet.equals(fieldName.MISC1.getName()))
+			record.setMisc1(inData[misc1Index]);
+		else if (fieldToSet.equals(fieldName.MISC2.getName()))
+			record.setMisc2(inData[misc2Index]);
 		else if (fieldToSet.equals(fieldName.PREFIX.getName()))
 			record.setPrefix(inData[prefixIndex]);
 		else if (fieldToSet.equals(fieldName.SUFFIX.getName()))
@@ -2582,6 +2648,24 @@ public class UserData {
 			record.setPCode(inData[pCodeIndex]);
 		else if (fieldToSet.equals(fieldName.COUNTRY.getName()))
 			record.setCntry(inData[cntryIndex]);
+		else if (fieldToSet.equals(fieldName.STREET_NUMBER.getName()))
+			record.setStreetNum(inData[streetNumIndex]);
+		else if (fieldToSet.equals(fieldName.STREET_DIRECTION.getName()))
+			record.setStreetDir(inData[streetDirIndex]);
+		else if (fieldToSet.equals(fieldName.STREET_NAME.getName()))
+			record.setStreetNam(inData[streetNamIndex]);
+		else if (fieldToSet.equals(fieldName.STREET_DEFINER.getName()))
+			record.setStreetDef(inData[streetDefIndex]);
+		else if (fieldToSet.equals(fieldName.APARTMENT_NUMBER.getName()))
+			record.setAptNum(inData[aptNumIndex]);
+		else if (fieldToSet.equals(fieldName.SERVICE_ADDRESS.getName()))
+			record.setServiceAdd(inData[serviceAddIndex]);
+		else if (fieldToSet.equals(fieldName.SERVICE_CITY.getName()))
+			record.setServiceCity(inData[serviceCityIndex]);
+		else if (fieldToSet.equals(fieldName.PO_BOX.getName()))
+			record.setPoBox(inData[poBoxIndex]);
+		else if (fieldToSet.equals(fieldName.CARE_OF.getName()))
+			record.setCareOf(inData[careOfIndex]);
 		else if (fieldToSet.equals(fieldName.NCOA.getName()))
 			record.setNcoa(inData[ncoaIndex]);
 		else if (fieldToSet.equals(fieldName.DNM.getName()))
