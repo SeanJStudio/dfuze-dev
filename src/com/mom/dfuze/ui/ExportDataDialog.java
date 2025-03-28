@@ -216,9 +216,10 @@ public class ExportDataDialog extends JDialog {
 		contentPanel.add(btnExportData, "cell 5 11 3 1,grow");
 
 		btnExportData.addActionListener(new ExportDataButtonHandler());
-		
+				
 		pack();
 	    setLocationRelativeTo(frame);
+	    btnExportData.requestFocusInWindow();
 	}
 
 

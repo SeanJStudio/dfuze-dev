@@ -9,11 +9,11 @@ package com.mom.dfuze.data.jobs.bchydro;
 import com.mom.dfuze.data.RunBehavior;
 
 /**
- * RunGenerosityXBehavior extends the RunBehavior interface to avoid namespace issues
+ * RunBCHydroBehavior extends the RunBehavior interface to avoid namespace issues
  * 
  * @author Sean Johnson
- *         Mail-o-Matic Services Ltd
- *         Date: 07/06/2023
+ *         Datacore Mail Management
+ *         Date: 03/27/2025
  *
  */
 public interface RunBCHydroBehavior extends RunBehavior {

@@ -72,6 +72,7 @@ public class Record {
   private String timeFrom;
   private String timeTo;
   private String ref;
+  private String comments;
   private String misc1;
   private String misc2;
 
@@ -242,6 +243,7 @@ public class Record {
     timeFrom = builder.timeFrom;
     timeTo = builder.timeTo;
     ref = builder.ref;
+    comments = builder.comments;
     misc1 = builder.misc1;
     misc2 = builder.misc2;
 
@@ -406,6 +408,7 @@ public class Record {
     private String timeFrom;
     private String timeTo;
     private String ref;
+    private String comments;
     private String misc1;
     private String misc2;
 
@@ -777,6 +780,11 @@ public class Record {
     
     public Builder setRef(String ref) {
     	this.ref = ref;
+    	return this;
+    }
+    
+    public Builder setComments(String comments) {
+    	this.comments = comments;
     	return this;
     }
     
@@ -1469,6 +1477,10 @@ public class Record {
 		return ref;
 	}
 	
+	public String getComments() {
+		return comments;
+	}
+	
 	public String getMisc1() {
 		return misc1;
 	}
@@ -2057,6 +2069,10 @@ public class Record {
 		this.ref = ref;
 	}
 	
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+	
 	public void setMisc1(String misc1) {
 		this.misc1 = misc1;
 	}
@@ -2465,32 +2481,32 @@ public String toString() {
 			+ day + ", month=" + month + ", year=" + year + ", latitude=" + latitude + ", longitude=" + longitude
 			+ ", quantity=" + quantity + ", phone1=" + phone1 + ", phone2=" + phone2 + ", mobilePhone=" + mobilePhone
 			+ ", email=" + email + ", storeId=" + storeId + ", dateFrom=" + dateFrom + ", dateTo=" + dateTo
-			+ ", timeFrom=" + timeFrom + ", timeTo=" + timeTo + ", ref=" + ref + ", misc1=" + misc1 + ", misc2=" + misc2
-			+ ", prefix=" + prefix + ", suffix=" + suffix + ", fstName=" + fstName + ", midName=" + midName
-			+ ", lstName=" + lstName + ", nam1=" + nam1 + ", nam1_2=" + nam1_2 + ", nam2=" + nam2 + ", nam2_2=" + nam2_2
-			+ ", spousePrefix=" + spousePrefix + ", spouseSuffix=" + spouseSuffix + ", spouseFstName=" + spouseFstName
-			+ ", spouseMidName=" + spouseMidName + ", spouseLstName=" + spouseLstName + ", spouseNam1=" + spouseNam1
-			+ ", spouseNam2=" + spouseNam2 + ", cmpny=" + cmpny + ", cmpny_2=" + cmpny_2 + ", cmpnyCn=" + cmpnyCn
-			+ ", dearSal=" + dearSal + ", paraSal=" + paraSal + ", cmpnySal=" + cmpnySal + ", cmpnyAdd1=" + cmpnyAdd1
-			+ ", cmpnyAdd2=" + cmpnyAdd2 + ", add1=" + add1 + ", add1_2=" + add1_2 + ", add2=" + add2 + ", add2_2="
-			+ add2_2 + ", city=" + city + ", prov=" + prov + ", pCode=" + pCode + ", cntry=" + cntry + ", streetNum="
-			+ streetNum + ", streetDir=" + streetDir + ", streetNam=" + streetNam + ", streetDef=" + streetDef
-			+ ", aptNum=" + aptNum + ", serviceAdd=" + serviceAdd + ", serviceCity=" + serviceCity + ", poBox=" + poBox
-			+ ", careOf=" + careOf + ", ncoa=" + ncoa + ", dnm=" + dnm + ", deceased=" + deceased + ", dnAmtArr="
-			+ dnAmtArr + ", dnDatArr=" + dnDatArr + ", numDn=" + numDn + ", numDnLst12Mnths=" + numDnLst12Mnths
-			+ ", ttlDnAmt=" + ttlDnAmt + ", ttlDnAmtLst12Mnths=" + ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr="
-			+ ttlDnAmtCrntYr + ", ttlDnAmtLstYr=" + ttlDnAmtLstYr + ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt
-			+ ", lMDnAmt=" + lMDnAmt + ", lrgDnAmt=" + lrgDnAmt + ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat
-			+ ", lstDnDat=" + lstDnDat + ", lMDnDat=" + lMDnDat + ", penultAmt=" + penultAmt + ", penultDat="
-			+ penultDat + ", dn1Amt=" + dn1Amt + ", dn2Amt=" + dn2Amt + ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt
-			+ ", oDnAmt=" + oDnAmt + ", mDn1Amt=" + mDn1Amt + ", mDn2Amt=" + mDn2Amt + ", mDn3Amt=" + mDn3Amt
-			+ ", mDn4Amt=" + mDn4Amt + ", mODnAmt=" + mODnAmt + ", provide1=" + provide1 + ", provide2=" + provide2
-			+ ", provide3=" + provide3 + ", provide4=" + provide4 + ", priority=" + priority + ", abGroup=" + abGroup
-			+ ", appeal=" + appeal + ", seg=" + seg + ", segCode=" + segCode + ", letVer=" + letVer + ", pkgVer="
-			+ pkgVer + ", repVer=" + repVer + ", codeLine=" + codeLine + ", meanAmt=" + meanAmt + ", median=" + median
-			+ ", sDevAmt=" + sDevAmt + ", rScore=" + rScore + ", fScore=" + fScore + ", mScore=" + mScore
-			+ ", rfmScore=" + rfmScore + ", length=" + length + ", width=" + width + ", height=" + height + ", weight="
-			+ weight + "]";
+			+ ", timeFrom=" + timeFrom + ", timeTo=" + timeTo + ", ref=" + ref + ", comments=" + comments + ", misc1="
+			+ misc1 + ", misc2=" + misc2 + ", prefix=" + prefix + ", suffix=" + suffix + ", fstName=" + fstName
+			+ ", midName=" + midName + ", lstName=" + lstName + ", nam1=" + nam1 + ", nam1_2=" + nam1_2 + ", nam2="
+			+ nam2 + ", nam2_2=" + nam2_2 + ", spousePrefix=" + spousePrefix + ", spouseSuffix=" + spouseSuffix
+			+ ", spouseFstName=" + spouseFstName + ", spouseMidName=" + spouseMidName + ", spouseLstName="
+			+ spouseLstName + ", spouseNam1=" + spouseNam1 + ", spouseNam2=" + spouseNam2 + ", cmpny=" + cmpny
+			+ ", cmpny_2=" + cmpny_2 + ", cmpnyCn=" + cmpnyCn + ", dearSal=" + dearSal + ", paraSal=" + paraSal
+			+ ", cmpnySal=" + cmpnySal + ", cmpnyAdd1=" + cmpnyAdd1 + ", cmpnyAdd2=" + cmpnyAdd2 + ", add1=" + add1
+			+ ", add1_2=" + add1_2 + ", add2=" + add2 + ", add2_2=" + add2_2 + ", city=" + city + ", prov=" + prov
+			+ ", pCode=" + pCode + ", cntry=" + cntry + ", streetNum=" + streetNum + ", streetDir=" + streetDir
+			+ ", streetNam=" + streetNam + ", streetDef=" + streetDef + ", aptNum=" + aptNum + ", serviceAdd="
+			+ serviceAdd + ", serviceCity=" + serviceCity + ", poBox=" + poBox + ", careOf=" + careOf + ", ncoa=" + ncoa
+			+ ", dnm=" + dnm + ", deceased=" + deceased + ", dnAmtArr=" + dnAmtArr + ", dnDatArr=" + dnDatArr
+			+ ", numDn=" + numDn + ", numDnLst12Mnths=" + numDnLst12Mnths + ", ttlDnAmt=" + ttlDnAmt
+			+ ", ttlDnAmtLst12Mnths=" + ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr=" + ttlDnAmtCrntYr + ", ttlDnAmtLstYr="
+			+ ttlDnAmtLstYr + ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt + ", lMDnAmt=" + lMDnAmt
+			+ ", lrgDnAmt=" + lrgDnAmt + ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat + ", lstDnDat=" + lstDnDat
+			+ ", lMDnDat=" + lMDnDat + ", penultAmt=" + penultAmt + ", penultDat=" + penultDat + ", dn1Amt=" + dn1Amt
+			+ ", dn2Amt=" + dn2Amt + ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt=" + oDnAmt + ", mDn1Amt="
+			+ mDn1Amt + ", mDn2Amt=" + mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt + ", mODnAmt="
+			+ mODnAmt + ", provide1=" + provide1 + ", provide2=" + provide2 + ", provide3=" + provide3 + ", provide4="
+			+ provide4 + ", priority=" + priority + ", abGroup=" + abGroup + ", appeal=" + appeal + ", seg=" + seg
+			+ ", segCode=" + segCode + ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer=" + repVer
+			+ ", codeLine=" + codeLine + ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt
+			+ ", rScore=" + rScore + ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore
+			+ ", length=" + length + ", width=" + width + ", height=" + height + ", weight=" + weight + "]";
 }
 
 }

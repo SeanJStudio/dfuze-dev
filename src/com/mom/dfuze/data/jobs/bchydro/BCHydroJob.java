@@ -10,11 +10,11 @@ import com.mom.dfuze.data.Job;
 import com.mom.dfuze.data.RunBehavior;
 
 /**
- * GenerosityXJob extends the Job to hold the client name
+ * BCHydroJob extends the Job to hold the client name
  * 
  * @author Sean Johnson
- *         Mail-o-Matic Services Ltd
- *         Date: 07/06/2023
+ *         Datacore Mail Management
+ *         Date: 03/27/2025
  *
  */
 public class BCHydroJob extends Job {

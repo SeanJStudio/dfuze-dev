@@ -45,11 +45,13 @@ public class PON implements RunBCHydroBehavior {
 			UserData.fieldName.STREET_NAME.getName(),
 			UserData.fieldName.STREET_DEFINER.getName(),
 			UserData.fieldName.STREET_DIRECTION.getName(),
+			UserData.fieldName.PO_BOX.getName(),
 			UserData.fieldName.CITY.getName(),
 			UserData.fieldName.PROVINCE.getName(),
 			UserData.fieldName.POSTALCODE.getName(),
 			UserData.fieldName.SERVICE_ADDRESS.getName(),
 			UserData.fieldName.SERVICE_CITY.getName(),
+			UserData.fieldName.COMMENTS.getName(),
 	};
 
 	private String DESCRIPTION = 
@@ -95,6 +97,12 @@ public class PON implements RunBCHydroBehavior {
 	
 	// Misc
 	public final Pattern OUTAGE_DATE_PATTERN = Pattern.compile("\\d+(\\.|\\s)?\\D+(,)?(\\s)?", Pattern.CASE_INSENSITIVE);
+	public final Pattern FIX_COMMENTS_DATE_YEAR_PATTERN = Pattern.compile("(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\D+(,|\\s)?(,|\\s)?\\d(\\d)?(th|rd)?(,|\\s)?(,|\\s)?", Pattern.CASE_INSENSITIVE);
+	public final Pattern COMMENTS_DATE_YEAR_PATTERN = Pattern.compile("(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\D+(,|\\s)?(,|\\s)?\\d(\\d)?(th|rd)?(,|\\s)?(,|\\s)?\\d\\d\\d\\d", Pattern.CASE_INSENSITIVE);
+	
+	public final Pattern FIX_COMMENTS_TIME_SPACING_PATTERN = Pattern.compile("\\d+(?=(\\.)?(a|p)(\\.)?m(\\.)?)", Pattern.CASE_INSENSITIVE);
+	public final Pattern AM_PATTERN = Pattern.compile("a(\\.)?m(\\.)?", Pattern.CASE_INSENSITIVE);
+	public final Pattern PM_PATTERN = Pattern.compile("p(\\.)?m(\\.)?", Pattern.CASE_INSENSITIVE);
 
 	/*
 	 * (non-Javadoc)
@@ -122,6 +130,9 @@ public class PON implements RunBCHydroBehavior {
 		// Create address fields
 		createAddressFields(userData);
 		
+		// reformat the comments
+		reformatComments(userData);
+		
 		// Split the reference later to easily add to report
 		splitReference(userData);
 		
@@ -138,6 +149,7 @@ public class PON implements RunBCHydroBehavior {
 				UserData.fieldName.PROVINCE.getName(),
 				UserData.fieldName.POSTALCODE.getName(),
 				UserData.fieldName.STATUS.getName(),
+				UserData.fieldName.COMMENTS.getName(),
 				UserData.fieldName.CODELINE.getName(),
 				UserData.fieldName.MISC1.getName(),
 				UserData.fieldName.MISC2.getName(),
@@ -151,9 +163,9 @@ public class PON implements RunBCHydroBehavior {
 			String recordFileName = record.getDfInData()[fileNameIndex];
 			String name = record.getNam1();
 			String company = record.getCmpny();
-			String status = record.getStatus();
+			String serviceAdd = record.getServiceAdd();
 			
-			String dedupeKey = String.format("%s%s%s%s", recordFileName, name, company, status).replaceAll(" ", "").toLowerCase();
+			String dedupeKey = String.format("%s%s%s%s", recordFileName, name, company, serviceAdd).replaceAll(" ", "").toLowerCase();
 			record.setCodeLine(dedupeKey);
 		}
 	}
@@ -167,7 +179,7 @@ public class PON implements RunBCHydroBehavior {
 			if(parts.length > 1) {
 				misc1 = parts[0];
 				if(parts.length == 2)
-					misc2 = parts[1];
+					misc2 = "\"" + parts[1] + "\"";
 			}
 			
 			record.setMisc1(misc1);
@@ -254,44 +266,44 @@ public class PON implements RunBCHydroBehavior {
 	
 	private String getReformattedDate(String date) {
 		if(MONDAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)monday", "Mon");
+			date = date.replaceAll("(?i)monday", "Mon");
 		else if(TUESDAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)tuesday", "Tue");
+			date = date.replaceAll("(?i)tuesday", "Tue");
 		else if(WEDNESDAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)wednesday", "Wed");
+			date = date.replaceAll("(?i)wednesday", "Wed");
 		else if(THURSDAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)thursday", "Thur");
+			date = date.replaceAll("(?i)thursday", "Thu");
 		else if(FRIDAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)friday", "Fri");
+			date = date.replaceAll("(?i)friday", "Fri");
 		else if(SATURDAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)saturday", "Sat");
+			date = date.replaceAll("(?i)saturday", "Sat");
 		else if(SUNDAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)sunday", "Sun");
+			date = date.replaceAll("(?i)sunday", "Sun");
 		
 		if(JANUARY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)january", "Jan");
+			date = date.replaceAll("(?i)january", "Jan");
 		else if(FEBRUARY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)february", "Feb");
+			date = date.replaceAll("(?i)february", "Feb");
 		else if(MARCH_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)march", "Mar");
+			date = date.replaceAll("(?i)march", "Mar");
 		else if(APRIL_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)april", "Apr");
+			date = date.replaceAll("(?i)april", "Apr");
 		else if(MAY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)may", "May");
+			date = date.replaceAll("(?i)may", "May");
 		else if(JUNE_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)june", "Jun");
+			date = date.replaceAll("(?i)june", "Jun");
 		else if(JULY_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)july", "Jul");
+			date = date.replaceAll("(?i)july", "Jul");
 		else if(AUGUST_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)august", "Aug");
+			date = date.replaceAll("(?i)august", "Aug");
 		else if(SEPTEMBER_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)september", "Sep");
+			date = date.replaceAll("(?i)september", "Sep");
 		else if(OCTOBER_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)october", "Oct");
+			date = date.replaceAll("(?i)october", "Oct");
 		else if(NOVEMBER_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)november", "Nov");
+			date = date.replaceAll("(?i)november", "Nov");
 		else if(DECEMBER_PATTERN.matcher(date).find())
-			date.replaceAll("(?i)december", "Dec");
+			date = date.replaceAll("(?i)december", "Dec");
 		
 		return date;
 	}
@@ -320,6 +332,63 @@ public class PON implements RunBCHydroBehavior {
 			record.setDateFrom(dateFrom);
 			record.setDateTo(dateTo);
 		}
+	}
+	
+	private void reformatComments(UserData userData) {
+		String currentYear = java.time.Year.now().toString();
+		boolean isNextYearSoon = isNextYearSoon();
+		
+		for(Record record : userData.getRecordList()) {
+			String comments = getReformattedComments(record.getComments(), currentYear, isNextYearSoon);
+			record.setComments(comments);
+		}
+	}
+	
+	private String getReformattedComments(String comments, String year, boolean isNextYearSoon) {
+		Matcher matcher = FIX_COMMENTS_TIME_SPACING_PATTERN.matcher(comments);
+		
+		while(matcher.find()) {
+			String match = matcher.group(0);
+			comments = comments.replaceAll(Pattern.quote(match), match + " ");
+		}
+		
+		matcher = AM_PATTERN.matcher(comments);
+		
+		while(matcher.find()) {
+			String match = matcher.group(0);
+			comments = comments.replaceAll(Pattern.quote(match), "a.m.");
+		}
+		
+		matcher = PM_PATTERN.matcher(comments);
+		
+		while(matcher.find()) {
+			String match = matcher.group(0);
+			comments = comments.replaceAll(Pattern.quote(match), "p.m.");
+		}
+		
+		matcher = COMMENTS_DATE_YEAR_PATTERN.matcher(comments);
+		
+		if(!isNextYearSoon && !matcher.find()) {
+			matcher = FIX_COMMENTS_DATE_YEAR_PATTERN.matcher(comments);
+			while(matcher.find()) {
+				String match = matcher.group(0);
+				String replace = matcher.group(0).trim();
+				
+				if(replace.endsWith(","))
+					replace = replace.substring(0, replace.length() - 2);
+				
+				replace += ", " + year + " ";
+				
+				comments = comments.replaceAll(Pattern.quote(match), replace);
+			}
+		}
+		
+		comments = comments.replaceAll(":00", "").replaceAll(" \\.", ".").replaceAll("  ", " ").trim();
+		
+		if(!comments.endsWith("."))
+			comments += ".";
+			
+		return comments;
 	}
 	
 	private String getReformattedTime(String time) {

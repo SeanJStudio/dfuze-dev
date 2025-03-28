@@ -82,6 +82,7 @@ public class UserData {
 	private int timeFromIndex = DEFAULT_INDEX;
 	private int timeToIndex = DEFAULT_INDEX;
 	private int refIndex = DEFAULT_INDEX;
+	private int commentsIndex = DEFAULT_INDEX;
 	private int misc1Index = DEFAULT_INDEX;
 	private int misc2Index = DEFAULT_INDEX;
 
@@ -250,6 +251,7 @@ public class UserData {
 		TIME_FROM("dfTimeFrom"),
 		TIME_TO("dfTimeTo"),
 		REFERENCE("dfRef"),
+		COMMENTS("dfComments"),
 		MISC1("dfMisc1"),
 		MISC2("dfMisc2"),
 
@@ -425,6 +427,7 @@ public class UserData {
 			fieldName.TIME_FROM.getName(),
 			fieldName.TIME_TO.getName(),
 			fieldName.REFERENCE.getName(),
+			fieldName.COMMENTS.getName(),
 			fieldName.MISC1.getName(),
 			fieldName.MISC2.getName(),
 			
@@ -728,6 +731,10 @@ public class UserData {
 	
 	public int getRefIndex() {
 		return refIndex;
+	}
+	
+	public int getCommentsIndex() {
+		return commentsIndex;
 	}
 	
 	public int getMisc1Index() {
@@ -1313,6 +1320,10 @@ public class UserData {
 	
 	public void setRefIndex(int refIndex) {
 		this.refIndex = refIndex;
+	}
+	
+	public void setCommentsIndex(int commentsIndex) {
+		this.commentsIndex = commentsIndex;
 	}
 	
 	public void setMisc1Index(int misc1Index) {
@@ -1982,6 +1993,8 @@ public class UserData {
 			return record.getTimeTo();
 		else if (fieldToGet.equals(fieldName.REFERENCE.getName()))
 			return record.getRef();
+		else if (fieldToGet.equals(fieldName.COMMENTS.getName()))
+			return record.getComments();
 		else if (fieldToGet.equals(fieldName.MISC1.getName()))
 			return record.getMisc1();
 		else if (fieldToGet.equals(fieldName.MISC2.getName()))
@@ -2281,6 +2294,8 @@ public class UserData {
 			record.setTimeTo(valueToSet);
 		else if (fieldToSet.equals(fieldName.REFERENCE.getName()))
 			record.setRef(valueToSet);
+		else if (fieldToSet.equals(fieldName.COMMENTS.getName()))
+			record.setComments(valueToSet);
 		else if (fieldToSet.equals(fieldName.MISC1.getName()))
 			record.setMisc1(valueToSet);
 		else if (fieldToSet.equals(fieldName.MISC2.getName()))
@@ -2580,6 +2595,8 @@ public class UserData {
 			record.setTimeTo(inData[timeToIndex]);
 		else if (fieldToSet.equals(fieldName.REFERENCE.getName()))
 			record.setRef(inData[refIndex]);
+		else if (fieldToSet.equals(fieldName.COMMENTS.getName()))
+			record.setComments(inData[commentsIndex]);
 		else if (fieldToSet.equals(fieldName.MISC1.getName()))
 			record.setMisc1(inData[misc1Index]);
 		else if (fieldToSet.equals(fieldName.MISC2.getName()))
