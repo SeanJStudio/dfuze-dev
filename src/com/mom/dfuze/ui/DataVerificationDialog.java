@@ -28,6 +28,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -1226,7 +1228,16 @@ public class DataVerificationDialog extends JDialog {
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fileChooser.getSelectedFile();
 						String fileName = file.getAbsolutePath();
-
+						String baseName = file.getName();
+						String docketNum = textFieldJobNo.getText();
+						
+						if(!baseName.contains(docketNum))
+							baseName = docketNum + " " + baseName;
+						
+						Path path = Paths.get(fileName);
+						Path newPath = path.resolveSibling(baseName); // Replaces only the filename
+						fileName = newPath.toString();
+						
 						if (fileName.toLowerCase().endsWith(".xlsx"))
 							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".xlsx"));
 						else if (fileName.toLowerCase().endsWith(".xlsm"))
