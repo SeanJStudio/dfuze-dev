@@ -69,6 +69,7 @@ public class MainFrame extends JFrame {
   private JMenu mnJob;
   private JMenuItem mntmRunJob;
   private JMenuItem mntmInkjet;
+  private JMenuItem mntmDataVerification;
   private JMenuItem mntmEncodingCorrection;
   private JMenuItem mntmCasingConversion;
   private JMenuItem mntmProofMaker;
@@ -132,6 +133,11 @@ public class MainFrame extends JFrame {
     mnTools.setFont(new Font("Segoe UI", Font.PLAIN, 14));
     mnTools.setEnabled(false);
     menuBar.add(mnTools);
+    
+    mntmDataVerification = new JMenuItem("Data Verification");
+    mntmDataVerification.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    mntmDataVerification.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, 0));
+    mntmDataVerification.setEnabled(false);
 
     mntmDedupe = new JMenuItem("Dedupe");
     mntmDedupe.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -154,6 +160,7 @@ public class MainFrame extends JFrame {
     mntmCasingConversion.setEnabled(false);
     
     mnTools.add(mntmCasingConversion);
+    mnTools.add(mntmDataVerification);
     mnTools.add(mntmDedupe);
     mnTools.add(mntmEncodingCorrection);
     mnTools.add(mntmInkjet);
@@ -244,7 +251,9 @@ public class MainFrame extends JFrame {
     mntmExportData.addActionListener(new UiController.DataExportItemHandler());
     
     mntmViewData.addActionListener(new UiController.DataViewItemHandler());
-
+    
+    mntmDataVerification.addActionListener(new UiController.ToolsDataVerificationItemHandler());
+    
     mntmDedupe.addActionListener(new UiController.ToolsDedupeItemHandler());
     
     mntmInkjet.addActionListener(new UiController.ToolsInkjetMakerItemHandler());
@@ -266,7 +275,7 @@ public class MainFrame extends JFrame {
     if (isJobComplete) {
       mnData.setEnabled(true);
       mnTools.setEnabled(true);
-      
+      mntmDataVerification.setEnabled(true);
       mntmInkjet.setEnabled(true);
       mntmEncodingCorrection.setEnabled(true);
       mntmCasingConversion.setEnabled(true);
@@ -389,6 +398,14 @@ public JMenuItem getMntmInkjet() {
 
 public void setMntmInkjet(JMenuItem mntmInkjet) {
 	this.mntmInkjet = mntmInkjet;
+}
+
+public JMenuItem getMntmDataVerification() {
+	return mntmDataVerification;
+}
+
+public void setMntmDataVerification(JMenuItem mntmDataVerification) {
+	this.mntmDataVerification = mntmDataVerification;
 }
 
 public JMenuItem getMntmEncodingCorrection() {

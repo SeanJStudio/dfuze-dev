@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +48,8 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.JCheckBox;
+import javax.swing.ComboBoxModel;
 
 @SuppressWarnings("serial")
 public class DataVerificationDialog extends JDialog {
@@ -109,10 +112,14 @@ public class DataVerificationDialog extends JDialog {
 	private JLabel lblMakeMultipleFiles;
 	private JComboBox<String> comboBoxMakeMultipleFiles;
 	private JLabel lblMakeMultipleFilesPreview;
+	
+	private JLabel lblLimit1RecordPerValue;
+	private JComboBox<String> comboBoxLimit1RecordPerValue;
+	
 	private JSeparator separatorSettingsBottom;
 	private JSeparator separatorSettingsTop;
 	
-	private JLabel lblOptions;
+	private JLabel lblDetails;
 	private JLabel lblTitle;
 	
 	// Details
@@ -121,6 +128,7 @@ public class DataVerificationDialog extends JDialog {
 	
 	private JLabel lblJobName;
 	private JTextField textFieldJobName;
+	private JCheckBox chckbxIncludeAllRecords;
 	
 	// patterns
 	private final static Pattern COUNTRY_CAN_PATTERN = Pattern.compile("canada|canad|canda|cdn|(^|\\s+)can(\\s+|$)|(^|\\s+)ca(\\s+|$)", Pattern.CASE_INSENSITIVE);
@@ -131,6 +139,9 @@ public class DataVerificationDialog extends JDialog {
 	private final static int MIN_RECORD_ID = -1;
 	private final static int MAX_LINE_NUM = 1000000000;
 	
+	private JSeparator separatorSettingsTop_1;
+	private JLabel lblSettings;
+	
 	public enum reason {
 		FIRST_RECORD("First Record"),
 		LAST_RECORD("Last Record"),
@@ -140,7 +151,8 @@ public class DataVerificationDialog extends JDialog {
 		LONGEST_ADDRESS("Longest Address"),
 		SHORTEST_NAME("Shortest Name"),
 		LONGEST_NAME("Longest Name"),
-		RANDOM("Random");
+		RANDOM("Random"),
+		UNIQUE("Unique");
 		
 		String name;
 
@@ -160,34 +172,34 @@ public class DataVerificationDialog extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);
 
-		setTitle("DV Maker");
+		setTitle("Data Verification");
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBackground(new Color(245, 245, 245));
 		contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(
-				new MigLayout("insets 10 28 20 28, gap 0", "[62px:n:62px][42px:n:42px,grow][22px:n:22px][28px:n:28px][62px:n:62px][62px:n:62px][28px:n:28px][62px:n:62px][62px:n:62px][28px:n:28px][62px:n:62px][62px:n:62px]", "[6px:n:6px][36px:n:36px][4px:n:4px][28px:n:28px][28px:n:28px][28px:n:28px][36px:n:36px][4px:n:4px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][28px:n:28px][36px:n:36px][28px:n:28px]"));
+				new MigLayout("insets 10 28 20 28, gap 0", "[62px:n:62px][42px:n:42px,grow][22px:n:22px][28px:n:28px][62px:n:62px][62px:n:62px][28px:n:28px][62px:n:62px,grow][62px:n:62px][28px:n:28px][62px:n:62px][62px:n:62px]", "[6px:n:6px][36px:n:36px][4px:n:4px][28px:n:28px][28px:n:28px][14px:n:14px][36px:n:36px][4px:n:4px][28px:n:28px][14px:n:14px][36px:n:36px][4px:n:4px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][28px:n:28px][36px:n:36px][28px:n:28px]"));
 		
-		lblOptions = new JLabel("Details");
-		lblOptions.setForeground(Theme.TITLE_COLOR);
-		lblOptions.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
-		contentPanel.add(lblOptions, "cell 0 1");
+		lblDetails = new JLabel("Details");
+		lblDetails.setForeground(Theme.TITLE_COLOR);
+		lblDetails.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
+		contentPanel.add(lblDetails, "cell 0 1");
 
 		separatorSettingsTop = new JSeparator();
 		contentPanel.add(separatorSettingsTop, "cell 1 1 11 1,growx,aligny center");
 		
 		lblJobNo = new JLabel("Job No");
 		lblJobNo.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblJobNo, "cell 0 3,alignx left,aligny top");
+		contentPanel.add(lblJobNo, "cell 0 3,alignx left,aligny center");
 		
 		lblJobName = new JLabel("Job Name");
 		lblJobName.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblJobName, "cell 4 3,alignx left,aligny top");
+		contentPanel.add(lblJobName, "cell 4 3,alignx left,aligny center");
 
 		lblMakeMultipleFiles = new JLabel("Make a DV for each unique value found in:");
 		lblMakeMultipleFiles.setForeground(Color.BLACK);
 		lblMakeMultipleFiles.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblMakeMultipleFiles, "cell 7 3 5 1,alignx left,aligny top");
+		contentPanel.add(lblMakeMultipleFiles, "cell 7 3 5 1,alignx left,aligny center");
 
 		comboBoxMakeMultipleFiles = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxMakeMultipleFiles.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -210,34 +222,60 @@ public class DataVerificationDialog extends JDialog {
 		lblMakeMultipleFilesPreview.setForeground(Theme.TITLE_COLOR);
 		lblMakeMultipleFilesPreview.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		contentPanel.add(lblMakeMultipleFilesPreview, "cell 10 4 2 1,alignx center,aligny center");
+		
+		lblSettings = new JLabel("Settings");
+		lblSettings.setForeground(new Color(0, 0, 128));
+		lblSettings.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
+		contentPanel.add(lblSettings, "cell 0 6");
+		
+		separatorSettingsTop_1 = new JSeparator();
+		contentPanel.add(separatorSettingsTop_1, "cell 1 6 11 1,growx,aligny center");
+		
+		chckbxIncludeAllRecords = new JCheckBox("Include all records");
+		chckbxIncludeAllRecords.setForeground(Color.BLACK);
+		chckbxIncludeAllRecords.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		chckbxIncludeAllRecords.setBackground(new Color(245, 245, 245));
+		contentPanel.add(chckbxIncludeAllRecords, "cell 0 8 4 1,aligny center");
+		
+		lblLimit1RecordPerValue = new JLabel("Only include 1 record per unique value found in:");
+		lblLimit1RecordPerValue.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(lblLimit1RecordPerValue, "cell 4 8 5 1,alignx right,aligny center");
+		
+		comboBoxLimit1RecordPerValue = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
+		comboBoxLimit1RecordPerValue.setSelectedIndex(-1);
+		comboBoxLimit1RecordPerValue.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		comboBoxLimit1RecordPerValue.setPrototypeDisplayValue(COMBOBOX_PROTOTYPE_DISPLAY);
+		comboBoxLimit1RecordPerValue.addActionListener(new ComboBoxLimit1RecordPerValueHandler());
+		contentPanel.add(comboBoxLimit1RecordPerValue, "cell 10 8 2 1,grow");
+		
 
 		separatorSettingsBottom = new JSeparator();
-		contentPanel.add(separatorSettingsBottom, "cell 1 6 11 1,growx");
+		contentPanel.add(separatorSettingsBottom, "cell 1 10 11 1,growx");
 		
 		lblTitle = new JLabel("Fields");
 		lblTitle.setForeground(Theme.TITLE_COLOR);
 		lblTitle.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
-		contentPanel.add(lblTitle, "cell 0 6");
+		contentPanel.add(lblTitle, "cell 0 10");
 
 		lblLine1 = new JLabel("LINE1");
 		lblLine1.setForeground(Color.BLACK);
 		lblLine1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblLine1, "cell 0 8 2 1,aligny center");
+		contentPanel.add(lblLine1, "cell 0 12 2 1,aligny center");
 
 		lblLine2 = new JLabel("LINE2");
 		lblLine2.setForeground(Color.BLACK);
 		lblLine2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblLine2, "cell 4 8,aligny center");
+		contentPanel.add(lblLine2, "cell 4 12,aligny center");
 
 		lblLine3 = new JLabel("LINE3");
 		lblLine3.setForeground(Color.BLACK);
 		lblLine3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblLine3, "cell 7 8,aligny center");
+		contentPanel.add(lblLine3, "cell 7 12,aligny center");
 
 		lblLine4 = new JLabel("LINE4");
 		lblLine4.setForeground(Color.BLACK);
 		lblLine4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblLine4, "cell 10 8,alignx left,aligny center");
+		contentPanel.add(lblLine4, "cell 10 12,alignx left,aligny center");
 
 		comboBoxLine1 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxLine1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -245,7 +283,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxLine1.setSelectedIndex(-1);
 		comboBoxLine1.addItemListener(new ComboBoxMappingListener());
 		comboBoxLine1.setName(lblLine1.getText());
-		contentPanel.add(comboBoxLine1, "cell 0 9 3 1,grow");
+		contentPanel.add(comboBoxLine1, "cell 0 13 3 1,grow");
 
 		comboBoxLine2 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxLine2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -253,7 +291,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxLine2.setSelectedIndex(-1);
 		comboBoxLine2.addItemListener(new ComboBoxMappingListener());
 		comboBoxLine2.setName(lblLine2.getText());
-		contentPanel.add(comboBoxLine2, "cell 4 9 2 1,grow");
+		contentPanel.add(comboBoxLine2, "cell 4 13 2 1,grow");
 
 		comboBoxLine3 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxLine3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -261,7 +299,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxLine3.setSelectedIndex(-1);
 		comboBoxLine3.addItemListener(new ComboBoxMappingListener());
 		comboBoxLine3.setName(lblLine3.getText());
-		contentPanel.add(comboBoxLine3, "cell 7 9 2 1,grow");
+		contentPanel.add(comboBoxLine3, "cell 7 13 2 1,grow");
 
 		comboBoxLine4 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxLine4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -269,27 +307,27 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxLine4.setSelectedIndex(-1);
 		comboBoxLine4.addItemListener(new ComboBoxMappingListener());
 		comboBoxLine4.setName(lblLine4.getText());
-		contentPanel.add(comboBoxLine4, "cell 10 9 2 1,grow");
+		contentPanel.add(comboBoxLine4, "cell 10 13 2 1,grow");
 		
 		lblName1 = new JLabel("NAME1");
 		lblName1.setForeground(Color.BLACK);
 		lblName1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName1, "cell 0 11");
+		contentPanel.add(lblName1, "cell 0 15");
 		
 		lblName2 = new JLabel("NAME2");
 		lblName2.setForeground(Color.BLACK);
 		lblName2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName2, "cell 4 11");
+		contentPanel.add(lblName2, "cell 4 15");
 		
 		lblName3 = new JLabel("NAME3");
 		lblName3.setForeground(Color.BLACK);
 		lblName3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName3, "cell 7 11");
+		contentPanel.add(lblName3, "cell 7 15");
 		
 		lblName4 = new JLabel("NAME4");
 		lblName4.setForeground(Color.BLACK);
 		lblName4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName4, "cell 10 11");
+		contentPanel.add(lblName4, "cell 10 15");
 		
 		comboBoxName1 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -297,7 +335,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName1.setSelectedIndex(-1);
 		comboBoxName1.addItemListener(new ComboBoxMappingListener());
 		comboBoxName1.setName(lblName1.getText());
-		contentPanel.add(comboBoxName1, "cell 0 12 3 1,grow");
+		contentPanel.add(comboBoxName1, "cell 0 16 3 1,grow");
 		
 		comboBoxName2 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -305,7 +343,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName2.setSelectedIndex(-1);
 		comboBoxName2.addItemListener(new ComboBoxMappingListener());
 		comboBoxName2.setName(lblName2.getText());
-		contentPanel.add(comboBoxName2, "cell 4 12 2 1,grow");
+		contentPanel.add(comboBoxName2, "cell 4 16 2 1,grow");
 		
 		comboBoxName3 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -313,7 +351,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName3.setSelectedIndex(-1);
 		comboBoxName3.addItemListener(new ComboBoxMappingListener());
 		comboBoxName3.setName(lblName3.getText());
-		contentPanel.add(comboBoxName3, "cell 7 12 2 1,grow");
+		contentPanel.add(comboBoxName3, "cell 7 16 2 1,grow");
 		
 		comboBoxName4 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -321,27 +359,27 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName4.setSelectedIndex(-1);
 		comboBoxName4.addItemListener(new ComboBoxMappingListener());
 		comboBoxName4.setName(lblName4.getText());
-		contentPanel.add(comboBoxName4, "cell 10 12 2 1,grow");
+		contentPanel.add(comboBoxName4, "cell 10 16 2 1,grow");
 
 		lblAddress1 = new JLabel("ADDRESS1");
 		lblAddress1.setForeground(Color.BLACK);
 		lblAddress1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress1, "cell 0 14 2 1,aligny center");
+		contentPanel.add(lblAddress1, "cell 0 18 2 1,aligny center");
 
 		lblAddress2 = new JLabel("ADDRESS2");
 		lblAddress2.setForeground(Color.BLACK);
 		lblAddress2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress2, "cell 4 14 2 1,aligny center");
+		contentPanel.add(lblAddress2, "cell 4 18 2 1,aligny center");
 
 		lblAddress3 = new JLabel("ADDRESS3");
 		lblAddress3.setForeground(Color.BLACK);
 		lblAddress3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress3, "cell 7 14,aligny center");
+		contentPanel.add(lblAddress3, "cell 7 18,aligny center");
 
 		lblAddress4 = new JLabel("ADDRESS4");
 		lblAddress4.setForeground(Color.BLACK);
 		lblAddress4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress4, "cell 10 14,aligny center");
+		contentPanel.add(lblAddress4, "cell 10 18,aligny center");
 
 		comboBoxAddress1 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -349,7 +387,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress1.setSelectedIndex(-1);
 		comboBoxAddress1.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress1.setName(lblAddress1.getText());
-		contentPanel.add(comboBoxAddress1, "cell 0 15 3 1,grow");
+		contentPanel.add(comboBoxAddress1, "cell 0 19 3 1,grow");
 
 		comboBoxAddress2 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -357,7 +395,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress2.setSelectedIndex(-1);
 		comboBoxAddress2.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress2.setName(lblAddress2.getText());
-		contentPanel.add(comboBoxAddress2, "cell 4 15 2 1,grow");
+		contentPanel.add(comboBoxAddress2, "cell 4 19 2 1,grow");
 
 		comboBoxAddress3 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -365,7 +403,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress3.setSelectedIndex(-1);
 		comboBoxAddress3.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress3.setName(lblAddress3.getText());
-		contentPanel.add(comboBoxAddress3, "cell 7 15 2 1,grow");
+		contentPanel.add(comboBoxAddress3, "cell 7 19 2 1,grow");
 
 		comboBoxAddress4 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -373,27 +411,27 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress4.setSelectedIndex(-1);
 		comboBoxAddress4.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress4.setName(lblAddress4.getText());
-		contentPanel.add(comboBoxAddress4, "cell 10 15 2 1,grow");
+		contentPanel.add(comboBoxAddress4, "cell 10 19 2 1,grow");
 
 		lblCity = new JLabel("CITY");
 		lblCity.setForeground(Color.BLACK);
 		lblCity.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblCity, "cell 0 17 2 1,aligny center");
+		contentPanel.add(lblCity, "cell 0 21 2 1,aligny center");
 
 		lblProv = new JLabel("PROVINCE");
 		lblProv.setForeground(Color.BLACK);
 		lblProv.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblProv, "cell 4 17 2 1,aligny center");
+		contentPanel.add(lblProv, "cell 4 21 2 1,aligny center");
 
 		lblPC = new JLabel("PC");
 		lblPC.setForeground(Color.BLACK);
 		lblPC.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblPC, "cell 7 17,aligny center");
+		contentPanel.add(lblPC, "cell 7 21,aligny center");
 
 		lblCountry = new JLabel("COUNTRY");
 		lblCountry.setForeground(Color.BLACK);
 		lblCountry.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblCountry, "cell 10 17,aligny center");
+		contentPanel.add(lblCountry, "cell 10 21,aligny center");
 
 		comboBoxCity = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxCity.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -401,7 +439,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxCity.setSelectedIndex(-1);
 		comboBoxCity.addItemListener(new ComboBoxMappingListener());
 		comboBoxCity.setName(lblCity.getText());
-		contentPanel.add(comboBoxCity, "cell 0 18 3 1,grow");
+		contentPanel.add(comboBoxCity, "cell 0 22 3 1,grow");
 
 		comboBoxProv = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxProv.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -409,7 +447,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxProv.setSelectedIndex(-1);
 		comboBoxProv.addItemListener(new ComboBoxMappingListener());
 		comboBoxProv.setName(lblProv.getText());
-		contentPanel.add(comboBoxProv, "cell 4 18 2 1,grow");
+		contentPanel.add(comboBoxProv, "cell 4 22 2 1,grow");
 
 		comboBoxPC = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxPC.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -417,7 +455,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxPC.setSelectedIndex(-1);
 		comboBoxPC.addItemListener(new ComboBoxMappingListener());
 		comboBoxPC.setName(lblPC.getText());
-		contentPanel.add(comboBoxPC, "cell 7 18 2 1,grow");
+		contentPanel.add(comboBoxPC, "cell 7 22 2 1,grow");
 
 		comboBoxCountry = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxCountry.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -425,12 +463,12 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxCountry.setSelectedIndex(-1);
 		comboBoxCountry.addItemListener(new ComboBoxMappingListener());
 		comboBoxCountry.setName(lblCountry.getText());
-		contentPanel.add(comboBoxCountry, "cell 10 18 2 1,grow");
+		contentPanel.add(comboBoxCountry, "cell 10 22 2 1,grow");
 
 		lblListOrder = new JLabel("LISTORDER");
 		lblListOrder.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		lblListOrder.setForeground(new Color(220, 20, 60));
-		contentPanel.add(lblListOrder, "cell 0 20 12 1,aligny center");
+		contentPanel.add(lblListOrder, "cell 0 24 12 1,aligny center");
 
 		comboBoxListOrder = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxListOrder.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -439,15 +477,15 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxListOrder.addItemListener(new ComboBoxMappingListener());
 		comboBoxListOrder.addActionListener(new ComboBoxListOrderHandler());
 		comboBoxListOrder.setName(lblListOrder.getText());
-		contentPanel.add(comboBoxListOrder, "cell 0 21 3 1,grow");
+		contentPanel.add(comboBoxListOrder, "cell 0 25 3 1,grow");
 
 		JSeparator separatorBottom = new JSeparator();
-		contentPanel.add(separatorBottom, "cell 0 23 12 1,growx,aligny center");
+		contentPanel.add(separatorBottom, "cell 0 27 12 1,growx,aligny center");
 
 		btnReset = new JButton("Reset Fields");
 		btnReset.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 		btnReset.addActionListener(new ResetButtonHandler());
-		contentPanel.add(btnReset, "cell 0 24 3 1,grow");
+		contentPanel.add(btnReset, "cell 0 28 3 1,grow");
 
 		btnMake = new JButton("Make Data Verification");
 		btnMake.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -456,8 +494,8 @@ public class DataVerificationDialog extends JDialog {
 				lblSubTitle = new JLabel("LISTORDER is required");
 				lblSubTitle.setForeground(new Color(220, 20, 60));
 				lblSubTitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-				contentPanel.add(lblSubTitle, "cell 4 24 2 1,alignx right");
-		contentPanel.add(btnMake, "cell 7 24 5 1,grow");
+				contentPanel.add(lblSubTitle, "cell 4 28 2 1,alignx right");
+		contentPanel.add(btnMake, "cell 7 28 5 1,grow");
 		
 		fillComboBoxList();
 		fillLabelList();
@@ -537,10 +575,12 @@ public class DataVerificationDialog extends JDialog {
 	private void disableUi() {
 		for(JComboBox<String> cb : comboBoxList)
 			cb.setEnabled(false);
-
+		
+		chckbxIncludeAllRecords.setEnabled(false);
 		textFieldJobNo.setEnabled(false);
 		textFieldJobName.setEnabled(false);
 		comboBoxMakeMultipleFiles.setEnabled(false);
+		comboBoxLimit1RecordPerValue.setEnabled(false);
 		btnReset.setEnabled(false);
 		btnMake.setEnabled(false);
 	}
@@ -548,10 +588,12 @@ public class DataVerificationDialog extends JDialog {
 	private void enableUi() {
 		for(JComboBox<String> cb : comboBoxList)
 			cb.setEnabled(true);
-
+		
+		chckbxIncludeAllRecords.setEnabled(true);
 		textFieldJobNo.setEnabled(true);
 		textFieldJobName.setEnabled(true);
 		comboBoxMakeMultipleFiles.setEnabled(true);
+		comboBoxLimit1RecordPerValue.setEnabled(true);
 		btnReset.setEnabled(true);
 		btnMake.setEnabled(true);
 	}
@@ -659,6 +701,22 @@ public class DataVerificationDialog extends JDialog {
 			}
 		}
 	}
+	
+	private class ComboBoxLimit1RecordPerValueHandler implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				if (e.getSource() == comboBoxLimit1RecordPerValue)  {
+					if(comboBoxLimit1RecordPerValue.getSelectedIndex() > -1) {
+						chckbxIncludeAllRecords.setSelected(false);
+						chckbxIncludeAllRecords.setEnabled(false);
+					}
+				}
+			} catch (Exception err) {
+				UiController.handle(err);
+			}
+		}
+	}
 
 	private class ResetButtonHandler implements ActionListener {
 		@Override
@@ -672,8 +730,11 @@ public class DataVerificationDialog extends JDialog {
 
 					// Reset the used fields
 					usedFields = new HashSet<>();
-
+					
 					comboBoxMakeMultipleFiles.setSelectedIndex(-1);
+					comboBoxLimit1RecordPerValue.setSelectedIndex(-1);
+					chckbxIncludeAllRecords.setSelected(false);
+					chckbxIncludeAllRecords.setEnabled(true);
 				}
 			} catch (Exception err) {
 				UiController.handle(err);
@@ -681,10 +742,12 @@ public class DataVerificationDialog extends JDialog {
 		}
 	}
 	
+	
+	
 	// Checks if the "make file for each unique value" field is an internal dfuze field or not
-	private boolean isUniqueFieldDfField() {
+	private boolean isUniqueFieldDfField(JComboBox<String> comboBox) {
 		for(String dfField : UiController.getUserData().getDfHeaders()) {
-			if(dfField.equalsIgnoreCase(comboBoxMakeMultipleFiles.getSelectedItem().toString())) {
+			if(dfField.equalsIgnoreCase(comboBox.getSelectedItem().toString())) {
 				return true;
 			}
 		}
@@ -692,17 +755,17 @@ public class DataVerificationDialog extends JDialog {
 	}
 	
 	// Gets a treeset of unique segments in insertion order
-	private SortedSet<String> getUniqueFileSegments(boolean isUniqueFieldDfField){
+	private SortedSet<String> getUniqueFileSegments(boolean isUniqueFieldDfField, JComboBox<String> comboBox){
 		SortedSet<String> uniqueFileSegments = new TreeSet<>();
 
 			if(isUniqueFieldDfField) {
 				for(Record record : UiController.getUserData().getRecordList()) {
-					String value = UserData.getRecordFieldByName(comboBoxMakeMultipleFiles.getSelectedItem().toString(), record);
+					String value = UserData.getRecordFieldByName(comboBox.getSelectedItem().toString(), record);
 					uniqueFileSegments.add(value);
 				}
 			} else {
 				for(Record record : UiController.getUserData().getRecordList()) {
-					String value = record.getDfInData()[comboBoxMakeMultipleFiles.getSelectedIndex()];
+					String value = record.getDfInData()[comboBox.getSelectedIndex()];
 					uniqueFileSegments.add(value);
 				}
 			}
@@ -738,26 +801,30 @@ public class DataVerificationDialog extends JDialog {
 		return recordLists;
 	}
 	
-	private ArrayList<String> getLinesFromList(Record record, LinkedHashMap<String, JComboBox<String>> linesMap, HashMap<String, Integer> nonDfFieldIndexes) {
+	private ArrayList<String> getLinesFromList(Record record, LinkedHashMap<String, JComboBox<String>> linesMap, List<String> inHeaders) {
 		ArrayList<String> list = new ArrayList<>();
 		String cpp = "";
 		String country = "";
 		
 		for(Map.Entry<String, JComboBox<String>> entry : linesMap.entrySet()) {
-			String selectedField = entry.getValue().getSelectedItem().toString();
-			String value = getValueFromFieldName(record, selectedField, nonDfFieldIndexes).trim();
-			
-			// handle address fields separately
-			if(entry.getKey().equalsIgnoreCase(lblCity.getText()))
-				cpp += " " + value;
-			else if(entry.getKey().equalsIgnoreCase(lblProv.getText()))
-				cpp += " " + value;
-			else if(entry.getKey().equalsIgnoreCase(lblPC.getText()))
-				cpp += "  " + value;
-			else if(entry.getKey().equalsIgnoreCase(lblCountry.getText()))
-				country += value;
-			else
-				list.add(value);
+			if(entry.getValue().getSelectedIndex() > -1) {
+				String selectedField = entry.getValue().getSelectedItem().toString();
+				String value = getValueFromFieldName(record, selectedField, inHeaders).trim();
+				
+				if(value.length() > 0) {
+					// handle address fields separately
+					if(entry.getKey().equalsIgnoreCase(lblCity.getText()))
+						cpp += " " + value;
+					else if(entry.getKey().equalsIgnoreCase(lblProv.getText()))
+						cpp += " " + value;
+					else if(entry.getKey().equalsIgnoreCase(lblPC.getText()))
+						cpp += "  " + value;
+					else if(entry.getKey().equalsIgnoreCase(lblCountry.getText()))
+						country += value;
+					else
+						list.add(value);
+				}
+			}
 		}
 		
 		cpp = cpp.trim();
@@ -771,17 +838,30 @@ public class DataVerificationDialog extends JDialog {
 	}
 	
 	
-	private List<List<Record>> verifyData(List<List<Record>> recordLists) {
-		HashMap<String, Integer> nonDfFieldIndexes = getNonDfFieldIndexes();
+	private List<List<Record>> verifyData(List<List<Record>> recordLists, List<File> files) throws Exception {
+		
+		List<String> inHeaders = Arrays.asList(UiController.getUserData().getInHeaders());
+
 		SimpleDateFormat formatter = new SimpleDateFormat("M/d/yyyy");
 		String today = formatter.format(new Date());
-		int fileNum = 0;
+		int fileNum = -1;
 		List<List<Record>> selectedRecordLists = new ArrayList<>();
+		HashMap<Integer, Record> idToRecordMap = new HashMap<>();
+		
 		boolean hasProv = (comboBoxProv.getSelectedIndex() > -1) ? true : false;
 		boolean hasPc = (comboBoxPC.getSelectedIndex() > -1) ? true : false;
 		boolean hasCountry = (comboBoxCountry.getSelectedIndex() > -1) ? true : false;
 		
+		boolean isUniqueValueDfField = false;
+		if(comboBoxLimit1RecordPerValue.getSelectedIndex() > -1)
+			isUniqueValueDfField = isUniqueFieldDfField(comboBoxLimit1RecordPerValue);
+
 		for(List<Record> recordList : recordLists) {
+			
+			SortedSet<String> uniqueValues = new TreeSet<>();
+			if(comboBoxLimit1RecordPerValue.getSelectedIndex() > -1)
+				uniqueValues = getUniqueFileSegments(isUniqueValueDfField, comboBoxLimit1RecordPerValue);
+			
 			// track
 			int counter = 0;
 			++fileNum;
@@ -824,10 +904,11 @@ public class DataVerificationDialog extends JDialog {
 			HashMap<Integer, ArrayList<String>> allAddressMap = new HashMap<>();
 			
 			for(Record record : recordList) {
+
 				// get the lineLists
-				ArrayList<String> lineList = getLinesFromList(record, lineMap, nonDfFieldIndexes);
-				ArrayList<String> nameList = getLinesFromList(record, nameMap, nonDfFieldIndexes);
-				ArrayList<String> addressList = getLinesFromList(record, addressMap, nonDfFieldIndexes);
+				ArrayList<String> lineList = getLinesFromList(record, lineMap, inHeaders);
+				ArrayList<String> nameList = getLinesFromList(record, nameMap, inHeaders);
+				ArrayList<String> addressList = getLinesFromList(record, addressMap, inHeaders);
 				ArrayList<String> combinedList = new ArrayList<>();
 				combinedList.addAll(lineList);
 				combinedList.addAll(nameList);
@@ -837,7 +918,7 @@ public class DataVerificationDialog extends JDialog {
 				
 				// Get the country
 				if(hasCountry) {
-					String country = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxCountry.getSelectedItem().toString(), nonDfFieldIndexes)).replaceAll("[^a-zA-Z]", "").trim();
+					String country = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxCountry.getSelectedItem().toString(), inHeaders)).replaceAll("[^a-zA-Z]", "").trim();
 					if(country.length() > 0) {
 						if(COUNTRY_CAN_PATTERN.matcher(country).find())
 							++canadianNum;
@@ -850,13 +931,13 @@ public class DataVerificationDialog extends JDialog {
 					}
 				} else {
 					if(hasPc) {
-						String pc = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxPC.getSelectedItem().toString(), nonDfFieldIndexes)).replaceAll("[^a-zA-Z0-9]", "").trim();
+						String pc = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxPC.getSelectedItem().toString(), inHeaders)).replaceAll("[^a-zA-Z0-9]", "").trim();
 						if(ZIP_PATTERN.matcher(pc).find())
 							++usaNum;
 						else
 							++canadianNum;
 					} else if (hasProv) {
-						String prov = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxProv.getSelectedItem().toString(), nonDfFieldIndexes)).replaceAll("[^a-zA-Z0-9\\s]", "").trim();
+						String prov = StringUtils.stripAccents(getValueFromFieldName(record, comboBoxProv.getSelectedItem().toString(), inHeaders)).replaceAll("[^a-zA-Z0-9\\s]", "").trim();
 						if(STATE_PATTERN.matcher(prov).find())
 							++usaNum;
 						else
@@ -912,46 +993,86 @@ public class DataVerificationDialog extends JDialog {
 				
 				
 				allAddressMap.put(record.getDfId(), combinedList);
+				idToRecordMap.put(record.getDfId(), record);
+				
 				++counter;
 			}
 			
-			// add the records that meet our requirements
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, firstRecordId, reason.FIRST_RECORD.getName());
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, lastRecordId, reason.LAST_RECORD.getName());
+			// ===========================================================
+			// if we ARE NOT limiting to 1 per value, add our selections
+			// ===========================================================
+			if(comboBoxLimit1RecordPerValue.getSelectedIndex() == -1) {
+				// add the records that meet our requirements
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, firstRecordId, reason.FIRST_RECORD.getName());
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, lastRecordId, reason.LAST_RECORD.getName());
+				
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, minLinesId, reason.MIN_LINES.getName());
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, maxLinesId, reason.MAX_LINES.getName());
+				
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, shortestAddressId, reason.SHORTEST_ADDRESS.getName());
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, longestAddressId, reason.LONGEST_ADDRESS.getName());
+				
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, shortestNameId, reason.SHORTEST_NAME.getName());
+				processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, longestNameId, reason.LONGEST_NAME.getName());
+				
+				// add as many random records as we can to hit 10 records
+				if(finalAddressMap.size() < 10) {
+					for(Record record : recordList) {
+						if(finalAddressMap.putIfAbsent(record.getDfId(), allAddressMap.get(record.getDfId())) == null) // key was NOT present, thus was added and returns null
+							finalReasonMap.put(record.getDfId(), reason.RANDOM.getName());
+						if(finalAddressMap.size() == 10)
+							break;
+					}
+				}
+			}
 			
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, minLinesId, reason.MIN_LINES.getName());
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, maxLinesId, reason.MAX_LINES.getName());
+			// ===========================================================
+			// if we ARE limiting to 1 per value
+			// ===========================================================
+			if(comboBoxLimit1RecordPerValue.getSelectedIndex() > -1) {
+				String fieldName = comboBoxLimit1RecordPerValue.getSelectedItem().toString();
+				for(Record record : recordList) {
+					String uniqueValue = "";
+					
+					if(!isUniqueValueDfField)
+						uniqueValue = record.getDfInData()[Arrays.asList(UiController.getUserData().getInHeaders()).indexOf(fieldName)];
+					else
+						uniqueValue = UserData.getRecordFieldByName(fieldName, record);
+					
+					if(uniqueValues.contains(uniqueValue)) {
+						if(finalAddressMap.putIfAbsent(record.getDfId(), allAddressMap.get(record.getDfId())) == null) { // key was NOT present, thus was added and returns null
+							finalReasonMap.put(record.getDfId(), uniqueValue);
+							uniqueValues.remove(uniqueValue);
+						}
+					}
+				}
+			}
 			
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, shortestAddressId, reason.SHORTEST_ADDRESS.getName());
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, longestAddressId, reason.LONGEST_ADDRESS.getName());
-			
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, shortestNameId, reason.SHORTEST_NAME.getName());
-			processRecordToReasonMap(finalAddressMap, finalReasonMap, allAddressMap, longestNameId, reason.LONGEST_NAME.getName());
-			
-			// add as many random records as we can to hit 10 records
-			if(finalAddressMap.size() < 10) {
+			// ===========================================================
+			// if add all records is checked, add them
+			// ===========================================================
+			if(chckbxIncludeAllRecords.isSelected()) {
 				for(Record record : recordList) {
 					if(finalAddressMap.putIfAbsent(record.getDfId(), allAddressMap.get(record.getDfId())) == null) // key was NOT present, thus was added and returns null
 						finalReasonMap.put(record.getDfId(), reason.RANDOM.getName());
-					if(finalAddressMap.size() == 10)
-						break;
 				}
 			}
 			
+			
+			// ===========================================================
+			// create the final record list for the DV
+			// ===========================================================
 			List<Record> listToAdd = new ArrayList<>();
-			HashMap<Integer, Record> idToRecordMap = new HashMap<>();
-			for(Record record : recordList) {
-				if(finalAddressMap.containsKey(record.getDfId())) {
-					idToRecordMap.put(record.getDfId(), record);
+			
+			for(Record record : recordList)
+				if(finalAddressMap.containsKey(record.getDfId()))
 					listToAdd.add(record);
-				}
-			}
-			
-			
-			// finally generate the files and reports
-			// Ask the user to save a name prior to processing data
-			
-			File dvReportFile = new File("DV_" + fileNum + ".txt");
+
+			// ===========================================================
+			// finally generate the reports
+			// ===========================================================
+			String dvPath = files.get(fileNum).getAbsolutePath().replaceAll("\\.xlsx$", "_DV.txt");
+			File dvReportFile = new File(dvPath);
 			StringBuffer dvReport = new StringBuffer();
 			
 			// Details
@@ -960,7 +1081,7 @@ public class DataVerificationDialog extends JDialog {
 			dvReport.append("=".repeat(80)).append("\n");
 			dvReport.append(String.format(" %-20s : %s", "Job Number", textFieldJobNo.getText())).append("\n");
 			dvReport.append(String.format(" %-20s : %s", "Job Name", textFieldJobName.getText())).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "File", textFieldJobNo.getText())).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "File", files.get(fileNum).getName())).append("\n");
 			dvReport.append(String.format(" %-20s : %s", "Date", today)).append("\n");
 			dvReport.append("\n").append("\n");
 			
@@ -974,6 +1095,24 @@ public class DataVerificationDialog extends JDialog {
 			dvReport.append(String.format(" %-20s : %s", "International", String.valueOf(intNum))).append("\n");
 			dvReport.append("\n").append("\n");
 			
+			// Quality Check
+			String listOrderOfMaxLines = "";
+			if(maxLinesId > -1)
+				listOrderOfMaxLines = getValueFromFieldName(idToRecordMap.get(maxLinesId), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
+			
+			String listOrderOfLongestLine = "";
+			if(longestAddress >= longestName && longestAddressId > -1)
+				listOrderOfLongestLine = getValueFromFieldName(idToRecordMap.get(longestAddressId), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
+			else if(longestNameId > -1)
+				listOrderOfLongestLine = getValueFromFieldName(idToRecordMap.get(longestNameId), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
+			
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(" Quality Check").append("\n");
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Max Lines", "#" + listOrderOfMaxLines)).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Longest Line", "#" + listOrderOfLongestLine)).append("\n");
+			dvReport.append("\n").append("\n");
+
 			// Fields
 			dvReport.append("=".repeat(80)).append("\n");
 			dvReport.append(" Fields").append("\n");
@@ -984,7 +1123,7 @@ public class DataVerificationDialog extends JDialog {
 				if(comboBox.getSelectedIndex() > -1) {
 					++fieldCounter;
 					String fieldName = comboBox.getSelectedItem().toString();
-					dvReport.append(String.format(" %-2s. : %s", String.valueOf(fieldCounter), fieldName)).append("\n");
+					dvReport.append(String.format(" %2s. %s", String.valueOf(fieldCounter), fieldName)).append("\n");
 				}
 			}
 			dvReport.append("\n").append("\n");
@@ -997,15 +1136,18 @@ public class DataVerificationDialog extends JDialog {
 			
 			for (int id : finalAddressMap.keySet()) {
 				String reason = finalReasonMap.get(id);
-				String listOrder = getValueFromFieldName(idToRecordMap.get(id), comboBoxListOrder.getSelectedItem().toString(), nonDfFieldIndexes);
+				String listOrder = getValueFromFieldName(idToRecordMap.get(id), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
 				String finalReason = reason + " #" + listOrder;
-				dvReport.append(String.format("%-80s", finalReason)).append("\n");
+				dvReport.append(String.format("%80s", finalReason)).append("\n");
 				dvReport.append("-".repeat(80)).append("\n");
 				dvReport.append("\n");
 				for(String line : finalAddressMap.get(id))
 					dvReport.append(line).append("\n");
 				dvReport.append("\n");
 			}
+			
+			// Write the report
+			TextWriter.writeTextNoDelimiter(dvReportFile, dvReport.toString());
 			
 			selectedRecordLists.add(listToAdd);
 
@@ -1033,35 +1175,11 @@ public class DataVerificationDialog extends JDialog {
 	}
 	
 	
-	private String getValueFromFieldName(Record record, String fieldValueToGet, HashMap<String, Integer> nonDfFieldIndexes) {
-		if(nonDfFieldIndexes.containsKey(fieldValueToGet))
-			return record.getDfInData()[nonDfFieldIndexes.get(fieldValueToGet)];
+	private String getValueFromFieldName(Record record, String fieldValueToGet, List<String> inHeaders) {
+		if(inHeaders.contains(fieldValueToGet))
+			return record.getDfInData()[inHeaders.indexOf(fieldValueToGet)];
 		
 		return UserData.getRecordFieldByName(fieldValueToGet, record);
-	}
-	
-	private HashMap<String, Integer> getNonDfFieldIndexes() {
-		HashMap<String, Integer> nonDfFieldIndexes = new HashMap<>();
-		for (String usedField : usedFields) {
-			boolean isDfField = false;
-			for(String dfField : UiController.getUserData().getDfHeaders()) {
-				if(usedField.equalsIgnoreCase(dfField)) {
-					isDfField = true;
-					break;
-				}
-			}
-			
-			if(!isDfField) {
-				for(int i = 0; i < UiController.getUserData().getExportHeaders().length; ++i) {
-					if(usedField.equalsIgnoreCase(UiController.getUserData().getExportHeaders()[i])) {
-						nonDfFieldIndexes.put(usedField, i);
-						break;
-					}
-				}
-			}
-		}
-		
-		return nonDfFieldIndexes;
 	}
 
 	private class CreateButtonHandler implements ActionListener {
@@ -1090,8 +1208,8 @@ public class DataVerificationDialog extends JDialog {
 					SortedSet<String> uniqueFileSegments = new TreeSet<>();
 
 					if(comboBoxMakeMultipleFiles.getSelectedIndex() > -1) {
-						boolean isDfField = isUniqueFieldDfField();
-						uniqueFileSegments = getUniqueFileSegments(isDfField);
+						boolean isDfField = isUniqueFieldDfField(comboBoxMakeMultipleFiles);
+						uniqueFileSegments = getUniqueFileSegments(isDfField, comboBoxMakeMultipleFiles);
 						recordLists = getUniqueFileRecordLists(uniqueFileSegments, isDfField);
 					} else {
 						recordLists.add(UiController.getUserData().getRecordList());
@@ -1100,8 +1218,6 @@ public class DataVerificationDialog extends JDialog {
 					//============================================
 					// FOR EACH LIST, GENERATE THE DATA AND REPORT
 					//============================================
-
-					List<List<Record>> finalArrayLists = verifyData(recordLists);
 
 					// time to save the file
 					JFileChooser fileChooser = new JFileChooser(UserPrefs.getLastUsedFolder());
@@ -1155,11 +1271,15 @@ public class DataVerificationDialog extends JDialog {
 
 						UserData userData = UiController.getUserData();
 						String[] headers = userData.getExportHeaders();
+						
+						List<List<Record>> finalArrayLists = verifyData(recordLists, files);
 
 						for(int j = 0; j < finalArrayLists.size(); ++j)
 							XLSXWriter.write(files.get(j), headers, userData.getExportData(finalArrayLists.get(j)), false, true);
 					}
 				}
+				
+				JOptionPane.showMessageDialog(DataVerificationDialog.this, "Data Verification export complete", "Success", JOptionPane.INFORMATION_MESSAGE);
 
 			} catch (Exception err) {
 				UiController.handle(err);

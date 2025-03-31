@@ -29,6 +29,7 @@ public class Load implements RunUtilityBehavior {
   		+ "<li>Merge multiple files, even of different types</li>"
   		+ "<li>Casing conversion</li>"
   		+ "<li>Encoding correction</li>"
+  		+ "<li>Data Verification creation</li>"
   		+ "<li>Inkjet file creation</li>"
   		+ "<li>Proof file creation</li>"
   		+ "<li>Sample file creation</li>"
