@@ -28,9 +28,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -100,6 +102,7 @@ public class DataVerificationDialog extends JDialog {
 
 	// internal
 	private ArrayList<JComboBox<String>> comboBoxList = new ArrayList<>();
+	private ArrayList<String> labelList = new ArrayList<>();
 	private HashSet<String> usedFields = new HashSet<>();
 
 	private JLabel lblSubTitle;
@@ -457,6 +460,8 @@ public class DataVerificationDialog extends JDialog {
 		contentPanel.add(btnMake, "cell 7 24 5 1,grow");
 		
 		fillComboBoxList();
+		fillLabelList();
+		
 		fillLineMap();
 		fillNameMap();
 		fillAddressMap();
@@ -509,6 +514,24 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxList.add(comboBoxPC);
 		comboBoxList.add(comboBoxCountry);
 		comboBoxList.add(comboBoxListOrder);
+	}
+	
+	private void fillLabelList() {
+		labelList.add(lblLine1.getText());
+		labelList.add(lblLine2.getText());
+		labelList.add(lblLine3.getText());
+		labelList.add(lblLine4.getText());
+		labelList.add(lblName1.getText());
+		labelList.add(lblName2.getText());
+		labelList.add(lblName3.getText());
+		labelList.add(lblName4.getText());
+		labelList.add(lblAddress1.getText());
+		labelList.add(lblAddress2.getText());
+		labelList.add(lblCity.getText());
+		labelList.add(lblProv.getText());
+		labelList.add(lblPC.getText());
+		labelList.add(lblCountry.getText());
+		labelList.add(lblListOrder.getText());
 	}
 
 	private void disableUi() {
@@ -748,14 +771,12 @@ public class DataVerificationDialog extends JDialog {
 	}
 	
 	
-	private void verifyData(List<List<Record>> recordLists) {
+	private List<List<Record>> verifyData(List<List<Record>> recordLists) {
 		HashMap<String, Integer> nonDfFieldIndexes = getNonDfFieldIndexes();
-		
+		SimpleDateFormat formatter = new SimpleDateFormat("M/d/yyyy");
+		String today = formatter.format(new Date());
 		int fileNum = 0;
-		
-		// List of LinkedHashMaps where the key is the record Id and the value is their address block 
-		ArrayList<LinkedHashMap<Integer, ArrayList<String>>> reasonList = new ArrayList<>();
-		
+		List<List<Record>> selectedRecordLists = new ArrayList<>();
 		boolean hasProv = (comboBoxProv.getSelectedIndex() > -1) ? true : false;
 		boolean hasPc = (comboBoxPC.getSelectedIndex() > -1) ? true : false;
 		boolean hasCountry = (comboBoxCountry.getSelectedIndex() > -1) ? true : false;
@@ -917,19 +938,80 @@ public class DataVerificationDialog extends JDialog {
 				}
 			}
 			
+			List<Record> listToAdd = new ArrayList<>();
+			HashMap<Integer, Record> idToRecordMap = new HashMap<>();
+			for(Record record : recordList) {
+				if(finalAddressMap.containsKey(record.getDfId())) {
+					idToRecordMap.put(record.getDfId(), record);
+					listToAdd.add(record);
+				}
+			}
+			
 			
 			// finally generate the files and reports
 			// Ask the user to save a name prior to processing data
-			// lets just start by creating the reports
 			
 			File dvReportFile = new File("DV_" + fileNum + ".txt");
 			StringBuffer dvReport = new StringBuffer();
+			
+			// Details
 			dvReport.append("=".repeat(80)).append("\n");
 			dvReport.append(" Details").append("\n");
 			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Job Number", "x")).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Job Number", textFieldJobNo.getText())).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Job Name", textFieldJobName.getText())).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "File", textFieldJobNo.getText())).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Date", today)).append("\n");
+			dvReport.append("\n").append("\n");
+			
+			// Destination
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(" Destination").append("\n");
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Total", String.valueOf(recordNum))).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Canada", String.valueOf(canadianNum))).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "United States", String.valueOf(usaNum))).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "International", String.valueOf(intNum))).append("\n");
+			dvReport.append("\n").append("\n");
+			
+			// Fields
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(" Fields").append("\n");
+			dvReport.append("=".repeat(80)).append("\n");
+			int fieldCounter = 0;
+			for(int i = 0; i < comboBoxList.size(); ++i) {
+				JComboBox<String> comboBox = comboBoxList.get(i);
+				if(comboBox.getSelectedIndex() > -1) {
+					++fieldCounter;
+					String fieldName = comboBox.getSelectedItem().toString();
+					dvReport.append(String.format(" %-2s. : %s", String.valueOf(fieldCounter), fieldName)).append("\n");
+				}
+			}
+			dvReport.append("\n").append("\n");
+			
+			// Records
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append(" Records").append("\n");
+			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append("\n");
+			
+			for (int id : finalAddressMap.keySet()) {
+				String reason = finalReasonMap.get(id);
+				String listOrder = getValueFromFieldName(idToRecordMap.get(id), comboBoxListOrder.getSelectedItem().toString(), nonDfFieldIndexes);
+				String finalReason = reason + " #" + listOrder;
+				dvReport.append(String.format("%-80s", finalReason)).append("\n");
+				dvReport.append("-".repeat(80)).append("\n");
+				dvReport.append("\n");
+				for(String line : finalAddressMap.get(id))
+					dvReport.append(line).append("\n");
+				dvReport.append("\n");
+			}
+			
+			selectedRecordLists.add(listToAdd);
 
 		} // End of list loop
+		
+		return selectedRecordLists;
 	}
 	
 	
@@ -998,15 +1080,15 @@ public class DataVerificationDialog extends JDialog {
 
 					// Disable so nothing bad happens
 					disableUi();
-					
+
 					//================================================================
 					// PLACE RECORDS INTO GROUPS BASED ON UNIQUE FIELD VALUES
 					//================================================================
-					
+
 					List<List<Record>> recordLists = new ArrayList<>();
-					
+
 					SortedSet<String> uniqueFileSegments = new TreeSet<>();
-					
+
 					if(comboBoxMakeMultipleFiles.getSelectedIndex() > -1) {
 						boolean isDfField = isUniqueFieldDfField();
 						uniqueFileSegments = getUniqueFileSegments(isDfField);
@@ -1014,15 +1096,71 @@ public class DataVerificationDialog extends JDialog {
 					} else {
 						recordLists.add(UiController.getUserData().getRecordList());
 					}
-									
+
 					//============================================
 					// FOR EACH LIST, GENERATE THE DATA AND REPORT
 					//============================================
-					
-					
-					
 
+					List<List<Record>> finalArrayLists = verifyData(recordLists);
+
+					// time to save the file
+					JFileChooser fileChooser = new JFileChooser(UserPrefs.getLastUsedFolder());
+					int returnVal = fileChooser.showSaveDialog(DataVerificationDialog.this);
+
+					if (returnVal == JFileChooser.APPROVE_OPTION) {
+						File file = fileChooser.getSelectedFile();
+						String fileName = file.getAbsolutePath();
+
+						if (fileName.toLowerCase().endsWith(".xlsx"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".xlsx"));
+						else if (fileName.toLowerCase().endsWith(".xlsm"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".xlsm"));
+						else if (fileName.toLowerCase().endsWith(".accdb"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".accdb"));
+						else if (fileName.toLowerCase().endsWith(".mdb"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".mdb"));
+						else if (fileName.toLowerCase().endsWith(".dbf"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".dbf"));
+						else if (fileName.toLowerCase().endsWith(".txt"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".txt"));
+						else if (fileName.toLowerCase().endsWith(".csv"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".csv"));
+						else if (fileName.toLowerCase().endsWith(".dat"))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".dat"));
+
+
+						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+						DateTimeFormatter idtf = DateTimeFormatter.ofPattern("MMddyyyyHHmmss");
+						LocalDateTime now = LocalDateTime.now();
+
+						List<File> files = new ArrayList<>();
+
+						if(uniqueFileSegments.size() > 0) {
+							for(String segment : uniqueFileSegments) {
+								// ensure only valid characters are present in file names
+								segment = StringUtils.stripAccents(segment).replaceAll("[^a-zA-Z0-9 -_]", "");
+
+								File tempFile = new File(fileName + " " + segment + ".xlsx");
+								if(tempFile.exists() && tempFile.isFile())
+									tempFile = new File(fileName + " " + segment + " " + idtf.format(now) + ".xlsx");
+
+								files.add(tempFile);
+							}
+						} else {
+							File tempFile  = new File(fileName + ".xlsx");
+							if(tempFile.exists() && tempFile.isFile())
+								tempFile  = new File(fileName + " " + idtf.format(now) + ".xlsx");
+							files.add(tempFile);
+						}
+
+						UserData userData = UiController.getUserData();
+						String[] headers = userData.getExportHeaders();
+
+						for(int j = 0; j < finalArrayLists.size(); ++j)
+							XLSXWriter.write(files.get(j), headers, userData.getExportData(finalArrayLists.get(j)), false, true);
+					}
 				}
+
 			} catch (Exception err) {
 				UiController.handle(err);
 			} finally {
@@ -1030,7 +1168,7 @@ public class DataVerificationDialog extends JDialog {
 			}
 		}
 	}
-	
+
 	
 
 	public JComboBox<String> getComboBoxLine1() {

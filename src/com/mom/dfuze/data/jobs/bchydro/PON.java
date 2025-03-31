@@ -383,6 +383,12 @@ public class PON implements RunBCHydroBehavior {
 			}
 		}
 		
+		// check for up to 4 dates
+		comments = getReformattedDate(comments);
+		comments = getReformattedDate(comments);
+		comments = getReformattedDate(comments);
+		comments = getReformattedDate(comments);
+		
 		comments = comments.replaceAll(":00", "").replaceAll(" \\.", ".").replaceAll("  ", " ").trim();
 		
 		if(!comments.endsWith("."))
