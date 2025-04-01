@@ -583,10 +583,10 @@ public class DataVerificationDialog extends JDialog {
 		lineMap.put(lblLine2.getText(), comboBoxLine2);
 		lineMap.put(lblLine3.getText(), comboBoxLine3);
 		lineMap.put(lblLine4.getText(), comboBoxLine4);
-		lineMap.put(lblLine5.getText(), comboBoxLine1); 
-		lineMap.put(lblLine6.getText(), comboBoxLine2);
-		lineMap.put(lblLine7.getText(), comboBoxLine3);
-		lineMap.put(lblLine8.getText(), comboBoxLine4);
+		lineMap.put(lblLine5.getText(), comboBoxLine5); 
+		lineMap.put(lblLine6.getText(), comboBoxLine6);
+		lineMap.put(lblLine7.getText(), comboBoxLine7);
+		lineMap.put(lblLine8.getText(), comboBoxLine8);
 	}
 	
 	private void fillNameMap() {
