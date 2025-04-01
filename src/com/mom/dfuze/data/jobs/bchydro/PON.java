@@ -172,11 +172,17 @@ public class PON implements RunBCHydroBehavior {
 	
 	private void splitReference(UserData userData) {
 		for(Record record : userData.getRecordList()) {
-			String[] parts = record.getRef().split("-", 2);
+			String ref = record.getRef();
+			String[] parts = ref.split("-", 2);
 			String misc1 = "";
 			String misc2 = "";
 			
 			if(parts.length > 1) {
+				misc1 = parts[0];
+				if(parts.length == 2)
+					misc2 = "\"" + parts[1] + "\"";
+			} else {
+				parts = ref.split(" (?=[^ ]+$)");
 				misc1 = parts[0];
 				if(parts.length == 2)
 					misc2 = "\"" + parts[1] + "\"";

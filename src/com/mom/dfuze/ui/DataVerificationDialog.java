@@ -27,6 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,7 +53,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
-import javax.swing.ComboBoxModel;
 
 @SuppressWarnings("serial")
 public class DataVerificationDialog extends JDialog {
@@ -60,6 +61,10 @@ public class DataVerificationDialog extends JDialog {
 	private JComboBox<String> comboBoxLine2;
 	private JComboBox<String> comboBoxLine3;
 	private JComboBox<String> comboBoxLine4;
+	private JComboBox<String> comboBoxLine5;
+	private JComboBox<String> comboBoxLine6;
+	private JComboBox<String> comboBoxLine7;
+	private JComboBox<String> comboBoxLine8;
 	private JComboBox<String> comboBoxName1;
 	private JComboBox<String> comboBoxName2;
 	private JComboBox<String> comboBoxName3;
@@ -79,6 +84,10 @@ public class DataVerificationDialog extends JDialog {
 	private JLabel lblLine2;
 	private JLabel lblLine3;
 	private JLabel lblLine4;
+	private JLabel lblLine5;
+	private JLabel lblLine6;
+	private JLabel lblLine7;
+	private JLabel lblLine8;
 	private JLabel lblName1;
 	private JLabel lblName2;
 	private JLabel lblName3;
@@ -144,6 +153,8 @@ public class DataVerificationDialog extends JDialog {
 	private JSeparator separatorSettingsTop_1;
 	private JLabel lblSettings;
 	
+	private static final String STRIP_IN_REGEX = "(?i)([I][N]__)+";
+	
 	public enum reason {
 		FIRST_RECORD("First Record"),
 		LAST_RECORD("Last Record"),
@@ -180,7 +191,7 @@ public class DataVerificationDialog extends JDialog {
 		contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(
-				new MigLayout("insets 10 28 20 28, gap 0", "[62px:n:62px][42px:n:42px,grow][22px:n:22px][28px:n:28px][62px:n:62px][62px:n:62px][28px:n:28px][62px:n:62px,grow][62px:n:62px][28px:n:28px][62px:n:62px][62px:n:62px]", "[6px:n:6px][36px:n:36px][4px:n:4px][28px:n:28px][28px:n:28px][14px:n:14px][36px:n:36px][4px:n:4px][28px:n:28px][14px:n:14px][36px:n:36px][4px:n:4px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][28px:n:28px][36px:n:36px][28px:n:28px]"));
+				new MigLayout("insets 10 28 20 28, gap 0", "[62px:n:62px,grow][42px:n:42px,grow][22px:n:22px][28px:n:28px][62px:n:62px,grow][62px:n:62px][28px:n:28px][62px:n:62px,grow][62px:n:62px][28px:n:28px][62px:n:62px,grow][62px:n:62px]", "[6px:n:6px][36px:n:36px][4px:n:4px][28px:n:28px][28px:n:28px][14px:n:14px][36px:n:36px][4px:n:4px][28px:n:28px][14px:n:14px][36px:n:36px][4px:n:4px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][10px:n:10px][36px:n:36px][28px:n:28px][28px:n:28px][36px:n:36px][28px:n:28px]"));
 		
 		lblDetails = new JLabel("Details");
 		lblDetails.setForeground(Theme.TITLE_COLOR);
@@ -207,6 +218,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxMakeMultipleFiles.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		comboBoxMakeMultipleFiles.setPrototypeDisplayValue(COMBOBOX_PROTOTYPE_DISPLAY);
 		comboBoxMakeMultipleFiles.setSelectedIndex(-1);
+		comboBoxMakeMultipleFiles.setName(lblMakeMultipleFiles.getText());
 		comboBoxMakeMultipleFiles.addActionListener(new ComboBoxMultipleFilesHandler());
 		
 		textFieldJobNo = new JTextField();
@@ -239,7 +251,7 @@ public class DataVerificationDialog extends JDialog {
 		chckbxIncludeAllRecords.setBackground(new Color(245, 245, 245));
 		contentPanel.add(chckbxIncludeAllRecords, "cell 0 8 4 1,aligny center");
 		
-		lblLimit1RecordPerValue = new JLabel("Only include 1 record per unique value found in:");
+		lblLimit1RecordPerValue = new JLabel("<html>Only include 1 record per unique value found in:<br>\r\n<i>This will override Min, Max, Shortest, Longest etc...</i></html>");
 		lblLimit1RecordPerValue.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		contentPanel.add(lblLimit1RecordPerValue, "cell 4 8 5 1,alignx right,aligny center");
 		
@@ -247,6 +259,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxLimit1RecordPerValue.setSelectedIndex(-1);
 		comboBoxLimit1RecordPerValue.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		comboBoxLimit1RecordPerValue.setPrototypeDisplayValue(COMBOBOX_PROTOTYPE_DISPLAY);
+		comboBoxLimit1RecordPerValue.setName(lblLimit1RecordPerValue.getText());
 		comboBoxLimit1RecordPerValue.addActionListener(new ComboBoxLimit1RecordPerValueHandler());
 		contentPanel.add(comboBoxLimit1RecordPerValue, "cell 10 8 2 1,grow");
 		
@@ -311,25 +324,77 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxLine4.setName(lblLine4.getText());
 		contentPanel.add(comboBoxLine4, "cell 10 13 2 1,grow");
 		
+		lblLine5 = new JLabel("LINE5");
+		lblLine5.setForeground(Color.BLACK);
+		lblLine5.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(lblLine5, "cell 0 15 3 1");
+		
+		lblLine6 = new JLabel("LINE6");
+		lblLine6.setForeground(Color.BLACK);
+		lblLine6.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(lblLine6, "cell 4 15 2 1");
+		
+		lblLine7 = new JLabel("LINE7");
+		lblLine7.setForeground(Color.BLACK);
+		lblLine7.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(lblLine7, "cell 7 15 2 1");
+		
+		lblLine8 = new JLabel("LINE8");
+		lblLine8.setForeground(Color.BLACK);
+		lblLine8.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(lblLine8, "cell 10 15 2 1");
+		
+		comboBoxLine5 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
+		comboBoxLine5.setPrototypeDisplayValue(COMBOBOX_PROTOTYPE_DISPLAY);
+		comboBoxLine5.setSelectedIndex(-1);
+		comboBoxLine5.addItemListener(new ComboBoxMappingListener());
+		comboBoxLine5.setName(lblLine5.getText());
+		comboBoxLine5.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(comboBoxLine5, "cell 0 16 3 1,grow");
+		
+		comboBoxLine6 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
+		comboBoxLine6.setPrototypeDisplayValue(COMBOBOX_PROTOTYPE_DISPLAY);
+		comboBoxLine6.setSelectedIndex(-1);
+		comboBoxLine6.addItemListener(new ComboBoxMappingListener());
+		comboBoxLine6.setName(lblLine6.getText());
+		comboBoxLine6.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(comboBoxLine6, "cell 4 16 2 1,grow");
+		
+		comboBoxLine7 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
+		comboBoxLine7.setPrototypeDisplayValue(COMBOBOX_PROTOTYPE_DISPLAY);
+		comboBoxLine7.setSelectedIndex(-1);
+		comboBoxLine7.addItemListener(new ComboBoxMappingListener());
+		comboBoxLine7.setName(lblLine7.getText());
+		comboBoxLine7.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(comboBoxLine7, "cell 7 16 2 1,grow");
+		
+		comboBoxLine8 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
+		comboBoxLine8.setPrototypeDisplayValue(COMBOBOX_PROTOTYPE_DISPLAY);
+		comboBoxLine8.setSelectedIndex(-1);
+		comboBoxLine8.addItemListener(new ComboBoxMappingListener());
+		comboBoxLine8.setName(lblLine8.getText());
+		comboBoxLine8.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(comboBoxLine8, "cell 10 16 2 1,grow");
+		
 		lblName1 = new JLabel("NAME1");
 		lblName1.setForeground(Color.BLACK);
 		lblName1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName1, "cell 0 15");
+		contentPanel.add(lblName1, "cell 0 18");
 		
 		lblName2 = new JLabel("NAME2");
 		lblName2.setForeground(Color.BLACK);
 		lblName2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName2, "cell 4 15");
+		contentPanel.add(lblName2, "cell 4 18");
 		
 		lblName3 = new JLabel("NAME3");
 		lblName3.setForeground(Color.BLACK);
 		lblName3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName3, "cell 7 15");
+		contentPanel.add(lblName3, "cell 7 18");
 		
 		lblName4 = new JLabel("NAME4");
 		lblName4.setForeground(Color.BLACK);
 		lblName4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblName4, "cell 10 15");
+		contentPanel.add(lblName4, "cell 10 18");
 		
 		comboBoxName1 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -337,7 +402,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName1.setSelectedIndex(-1);
 		comboBoxName1.addItemListener(new ComboBoxMappingListener());
 		comboBoxName1.setName(lblName1.getText());
-		contentPanel.add(comboBoxName1, "cell 0 16 3 1,grow");
+		contentPanel.add(comboBoxName1, "cell 0 19 3 1,grow");
 		
 		comboBoxName2 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -345,7 +410,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName2.setSelectedIndex(-1);
 		comboBoxName2.addItemListener(new ComboBoxMappingListener());
 		comboBoxName2.setName(lblName2.getText());
-		contentPanel.add(comboBoxName2, "cell 4 16 2 1,grow");
+		contentPanel.add(comboBoxName2, "cell 4 19 2 1,grow");
 		
 		comboBoxName3 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -353,7 +418,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName3.setSelectedIndex(-1);
 		comboBoxName3.addItemListener(new ComboBoxMappingListener());
 		comboBoxName3.setName(lblName3.getText());
-		contentPanel.add(comboBoxName3, "cell 7 16 2 1,grow");
+		contentPanel.add(comboBoxName3, "cell 7 19 2 1,grow");
 		
 		comboBoxName4 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxName4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -361,27 +426,27 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxName4.setSelectedIndex(-1);
 		comboBoxName4.addItemListener(new ComboBoxMappingListener());
 		comboBoxName4.setName(lblName4.getText());
-		contentPanel.add(comboBoxName4, "cell 10 16 2 1,grow");
+		contentPanel.add(comboBoxName4, "cell 10 19 2 1,grow");
 
 		lblAddress1 = new JLabel("ADDRESS1");
 		lblAddress1.setForeground(Color.BLACK);
 		lblAddress1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress1, "cell 0 18 2 1,aligny center");
+		contentPanel.add(lblAddress1, "cell 0 21 2 1,aligny center");
 
 		lblAddress2 = new JLabel("ADDRESS2");
 		lblAddress2.setForeground(Color.BLACK);
 		lblAddress2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress2, "cell 4 18 2 1,aligny center");
+		contentPanel.add(lblAddress2, "cell 4 21 2 1,aligny center");
 
 		lblAddress3 = new JLabel("ADDRESS3");
 		lblAddress3.setForeground(Color.BLACK);
 		lblAddress3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress3, "cell 7 18,aligny center");
+		contentPanel.add(lblAddress3, "cell 7 21,aligny center");
 
 		lblAddress4 = new JLabel("ADDRESS4");
 		lblAddress4.setForeground(Color.BLACK);
 		lblAddress4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblAddress4, "cell 10 18,aligny center");
+		contentPanel.add(lblAddress4, "cell 10 21,aligny center");
 
 		comboBoxAddress1 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -389,7 +454,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress1.setSelectedIndex(-1);
 		comboBoxAddress1.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress1.setName(lblAddress1.getText());
-		contentPanel.add(comboBoxAddress1, "cell 0 19 3 1,grow");
+		contentPanel.add(comboBoxAddress1, "cell 0 22 3 1,grow");
 
 		comboBoxAddress2 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -397,7 +462,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress2.setSelectedIndex(-1);
 		comboBoxAddress2.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress2.setName(lblAddress2.getText());
-		contentPanel.add(comboBoxAddress2, "cell 4 19 2 1,grow");
+		contentPanel.add(comboBoxAddress2, "cell 4 22 2 1,grow");
 
 		comboBoxAddress3 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -405,7 +470,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress3.setSelectedIndex(-1);
 		comboBoxAddress3.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress3.setName(lblAddress3.getText());
-		contentPanel.add(comboBoxAddress3, "cell 7 19 2 1,grow");
+		contentPanel.add(comboBoxAddress3, "cell 7 22 2 1,grow");
 
 		comboBoxAddress4 = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxAddress4.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -413,27 +478,27 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxAddress4.setSelectedIndex(-1);
 		comboBoxAddress4.addItemListener(new ComboBoxMappingListener());
 		comboBoxAddress4.setName(lblAddress4.getText());
-		contentPanel.add(comboBoxAddress4, "cell 10 19 2 1,grow");
+		contentPanel.add(comboBoxAddress4, "cell 10 22 2 1,grow");
 
 		lblCity = new JLabel("CITY");
 		lblCity.setForeground(Color.BLACK);
 		lblCity.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblCity, "cell 0 21 2 1,aligny center");
+		contentPanel.add(lblCity, "cell 0 24 2 1,aligny center");
 
 		lblProv = new JLabel("PROVINCE");
 		lblProv.setForeground(Color.BLACK);
 		lblProv.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblProv, "cell 4 21 2 1,aligny center");
+		contentPanel.add(lblProv, "cell 4 24 2 1,aligny center");
 
 		lblPC = new JLabel("PC");
 		lblPC.setForeground(Color.BLACK);
 		lblPC.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblPC, "cell 7 21,aligny center");
+		contentPanel.add(lblPC, "cell 7 24,aligny center");
 
 		lblCountry = new JLabel("COUNTRY");
 		lblCountry.setForeground(Color.BLACK);
 		lblCountry.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		contentPanel.add(lblCountry, "cell 10 21,aligny center");
+		contentPanel.add(lblCountry, "cell 10 24,aligny center");
 
 		comboBoxCity = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxCity.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -441,7 +506,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxCity.setSelectedIndex(-1);
 		comboBoxCity.addItemListener(new ComboBoxMappingListener());
 		comboBoxCity.setName(lblCity.getText());
-		contentPanel.add(comboBoxCity, "cell 0 22 3 1,grow");
+		contentPanel.add(comboBoxCity, "cell 0 25 3 1,grow");
 
 		comboBoxProv = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxProv.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -449,7 +514,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxProv.setSelectedIndex(-1);
 		comboBoxProv.addItemListener(new ComboBoxMappingListener());
 		comboBoxProv.setName(lblProv.getText());
-		contentPanel.add(comboBoxProv, "cell 4 22 2 1,grow");
+		contentPanel.add(comboBoxProv, "cell 4 25 2 1,grow");
 
 		comboBoxPC = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxPC.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -457,7 +522,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxPC.setSelectedIndex(-1);
 		comboBoxPC.addItemListener(new ComboBoxMappingListener());
 		comboBoxPC.setName(lblPC.getText());
-		contentPanel.add(comboBoxPC, "cell 7 22 2 1,grow");
+		contentPanel.add(comboBoxPC, "cell 7 25 2 1,grow");
 
 		comboBoxCountry = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxCountry.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -465,12 +530,12 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxCountry.setSelectedIndex(-1);
 		comboBoxCountry.addItemListener(new ComboBoxMappingListener());
 		comboBoxCountry.setName(lblCountry.getText());
-		contentPanel.add(comboBoxCountry, "cell 10 22 2 1,grow");
+		contentPanel.add(comboBoxCountry, "cell 10 25 2 1,grow");
 
 		lblListOrder = new JLabel("LISTORDER");
 		lblListOrder.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		lblListOrder.setForeground(new Color(220, 20, 60));
-		contentPanel.add(lblListOrder, "cell 0 24 12 1,aligny center");
+		contentPanel.add(lblListOrder, "cell 0 27 12 1,aligny center");
 
 		comboBoxListOrder = new JComboBox<String>(new DefaultComboBoxModel<String>(UiController.getUserData().getExportHeaders()));
 		comboBoxListOrder.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -479,15 +544,15 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxListOrder.addItemListener(new ComboBoxMappingListener());
 		comboBoxListOrder.addActionListener(new ComboBoxListOrderHandler());
 		comboBoxListOrder.setName(lblListOrder.getText());
-		contentPanel.add(comboBoxListOrder, "cell 0 25 3 1,grow");
+		contentPanel.add(comboBoxListOrder, "cell 0 28 3 1,grow");
 
 		JSeparator separatorBottom = new JSeparator();
-		contentPanel.add(separatorBottom, "cell 0 27 12 1,growx,aligny center");
+		contentPanel.add(separatorBottom, "cell 0 30 12 1,growx,aligny center");
 
 		btnReset = new JButton("Reset Fields");
 		btnReset.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 		btnReset.addActionListener(new ResetButtonHandler());
-		contentPanel.add(btnReset, "cell 0 28 3 1,grow");
+		contentPanel.add(btnReset, "cell 0 31 3 1,grow");
 
 		btnMake = new JButton("Make Data Verification");
 		btnMake.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -496,8 +561,8 @@ public class DataVerificationDialog extends JDialog {
 				lblSubTitle = new JLabel("LISTORDER is required");
 				lblSubTitle.setForeground(new Color(220, 20, 60));
 				lblSubTitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-				contentPanel.add(lblSubTitle, "cell 4 28 2 1,alignx right");
-		contentPanel.add(btnMake, "cell 7 28 5 1,grow");
+				contentPanel.add(lblSubTitle, "cell 4 31 2 1,alignx right");
+		contentPanel.add(btnMake, "cell 7 31 5 1,grow");
 		
 		fillComboBoxList();
 		fillLabelList();
@@ -505,6 +570,8 @@ public class DataVerificationDialog extends JDialog {
 		fillLineMap();
 		fillNameMap();
 		fillAddressMap();
+		
+		addDeleteHandlers();
 		
 		pack();
 	    setLocationRelativeTo(frame);
@@ -516,6 +583,10 @@ public class DataVerificationDialog extends JDialog {
 		lineMap.put(lblLine2.getText(), comboBoxLine2);
 		lineMap.put(lblLine3.getText(), comboBoxLine3);
 		lineMap.put(lblLine4.getText(), comboBoxLine4);
+		lineMap.put(lblLine5.getText(), comboBoxLine1); 
+		lineMap.put(lblLine6.getText(), comboBoxLine2);
+		lineMap.put(lblLine7.getText(), comboBoxLine3);
+		lineMap.put(lblLine8.getText(), comboBoxLine4);
 	}
 	
 	private void fillNameMap() {
@@ -541,6 +612,10 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxList.add(comboBoxLine2);
 		comboBoxList.add(comboBoxLine3);
 		comboBoxList.add(comboBoxLine4);
+		comboBoxList.add(comboBoxLine5);
+		comboBoxList.add(comboBoxLine6);
+		comboBoxList.add(comboBoxLine7);
+		comboBoxList.add(comboBoxLine8);
 		comboBoxList.add(comboBoxName1);
 		comboBoxList.add(comboBoxName2);
 		comboBoxList.add(comboBoxName3);
@@ -561,6 +636,10 @@ public class DataVerificationDialog extends JDialog {
 		labelList.add(lblLine2.getText());
 		labelList.add(lblLine3.getText());
 		labelList.add(lblLine4.getText());
+		labelList.add(lblLine5.getText());
+		labelList.add(lblLine6.getText());
+		labelList.add(lblLine7.getText());
+		labelList.add(lblLine8.getText());
 		labelList.add(lblName1.getText());
 		labelList.add(lblName2.getText());
 		labelList.add(lblName3.getText());
@@ -572,6 +651,14 @@ public class DataVerificationDialog extends JDialog {
 		labelList.add(lblPC.getText());
 		labelList.add(lblCountry.getText());
 		labelList.add(lblListOrder.getText());
+	}
+	
+	private void addDeleteHandlers() {
+		for(JComboBox<String> comboBox : comboBoxList)
+			comboBox.addKeyListener(new ComboBoxDeleteHandler());
+		
+		comboBoxMakeMultipleFiles.addKeyListener(new ComboBoxDeleteHandler());
+		comboBoxLimit1RecordPerValue.addKeyListener(new ComboBoxDeleteHandler());
 	}
 
 	private void disableUi() {
@@ -640,6 +727,34 @@ public class DataVerificationDialog extends JDialog {
 			}
 
 		}
+	}
+	
+	private class ComboBoxDeleteHandler implements KeyListener {
+
+		public void keyPressed(KeyEvent e) {
+			int key = e.getKeyCode();
+			if (key == 127 || key == 8) {
+				if(e.getSource() instanceof JComboBox) {
+					@SuppressWarnings("rawtypes")
+					JComboBox comboBox = (JComboBox) e.getSource();
+					
+					if(comboBox.getSelectedIndex() > -1)
+						if(labelList.contains(comboBox.getName()))
+							usedFields.remove(comboBox.getSelectedItem().toString()); // remove the field from mapping
+					
+					if(comboBox.getName().equalsIgnoreCase(lblLimit1RecordPerValue.getText())) {
+						chckbxIncludeAllRecords.setSelected(false);
+						chckbxIncludeAllRecords.setEnabled(true);
+					}
+					
+					comboBox.setSelectedIndex(-1);
+				}
+			}
+		}
+
+		public void keyTyped(KeyEvent e) {}
+
+		public void keyReleased(KeyEvent e) {}
 	}
 	
 
@@ -1256,6 +1371,7 @@ public class DataVerificationDialog extends JDialog {
 							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".dat"));
 
 
+						@SuppressWarnings("unused")
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
 						DateTimeFormatter idtf = DateTimeFormatter.ofPattern("MMddyyyyHHmmss");
 						LocalDateTime now = LocalDateTime.now();
@@ -1282,6 +1398,16 @@ public class DataVerificationDialog extends JDialog {
 
 						UserData userData = UiController.getUserData();
 						String[] headers = userData.getExportHeaders();
+						
+						HashSet<String> uniqueHeaders = new HashSet<>();
+
+						for(int i = headers.length - 1; i >= 0; --i) {
+							if(!uniqueHeaders.add(headers[i].replaceAll(STRIP_IN_REGEX, ""))) {
+								uniqueHeaders.add(headers[i]);
+							} else {
+								headers[i] = headers[i].replaceAll(STRIP_IN_REGEX, "");
+							}
+						}
 						
 						List<List<Record>> finalArrayLists = verifyData(recordLists, files);
 
