@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -975,6 +976,11 @@ public class DataVerificationDialog extends JDialog {
 
 		for(List<Record> recordList : recordLists) {
 			
+			// Create a randomized copy
+			List<Record> randomizedRecordList = new ArrayList<Record>(recordList);
+			Collections.shuffle(randomizedRecordList);
+			
+			// Get unique values if we are limited to 1 per Unique value
 			SortedSet<String> uniqueValues = new TreeSet<>();
 			if(comboBoxLimit1RecordPerValue.getSelectedIndex() > -1)
 				uniqueValues = getUniqueFileSegments(isUniqueValueDfField, comboBoxLimit1RecordPerValue);
@@ -1021,7 +1027,6 @@ public class DataVerificationDialog extends JDialog {
 			HashMap<Integer, ArrayList<String>> allAddressMap = new HashMap<>();
 			
 			for(Record record : recordList) {
-
 				// get the lineLists
 				ArrayList<String> lineList = getLinesFromList(record, lineMap, inHeaders);
 				ArrayList<String> nameList = getLinesFromList(record, nameMap, inHeaders);
@@ -1134,7 +1139,7 @@ public class DataVerificationDialog extends JDialog {
 				
 				// add as many random records as we can to hit 10 records
 				if(finalAddressMap.size() < 10) {
-					for(Record record : recordList) {
+					for(Record record : randomizedRecordList) {
 						if(finalAddressMap.putIfAbsent(record.getDfId(), allAddressMap.get(record.getDfId())) == null) // key was NOT present, thus was added and returns null
 							finalReasonMap.put(record.getDfId(), reason.RANDOM.getName());
 						if(finalAddressMap.size() == 10)
@@ -1148,7 +1153,7 @@ public class DataVerificationDialog extends JDialog {
 			// ===========================================================
 			if(comboBoxLimit1RecordPerValue.getSelectedIndex() > -1) {
 				String fieldName = comboBoxLimit1RecordPerValue.getSelectedItem().toString();
-				for(Record record : recordList) {
+				for(Record record : randomizedRecordList) {
 					String uniqueValue = "";
 					
 					if(!isUniqueValueDfField)
