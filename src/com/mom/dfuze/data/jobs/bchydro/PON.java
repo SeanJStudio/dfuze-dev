@@ -97,8 +97,8 @@ public class PON implements RunBCHydroBehavior {
 	
 	// Misc
 	public final Pattern OUTAGE_DATE_PATTERN = Pattern.compile("\\d+(\\.|\\s)?\\D+(,)?(\\s)?", Pattern.CASE_INSENSITIVE);
-	public final Pattern FIX_COMMENTS_DATE_YEAR_PATTERN = Pattern.compile("(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\D+(,|\\s)?(,|\\s)?\\d(\\d)?(th|rd)?(,|\\s)?(,|\\s)?", Pattern.CASE_INSENSITIVE);
-	public final Pattern COMMENTS_DATE_YEAR_PATTERN = Pattern.compile("(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\D+(,|\\s)?(,|\\s)?\\d(\\d)?(th|rd)?(,|\\s)?(,|\\s)?\\d\\d\\d\\d", Pattern.CASE_INSENSITIVE);
+	public final Pattern FIX_COMMENTS_DATE_YEAR_PATTERN = Pattern.compile("(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\D+(,|\\s)?(,|\\s)?\\d(\\d)?(th|rd|st)?(,|\\s)?(,|\\s)?", Pattern.CASE_INSENSITIVE);
+	public final Pattern COMMENTS_DATE_YEAR_PATTERN = Pattern.compile("(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\D+(,|\\s)?(,|\\s)?\\d(\\d)?(th|rd|st)?(,|\\s)?(,|\\s)?\\d\\d\\d\\d", Pattern.CASE_INSENSITIVE);
 	
 	public final Pattern FIX_COMMENTS_TIME_SPACING_PATTERN = Pattern.compile("\\d+(?=(\\.)?(a|p)(\\.)?m(\\.)?)", Pattern.CASE_INSENSITIVE);
 	public final Pattern AM_PATTERN = Pattern.compile("a(\\.)?m(\\.)?", Pattern.CASE_INSENSITIVE);
@@ -397,7 +397,7 @@ public class PON implements RunBCHydroBehavior {
 		
 		comments = comments.replaceAll(":00", "").replaceAll(" \\.", ".").replaceAll("  ", " ").trim();
 		
-		if(!comments.endsWith("."))
+		if(!comments.endsWith(".") && comments.length() > 0)
 			comments += ".";
 			
 		return comments;
