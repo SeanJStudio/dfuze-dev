@@ -157,6 +157,8 @@ public class DataVerificationDialog extends JDialog {
 	private JSeparator separatorSettingsTop_1;
 	private JLabel lblSettings;
 	
+	private String newLine = "\r\n";
+	
 	private static final String STRIP_IN_REGEX = "(?i)([I][N]__)+";
 	
 	public enum reason {
@@ -1209,23 +1211,23 @@ public class DataVerificationDialog extends JDialog {
 			StringBuffer dvReport = new StringBuffer();
 			
 			// Details
-			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(" Details").append("\n");
-			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Job Number", textFieldJobNo.getText())).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Job Name", textFieldJobName.getText())).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "File", files.get(fileNum).getName())).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Date", today)).append("\n");
-			dvReport.append("\n").append("\n");
+			dvReport.append("=".repeat(80)).append(newLine);
+			dvReport.append(" Details").append(newLine);
+			dvReport.append("=".repeat(80)).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "Job Number", textFieldJobNo.getText())).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "Job Name", textFieldJobName.getText())).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "File", files.get(fileNum).getName())).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "Date", today)).append(newLine);
+			dvReport.append(newLine).append(newLine);
 			
 			// Destination
-			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(" Destination").append("\n");
-			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Total", String.valueOf(recordNum))).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Canada", String.valueOf(canadianNum))).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "United States", String.valueOf(usaNum))).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "International", String.valueOf(intNum))).append("\n");
+			dvReport.append("=".repeat(80)).append(newLine);
+			dvReport.append(" Destination").append(newLine);
+			dvReport.append("=".repeat(80)).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "Total", String.valueOf(recordNum))).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "Canada", String.valueOf(canadianNum))).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "United States", String.valueOf(usaNum))).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "International", String.valueOf(intNum))).append(newLine);
 			dvReport.append("\n").append("\n");
 			
 			// Quality Check
@@ -1246,30 +1248,30 @@ public class DataVerificationDialog extends JDialog {
 			dvReport.append("=".repeat(80)).append("\n");
 			dvReport.append(" Quality Check").append("\n");
 			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Max Lines", "#" + listOrderOfMaxLines + " (" + maxLines + " Lines)")).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Longest Line", "#" + listOrderOfLongestLine + " (" + longestLineChars + " Chars)")).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Max Lines", "#" + listOrderOfMaxLines + " (" + maxLines + " Lines)")).append(newLine);
+			dvReport.append(String.format(" %-20s : %s", "Longest Line", "#" + listOrderOfLongestLine + " (" + longestLineChars + " Chars)")).append(newLine);
 			dvReport.append("\n").append("\n");
 
 			// Fields
-			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(" Fields").append("\n");
-			dvReport.append("=".repeat(80)).append("\n");
+			dvReport.append("=".repeat(80)).append(newLine);
+			dvReport.append(" Fields").append(newLine);
+			dvReport.append("=".repeat(80)).append(newLine);
 			int fieldCounter = 0;
 			for(int i = 0; i < comboBoxList.size(); ++i) {
 				JComboBox<String> comboBox = comboBoxList.get(i);
 				if(comboBox.getSelectedIndex() > -1) {
 					++fieldCounter;
 					String fieldName = comboBox.getSelectedItem().toString();
-					dvReport.append(String.format(" %2s. %s", String.valueOf(fieldCounter), fieldName)).append("\n");
+					dvReport.append(String.format(" %2s. %s", String.valueOf(fieldCounter), fieldName)).append(newLine);
 				}
 			}
-			dvReport.append("\n").append("\n");
+			dvReport.append(newLine).append(newLine);
 			
 			// Records
-			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(" Records").append("\n");
-			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append("\n");
+			dvReport.append("=".repeat(80)).append(newLine);
+			dvReport.append(" Records").append(newLine);
+			dvReport.append("=".repeat(80)).append(newLine);
+			dvReport.append(newLine);
 			
 			
 			HashMap<Integer, String> idToListOrderMap = new HashMap<>();
@@ -1288,12 +1290,12 @@ public class DataVerificationDialog extends JDialog {
 				String listOrder = entry.getValue();
 				String reason = finalReasonMap.get(id);
 				String finalReason = reason + " #" + listOrder;
-				dvReport.append(String.format("%80s", finalReason)).append("\n");
-				dvReport.append("-".repeat(80)).append("\n");
-				dvReport.append("\n");
+				dvReport.append(String.format("%80s", finalReason)).append(newLine);
+				dvReport.append("-".repeat(80)).append(newLine);
+				dvReport.append(newLine);
 				for(String line : finalAddressMap.get(id))
-					dvReport.append(line).append("\n");
-				dvReport.append("\n");
+					dvReport.append(line).append(newLine);
+				dvReport.append(newLine);
 			}
 			
 			/*for (int id : finalAddressMap.keySet()) {
