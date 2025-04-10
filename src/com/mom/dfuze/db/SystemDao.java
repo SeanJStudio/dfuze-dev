@@ -53,6 +53,7 @@ public class SystemDao {
 		  
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.CalculateDistance()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.DataDump()),
+		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.DataVerification()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.Dedupe()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.FixApartmentHyphens()),
 		  //new UtilityJob(new com.mom.dfuze.data.jobs.utility.Hygiene()),

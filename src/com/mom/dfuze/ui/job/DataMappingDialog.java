@@ -674,6 +674,8 @@ public class DataMappingDialog extends JDialog {
 			labelName = "REFERENCE";
 		else if (field.equals(UserData.fieldName.COMMENTS.getName()))
 			labelName = "COMMENTS";
+		else if (field.equals(UserData.fieldName.IS_PROOF.getName()))
+			labelName = "IS PROOF";
 		else if (field.equals(UserData.fieldName.MISC1.getName()))
 			labelName = "MISC 1";
 		else if (field.equals(UserData.fieldName.MISC2.getName()))
@@ -1291,6 +1293,8 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setRefIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.COMMENTS.getName()))
 					UiController.getUserData().setCommentsIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.IS_PROOF.getName()))
+					UiController.getUserData().setIsProofIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.MISC1.getName()))
 					UiController.getUserData().setMisc1Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.MISC2.getName()))

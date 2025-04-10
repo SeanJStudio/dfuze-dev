@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.mom.dfuze.ApplicationException;
 import com.mom.dfuze.data.Record;
+import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.Theme;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
@@ -38,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +49,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.JSeparator;
 import javax.swing.JComboBox;
@@ -1027,6 +1030,9 @@ public class DataVerificationDialog extends JDialog {
 			HashMap<Integer, ArrayList<String>> allAddressMap = new HashMap<>();
 			
 			for(Record record : recordList) {
+				// default value for isProof
+				record.setIsProof("");
+				
 				// get the lineLists
 				ArrayList<String> lineList = getLinesFromList(record, lineMap, inHeaders);
 				ArrayList<String> nameList = getLinesFromList(record, nameMap, inHeaders);
@@ -1186,9 +1192,14 @@ public class DataVerificationDialog extends JDialog {
 			// ===========================================================
 			List<Record> listToAdd = new ArrayList<>();
 			
-			for(Record record : recordList)
-				if(finalAddressMap.containsKey(record.getDfId()))
+			for(Record record : recordList) {
+				if(finalAddressMap.containsKey(record.getDfId())) {
 					listToAdd.add(record);
+					record.setIsProof("Y");
+				}
+			}
+			
+			Collections.sort(listToAdd, (Comparator<? super Record>)new RecordSorters.CompareByInFieldAscAsNumber(comboBoxListOrder.getSelectedIndex()));
 
 			// ===========================================================
 			// finally generate the reports
@@ -1223,16 +1234,20 @@ public class DataVerificationDialog extends JDialog {
 				listOrderOfMaxLines = getValueFromFieldName(idToRecordMap.get(maxLinesId), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
 			
 			String listOrderOfLongestLine = "";
-			if(longestAddress >= longestName && longestAddressId > -1)
+			int longestLineChars = 0;
+			if(longestAddress >= longestName && longestAddressId > -1) {
 				listOrderOfLongestLine = getValueFromFieldName(idToRecordMap.get(longestAddressId), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
-			else if(longestNameId > -1)
+				longestLineChars = longestAddress;
+			} else if(longestNameId > -1) {
 				listOrderOfLongestLine = getValueFromFieldName(idToRecordMap.get(longestNameId), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
+				longestLineChars = longestName;
+			}
 			
 			dvReport.append("=".repeat(80)).append("\n");
 			dvReport.append(" Quality Check").append("\n");
 			dvReport.append("=".repeat(80)).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Max Lines", "#" + listOrderOfMaxLines)).append("\n");
-			dvReport.append(String.format(" %-20s : %s", "Longest Line", "#" + listOrderOfLongestLine)).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Max Lines", "#" + listOrderOfMaxLines + " (" + maxLines + " Lines)")).append("\n");
+			dvReport.append(String.format(" %-20s : %s", "Longest Line", "#" + listOrderOfLongestLine + " (" + longestLineChars + " Chars)")).append("\n");
 			dvReport.append("\n").append("\n");
 
 			// Fields
@@ -1256,7 +1271,32 @@ public class DataVerificationDialog extends JDialog {
 			dvReport.append("=".repeat(80)).append("\n");
 			dvReport.append("\n");
 			
+			
+			HashMap<Integer, String> idToListOrderMap = new HashMap<>();
 			for (int id : finalAddressMap.keySet()) {
+				String listOrder = getValueFromFieldName(idToRecordMap.get(id), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
+				idToListOrderMap.put(id, listOrder);
+			}
+			
+			List<Map.Entry<Integer, String>> sortedIdToListOrderEntries = idToListOrderMap.entrySet()
+	                .stream()
+	                .sorted(Comparator.comparingInt(entry -> Integer.parseInt(entry.getValue())))
+	                .collect(Collectors.toList());
+			
+			for (Map.Entry<Integer, String> entry : sortedIdToListOrderEntries) {
+				int id = entry.getKey();
+				String listOrder = entry.getValue();
+				String reason = finalReasonMap.get(id);
+				String finalReason = reason + " #" + listOrder;
+				dvReport.append(String.format("%80s", finalReason)).append("\n");
+				dvReport.append("-".repeat(80)).append("\n");
+				dvReport.append("\n");
+				for(String line : finalAddressMap.get(id))
+					dvReport.append(line).append("\n");
+				dvReport.append("\n");
+			}
+			
+			/*for (int id : finalAddressMap.keySet()) {
 				String reason = finalReasonMap.get(id);
 				String listOrder = getValueFromFieldName(idToRecordMap.get(id), comboBoxListOrder.getSelectedItem().toString(), inHeaders);
 				String finalReason = reason + " #" + listOrder;
@@ -1266,7 +1306,7 @@ public class DataVerificationDialog extends JDialog {
 				for(String line : finalAddressMap.get(id))
 					dvReport.append(line).append("\n");
 				dvReport.append("\n");
-			}
+			}*/
 			
 			// Write the report
 			TextWriter.writeTextNoDelimiter(dvReportFile, dvReport.toString());

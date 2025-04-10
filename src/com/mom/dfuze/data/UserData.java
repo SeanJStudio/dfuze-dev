@@ -83,6 +83,7 @@ public class UserData {
 	private int timeToIndex = DEFAULT_INDEX;
 	private int refIndex = DEFAULT_INDEX;
 	private int commentsIndex = DEFAULT_INDEX;
+	private int isProofIndex = DEFAULT_INDEX;
 	private int misc1Index = DEFAULT_INDEX;
 	private int misc2Index = DEFAULT_INDEX;
 
@@ -252,6 +253,7 @@ public class UserData {
 		TIME_TO("dfTimeTo"),
 		REFERENCE("dfRef"),
 		COMMENTS("dfComments"),
+		IS_PROOF("dfIsProof"),
 		MISC1("dfMisc1"),
 		MISC2("dfMisc2"),
 
@@ -428,6 +430,7 @@ public class UserData {
 			fieldName.TIME_TO.getName(),
 			fieldName.REFERENCE.getName(),
 			fieldName.COMMENTS.getName(),
+			fieldName.IS_PROOF.getName(),
 			fieldName.MISC1.getName(),
 			fieldName.MISC2.getName(),
 			
@@ -735,6 +738,10 @@ public class UserData {
 	
 	public int getCommentsIndex() {
 		return commentsIndex;
+	}
+	
+	public int getIsProofIndex() {
+		return isProofIndex;
 	}
 	
 	public int getMisc1Index() {
@@ -1324,6 +1331,10 @@ public class UserData {
 	
 	public void setCommentsIndex(int commentsIndex) {
 		this.commentsIndex = commentsIndex;
+	}
+	
+	public void setIsProofIndex(int isProofIndex) {
+		this.isProofIndex = isProofIndex;
 	}
 	
 	public void setMisc1Index(int misc1Index) {
@@ -1995,6 +2006,8 @@ public class UserData {
 			return record.getRef();
 		else if (fieldToGet.equals(fieldName.COMMENTS.getName()))
 			return record.getComments();
+		else if (fieldToGet.equals(fieldName.IS_PROOF.getName()))
+			return record.getIsProof();
 		else if (fieldToGet.equals(fieldName.MISC1.getName()))
 			return record.getMisc1();
 		else if (fieldToGet.equals(fieldName.MISC2.getName()))
@@ -2296,6 +2309,8 @@ public class UserData {
 			record.setRef(valueToSet);
 		else if (fieldToSet.equals(fieldName.COMMENTS.getName()))
 			record.setComments(valueToSet);
+		else if (fieldToSet.equals(fieldName.IS_PROOF.getName()))
+			record.setIsProof(valueToSet);
 		else if (fieldToSet.equals(fieldName.MISC1.getName()))
 			record.setMisc1(valueToSet);
 		else if (fieldToSet.equals(fieldName.MISC2.getName()))
@@ -2597,6 +2612,8 @@ public class UserData {
 			record.setRef(inData[refIndex]);
 		else if (fieldToSet.equals(fieldName.COMMENTS.getName()))
 			record.setComments(inData[commentsIndex]);
+		else if (fieldToSet.equals(fieldName.IS_PROOF.getName()))
+			record.setIsProof(inData[isProofIndex]);
 		else if (fieldToSet.equals(fieldName.MISC1.getName()))
 			record.setMisc1(inData[misc1Index]);
 		else if (fieldToSet.equals(fieldName.MISC2.getName()))

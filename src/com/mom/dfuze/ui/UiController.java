@@ -696,21 +696,6 @@ public class UiController {
 			}
 		}
 	}
-	
-	protected static class ToolsDataVerificationItemHandler implements ActionListener {
-
-		/*
-		 * (non-Javadoc)
-		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-		 */
-		@Override
-		public void actionPerformed(ActionEvent event) {
-
-			DataVerificationDialog dataVerificationDialog = new DataVerificationDialog(UiController.mainFrame);
-			dataVerificationDialog.setVisible(true);
-			freeMemory();
-		}
-	}
 
 	protected static class ToolsDedupeItemHandler implements ActionListener {
 
