@@ -16,7 +16,7 @@ public class DataVerification implements RunUtilityBehavior {
 	  protected String DESCRIPTION = "<html>Data Verification<br/><br/>"
 		  		+ "Description<br/>"
 		  		+ "<ul>"
-		  		+ "<li>Created Data Verification sheet</li>"
+		  		+ "<li>Creates Data Verification Sheet and Records</li>"
 		  		+ "</ul>"
 		  		+ "Instructions<br/>"
 		  		+ "<ul>"
