@@ -903,7 +903,7 @@ public class Larche implements RunGenerosityXBehavior {
 	
 	
 	
-	// logic to build non lapsed gift arrays
+	// logic to build static gift arrays
 	private void setStaticGiftArray(Record record, Double lastDonationRoundedUpByFive) {
 		int askTier = 1;
 		

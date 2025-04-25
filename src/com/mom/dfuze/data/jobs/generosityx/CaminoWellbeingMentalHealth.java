@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,6 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	private final String BEHAVIOR_NAME = "CWMH";
 	private String[] REQUIRED_FIELDS = {
 			UserData.fieldName.IN_ID.getName(),
-			UserData.fieldName.RECORD_TYPE.getName() // Use this to hold the monthly identifier
 	};
 
 	private String DESCRIPTION = 
@@ -79,20 +79,23 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	public final Pattern NEW_PATTERN = Pattern.compile("(4|5)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	public final Pattern LAPSED_PATTERN = Pattern.compile("(1)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)donor id(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("donor.*id", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)gift amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)date of gift(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)donor status(\\s+|$)|(^|\\s+)gift id(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_IN_MEMORY_PATTERN = Pattern.compile("in memory", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_TRIBUTE_TYPE_PATTERN = Pattern.compile("tribute type", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_APPEAL_PATTERN = Pattern.compile("appeal", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern TRIBUTE_PATTERN = Pattern.compile("(^|\\s+)tribute(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern MONTHLY_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
+	public final Pattern TRIBUTE_PATTERN = Pattern.compile("memory|honour", Pattern.CASE_INSENSITIVE);
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		NEW("New"),
 		LAPSED("Lapsed"),
 		FREQUENT("Frequent"),
 		TOP("Top"),
-		ACTIVE("Active"),
+		ACTIVE("General"),
+		RECENT("Recent"),
 		MONTHLY("Monthly"),
 		TRIBUTE("Tribute");
 		
@@ -165,8 +168,8 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			setCampaignCode(userData, getCampaignCode());
 			
 			// Set the gift amounts
-			double defaultAskAmount = getCostPerUnit();
-			setGiftArrays(userData, defaultAskAmount);
+			//double defaultAskAmount = getCostPerUnit();
+			setGiftArrays(userData);
 			
 			if(hasGiftMetricsButtonPressed == JOptionPane.YES_OPTION) {
 				UiController.displayMessage("Warning", "Slowly answer the following prompts as you can't go back!", JOptionPane.WARNING_MESSAGE);
@@ -276,7 +279,7 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		List<List<String>> giftFile = FileIngestor.ingest();	// get the gift file	
 		HashSet<Integer> indexSet = new HashSet<>();
 	
-		int idIndex, amountIndex, giftDateIndex, donorStatusIndex = -1;
+		int idIndex, amountIndex, giftDateIndex, inMemoryIndex, tributeTypeIndex, appealIndex = -1;
 		
 		String[] headers = giftFile.get(0).toArray(new String[0]);
 
@@ -342,12 +345,12 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		if(!indexSet.add(giftDateIndex))
 			throw new Exception("The gift date field has been mapped more than once.");
 		
-		// designation
-		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Donor Status field.");
+		// in memory
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the In Memory field.");
 		dsd.setValues(headers);
 
 		for(int i = 0; i < headers.length; ++i) {
-			if(GIFT_FILE_DESIGNATION_PATTERN.matcher(headers[i]).find()) {
+			if(GIFT_FILE_IN_MEMORY_PATTERN.matcher(headers[i]).find()) {
 				dsd.getComboBoxValues().setSelectedIndex(i);
 				break;
 			}
@@ -358,10 +361,52 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		if(!dsd.isNextPressed())
 			throw new Exception("Selection cancelled, please restart job.");
 
-		donorStatusIndex = dsd.getSelectedValueIndex();
+		inMemoryIndex = dsd.getSelectedValueIndex();
 		
-		if(!indexSet.add(donorStatusIndex))
-			throw new Exception("The donor status field has been mapped more than once.");
+		if(!indexSet.add(inMemoryIndex))
+			throw new Exception("The in memory field has been mapped more than once.");
+		
+		// tribute type
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Tribute Type field.");
+		dsd.setValues(headers);
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_TRIBUTE_TYPE_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		tributeTypeIndex = dsd.getSelectedValueIndex();
+				
+		if(!indexSet.add(tributeTypeIndex))
+			throw new Exception("The tribute type field has been mapped more than once.");
+		
+		// appeal
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Appeal field.");
+		dsd.setValues(headers);
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_APPEAL_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		appealIndex = dsd.getSelectedValueIndex();
+						
+		if(!indexSet.add(appealIndex))
+			throw new Exception("The appeal field has been mapped more than once.");
 		
 		List<Record> giftsList = new ArrayList<>();
 		
@@ -371,7 +416,9 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", ""); // Remove leading zeros
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
-			String donorStatus = giftFile.get(i).get(donorStatusIndex).trim();
+			String inMemory = giftFile.get(i).get(inMemoryIndex).trim();
+			String tributeType = giftFile.get(i).get(tributeTypeIndex).trim();
+			String appeal = giftFile.get(i).get(appealIndex).trim();
 			
 			boolean isGiftZero = false;
 			
@@ -387,7 +434,9 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 					.setInId(id)
 					.setLstDnAmt(giftAmount)
 					.setLstDnDat(giftDate)
-					.setSeg(donorStatus)
+					.setSeg(inMemory)
+					.setSegCode(tributeType)
+					.setMisc1(appeal)
 					.build();
 			
 			if(giftAmount.contains("-")) // Skip negative dollar amounts
@@ -418,7 +467,9 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 						record.getInId(),
 						giftAmount,
 						giftDate,
-						record.getSeg()
+						record.getSeg(),
+						record.getSegCode(),
+						record.getMisc1()
 						);
 				
 				if(!giftHistoryMap.containsKey(record.getInId()))
@@ -437,8 +488,9 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		final int MONTHS24 = 24;
 		
 		String now = String.valueOf(LocalDate.now());
-		int currentYear = LocalDate.now().getYear();
-		int lastYear = LocalDate.now().getYear() - 1;
+		int actuallyThisYear = LocalDate.now().getYear();
+		int currentYear = LocalDate.now().getYear() - 1; // PREVIOUS YEAR
+		int lastYear = LocalDate.now().getYear() - 2; // 2 YEARS AGO
 		
 		for(int i = 0; i < userData.getRecordList().size(); ++i) {
 			Record record = userData.getRecordList().get(i);
@@ -460,7 +512,8 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				record.setFScore("0");
 				record.setMScore("0");
 				record.setNumDnLst12Mnths("0"); 
-				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
+				record.setYear("0"); // Using this to hold the total donation amount of last 6 months
+				record.setMisc1("0");  // Using this to hold the total donation amount for this year
 			}
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
@@ -471,10 +524,12 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				
 				double totalGiftAmountLast6Months = 0.0;
 				double totalGiftAmountLast12Months = 0.0;
+				double totalGiftAmountActuallyThisYear = 0.0;
 				double totalGiftAmountCurrentYear = 0.0;
 				double totalGiftAmountLastYear = 0.0;
 				int totalGiftsLast12Months = 0;
 				double largestGiftMadeLast24Months = 0.0;
+				double largestGift = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
 				
@@ -488,6 +543,9 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 					
 					totalGiftAmount += giftHistory.getGiftAmount();
 					giftAmounts.add(giftHistory.getGiftAmount());
+					
+					if(giftHistory.getGiftAmount() > largestGift)
+						largestGift = giftHistory.getGiftAmount();
 					
 					long monthsFromDonation = getMonthsBetween(giftHistory.getGiftDate().toString(), now);
 					
@@ -505,8 +563,17 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 					
+					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
+					if(daysBetween <= 60) {
+						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getAppeal());
+						if(monthlyMatcher.find())
+							record.setSeg(segment.MONTHLY.getName());
+					}
+					
 					// gift the total gift amount from the current and last year
-					if(giftHistory.getGiftDate().getYear() == currentYear)
+					if(giftHistory.getGiftDate().getYear() == actuallyThisYear)
+						totalGiftAmountActuallyThisYear += giftHistory.getGiftAmount();
+					else if(giftHistory.getGiftDate().getYear() == currentYear)
 						totalGiftAmountCurrentYear += giftHistory.getGiftAmount();
 					else if(giftHistory.getGiftDate().getYear() == lastYear)
 						totalGiftAmountLastYear += giftHistory.getGiftAmount();
@@ -516,6 +583,14 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
 						record.setRScore(String.valueOf(daysBetween));
+						
+						// check for in memory donors
+						if(record.getSeg() == null) {
+							Matcher inMemoryMatcher = TRIBUTE_PATTERN.matcher(giftHistory.getInMemory());
+							Matcher tributeMatcher = TRIBUTE_PATTERN.matcher(giftHistory.getTributeType());
+							if(tributeMatcher.find() || inMemoryMatcher.find())
+								record.setSeg(segment.TRIBUTE.getName());
+						}
 					}
 					
 					// This is the first gift made
@@ -525,6 +600,10 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 					}
 
 				}
+				
+				if(record.getSeg() == null)
+					if(largestGift >= 1000)
+						record.setSeg(segment.TOP.getName());
 				
 				double monetarySum = giftAmounts.stream()
                         .mapToDouble(Double::doubleValue)
@@ -541,6 +620,7 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months));
 				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
+				record.setMisc1(String.valueOf(totalGiftAmountActuallyThisYear)); // Using this to hold the total donation amount for this year
 			}
 			
 			
@@ -581,14 +661,18 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				record.setSegCode(campaignCode + "-L0");
 			else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName()))
 				record.setSegCode(campaignCode + "-N0");
+			else if(record.getSeg().equalsIgnoreCase(segment.RECENT.getName()))
+				record.setSegCode(campaignCode + "-ZRECENT0");
+			else if(record.getSeg().equalsIgnoreCase(segment.TRIBUTE.getName()))
+				record.setSegCode(campaignCode + "-TD1");
 		}
 	}
 	
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code (Ex. YE24-DM)");
-		uid.getTextField().setText("YE24-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code (Ex. MHAM25-DM)");
+		uid.getTextField().setText("MHAM25-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed()) {
@@ -699,7 +783,7 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	}
 	
 	// Set the gift arrays
-	private void setGiftArrays(UserData userData, double defaultAskAmount) {
+	private void setGiftArrays(UserData userData) {
 		final BigDecimal LAST_GIFT_ROUNDING_AMOUNT = new BigDecimal("5.00");
 		
 		for(Record record : userData.getRecordList()) {
@@ -725,13 +809,56 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
-			if(donorSegment.equalsIgnoreCase(segment.LAPSED.getName())) // set lapsed gifts
-				setLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
-			else if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())) // set non-monthly gifts, leave monthly blank
-				setNonLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
+			setStaticGiftArray(record, lastDonationRoundedUpByFive);
 
 		}
 	}
+	
+	// logic to build static gift arrays
+		private void setStaticGiftArray(Record record, Double lastDonationRoundedUpByFive) {
+			int askTier = 1;
+			
+			if (lastDonationRoundedUpByFive < 50.0) {
+			    record.setDn1Amt("25");
+			    record.setDn2Amt("50");
+			    record.setDn3Amt("100");
+			    record.setDn4Amt("150");
+			    askTier = 7;
+			} else if (lastDonationRoundedUpByFive < 100.0) {
+			    record.setDn1Amt("50");
+			    record.setDn2Amt("100");
+			    record.setDn3Amt("150");
+			    record.setDn4Amt("200");
+			    askTier = 6;
+			} else if (lastDonationRoundedUpByFive < 250.0) {
+			    record.setDn1Amt("100");
+			    record.setDn2Amt("250");
+			    record.setDn3Amt("350");
+			    record.setDn4Amt("500");
+			    askTier = 5;
+			} else if (lastDonationRoundedUpByFive < 500.0) {
+			    record.setDn1Amt("250");
+			    record.setDn2Amt("500");
+			    record.setDn3Amt("750");
+			    record.setDn4Amt("1000");
+			    askTier = 4;
+			} else if (lastDonationRoundedUpByFive < 750.0) {
+			    record.setDn1Amt("500");
+			    record.setDn2Amt("750");
+			    record.setDn3Amt("1000");
+			    record.setDn4Amt("1250");
+			    askTier = 3;
+			} else {
+			    record.setDn1Amt("750");
+			    record.setDn2Amt("1000");
+			    record.setDn3Amt("1250");
+			    record.setDn4Amt("1500");
+			    askTier = 2;
+			}
+			
+			if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
+				record.setSegCode(record.getSegCode() + askTier);
+		}
 	
 	// Logic to build lapsed gift arrays
 	private void setLapsedGiftArray(Record record, Double lastDonationRoundedUpByFive) {
@@ -999,7 +1126,6 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	}
 	
 	private void setSegment(UserData userData) {
-		final int MAJOR_DONATION_AMOUNT = 500;
 		final int FREQUENT_DONATIONS_CRITERIA = 3;
 		final int NEW_DONOR_MONTHS_CRITERIA = 6;
 		final int LAPSED_DONATIONS_CRITERIA = 24;
@@ -1010,19 +1136,19 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
 			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
 			
-			if(record.getSeg() == null) {
+			if(record.getSeg() == null || record.getSeg().equalsIgnoreCase(segment.TRIBUTE.getName())) {
 				if(record.getInId().toLowerCase().contains("seed"))
 					record.setSeg(segment.ACTIVE.getName());
-				else if(MONTHLY_PATTERN.matcher(record.getRecType()).find())
-					record.setSeg(segment.MONTHLY.getName());
-				else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
-					record.setSeg(segment.TOP.getName());
 				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
 					record.setSeg(segment.NEW.getName());
+				else if(record.getSeg() != null  && record.getSeg().equalsIgnoreCase(segment.TRIBUTE.getName()))
+					record.setSeg(segment.TRIBUTE.getName());
 				else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA)
 					record.setSeg(segment.FREQUENT.getName());
 				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
 					record.setSeg(segment.LAPSED.getName());
+				else if(Double.parseDouble(record.getMisc1()) > 0.0)
+					record.setSeg(segment.RECENT.getName());
 				else
 					record.setSeg(segment.ACTIVE.getName());
 			}

@@ -6,15 +6,19 @@ public class CWMHGiftHistory {
 	private String id;
 	private double giftAmount;
 	private LocalDate giftDate;
-	private String giftDonorStatus;
+	private String inMemory;
+	private String tributeType;
+	private String appeal;
 	
 	public CWMHGiftHistory() {}
 	
-	public CWMHGiftHistory(String id, double giftAmount, LocalDate giftDate, String giftDonorStatus) {
+	public CWMHGiftHistory(String id, double giftAmount, LocalDate giftDate, String inMemory, String tributeType, String appeal) {
 		this.id = id;
 		this.giftAmount = giftAmount;
 		this.giftDate = giftDate;
-		this.giftDonorStatus = giftDonorStatus;
+		this.inMemory = inMemory;
+		this.tributeType = tributeType;
+		this.appeal = appeal;
 	}
 
 	public String getId() {
@@ -41,18 +45,35 @@ public class CWMHGiftHistory {
 		this.giftDate = giftDate;
 	}
 
-	public String getGiftDonorStatus() {
-		return giftDonorStatus;
+	public String getInMemory() {
+		return inMemory;
 	}
 
-	public void setGiftDonorStatus(String giftDonorStatus) {
-		this.giftDonorStatus = giftDonorStatus;
+	public void setInMemory(String inMemory) {
+		this.inMemory = inMemory;
+	}
+
+	public String getTributeType() {
+		return tributeType;
+	}
+
+	public void setTributeType(String tributeType) {
+		this.tributeType = tributeType;
+	}
+	
+	public String getAppeal() {
+		return appeal;
+	}
+
+	public void setAppeal(String appeal) {
+		this.appeal = appeal;
 	}
 
 	@Override
 	public String toString() {
-		return "CWMHGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate
-				+ ", giftDonorStatus=" + giftDonorStatus + "]";
+		return "CWMHGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", inMemory="
+				+ inMemory + ", tributeType=" + tributeType + ", appeal=" + appeal + "]";
 	}
-
+	
 }
+	
