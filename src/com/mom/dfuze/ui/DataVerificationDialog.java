@@ -17,6 +17,7 @@ import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.Theme;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
+import com.mom.dfuze.data.util.Validators;
 import com.mom.dfuze.io.FileIngestor;
 import com.mom.dfuze.io.TextWriter;
 import com.mom.dfuze.io.XLSXWriter;
@@ -186,7 +187,6 @@ public class DataVerificationDialog extends JDialog {
 			return name;
 		}
 	};
-	
 	
 	public DataVerificationDialog(JFrame frame) {
 
@@ -1389,9 +1389,35 @@ public class DataVerificationDialog extends JDialog {
 					List<String> inHeaders = Arrays.asList(UiController.getUserData().getInHeaders());
 					List<List<String>> giftFile = FileIngestor.ingest();	// get the template
 					
-					for(JComboBox<String> cb : comboBoxList)
-						cb.setSelectedIndex(-1);
-						
+					// Reset
+					btnReset.doClick();
+					
+					// Set Options
+					for(List<String> row : giftFile) {
+						if(row.size() >= 2) {
+							String dvField = row.get(0);
+							String dataFieldToSet = row.get(1);
+							
+							switch(dvField) {
+								case "JOB_NO":
+									if(Validators.isNumber(dataFieldToSet) && dataFieldToSet.length() < 6)
+										textFieldJobNo.setText(dataFieldToSet);
+								case "JOB_NAME":
+									textFieldJobName.setText(dataFieldToSet);
+								case "INCLUDE_ALL_RECORDS":
+									if(dataFieldToSet.trim().length() > 0)
+										chckbxIncludeAllRecords.setSelected(true);
+								case "DV_FOR_EACH_UNIQUE_VALUE":
+									comboBoxMakeMultipleFiles.setSelectedIndex(inHeaders.indexOf(dataFieldToSet));
+								case "ONE_LINE_PER_UNIQUE_VALUE":
+									comboBoxLimit1RecordPerValue.setSelectedIndex(inHeaders.indexOf(dataFieldToSet));
+								default:
+									;
+							}
+						}
+					}
+					
+					// Set Fields
 					for(List<String> row : giftFile) {
 						if(row.size() >= 2) {
 							String dvField = row.get(0);
