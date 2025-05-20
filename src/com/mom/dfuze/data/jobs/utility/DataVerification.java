@@ -1,13 +1,11 @@
 package com.mom.dfuze.data.jobs.utility;
 
-import javax.swing.JOptionPane;
-
 import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.util.Common;
 import com.mom.dfuze.ui.DataVerificationDialog;
 import com.mom.dfuze.ui.UiController;
-import com.mom.dfuze.ui.dedupe.DedupeDialog2;
+
 
 public class DataVerification implements RunUtilityBehavior {
 
