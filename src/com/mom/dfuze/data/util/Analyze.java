@@ -74,5 +74,16 @@ public class Analyze {
 			record.setPriority(String.valueOf(sum));
 		}
 	}
+	
+	public static void prioritizeRFMAdra(UserData userData) {
+		for(Record record : userData.getRecordList()) {
+			double sum = 0;
+			sum += Double.parseDouble(record.getRScore()) * 100.0;
+			sum += Double.parseDouble(record.getTtlDnAmtLst12Mnths()) / 1000.0;
+			sum += Double.parseDouble(record.getMScore()) * 11.0;
+			sum += Double.parseDouble(record.getFScore()) * 16.0;
+			record.setPriority(String.valueOf(sum));
+		}
+	}
 
 }

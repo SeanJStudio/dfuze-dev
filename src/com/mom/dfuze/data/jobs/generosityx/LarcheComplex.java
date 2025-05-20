@@ -6,6 +6,8 @@
  */
 package com.mom.dfuze.data.jobs.generosityx;
 
+
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -14,6 +16,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,13 +26,17 @@ import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 
+import com.mom.dfuze.data.FileExtensions;
 import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.UserData;
+import com.mom.dfuze.data.UserPrefs;
+import com.mom.dfuze.data.jobs.generosityx.AdraUkraine.segment;
 import com.mom.dfuze.data.util.Analyze;
 import com.mom.dfuze.data.util.Common;
 import com.mom.dfuze.data.util.DateTimeInferer;
 import com.mom.dfuze.data.util.Validators;
+import com.mom.dfuze.io.FileExporter;
 import com.mom.dfuze.io.FileIngestor;
 import com.mom.dfuze.ui.DropdownSelectDialog;
 import com.mom.dfuze.ui.UiController;
@@ -38,16 +45,16 @@ import com.mom.dfuze.ui.UserInputDialog;
 
 
 /**
- * RegularProcess implements a RunBehavior for Adra Jobs
+ * LarcheComplex implements a RunBehavior for Larche Jobs
  * 
  * @author Sean Johnson
  *         Mail-o-Matic Services Ltd
- *         Date: 06/11/2024
+ *         Date: 03/20/2025
  *
  */
-public class Adra implements RunGenerosityXBehavior {
+public class LarcheComplex implements RunGenerosityXBehavior {
 
-	private final String BEHAVIOR_NAME = "Adra";
+	private final String BEHAVIOR_NAME = "Larche Complex";
 	private String[] REQUIRED_FIELDS = {
 			UserData.fieldName.IN_ID.getName()
 	};
@@ -74,20 +81,31 @@ public class Adra implements RunGenerosityXBehavior {
 	public final Pattern NEW_PATTERN = Pattern.compile("(4|5)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	public final Pattern LAPSED_PATTERN = Pattern.compile("(1)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)ConstituentLookupId(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)date(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)appeal(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("account", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("received", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("date", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("campaign", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_FUND_PATTERN = Pattern.compile("fund", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)monthly(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
+	public final Pattern INTERNATIONAL_DESIGNATION_PATTERN = Pattern.compile("oversea|international", Pattern.CASE_INSENSITIVE);
+	
+	public final Pattern DONOR_FILE_SEED_ALL_PATTERN = Pattern.compile("seed.*all", Pattern.CASE_INSENSITIVE);
+	public final Pattern DONOR_FILE_SEED_LIMITED_PATTERN = Pattern.compile("seed.*limited", Pattern.CASE_INSENSITIVE);
+	public final Pattern DONOR_FILE_SEED_BOARD_PATTERN = Pattern.compile("seed.*board", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
-		NEW("New"),
-		LAPSED("Lapsed"),
-		FREQUENT("Frequent"),
-		TOP("Top"),
+		MONTHLY("Monthly"),
+		ULTRA_HIGH("Ultra High"),
+		HIGH("High"),
+		MEDIUM("Medium"),
 		ACTIVE("Active"),
-		MONTHLY("Monthly");
+		LAPSED_ULTRA_HIGH("Lapsed Ultra High"),
+		LAPSED_HIGH("Lapsed High"),
+		LAPSED("Lapsed"),
+		SEED_ALL("Seed All"),
+		SEED_LIMITED("Seed Limited"),
+		SEED_BOARD("Seed Board");
 		
 		String name;
 
@@ -126,7 +144,7 @@ public class Adra implements RunGenerosityXBehavior {
 		giftList.sort(new RecordSorters.CompareByFieldDescAsDate(UserData.fieldName.LAST_DONATION_DATE.getName(), datetimeFormatter));
 				
 		// Convert the gifts into a gift history map (id, List(history))
-		HashMap<String, List<AdraGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
+		HashMap<String, List<LarcheGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
 		
 		// process gift history into main donor list
 		processGifts(userData, giftHistoryMap);
@@ -136,9 +154,6 @@ public class Adra implements RunGenerosityXBehavior {
 		
 		//min max rfm
 		Analyze.minMaxRFM(userData);
-		
-		// Place into categories
-		setSegment(userData);
 		
 		// Set the campaign code
 		setCampaignCode(userData, getCampaignCode());
@@ -166,9 +181,8 @@ public class Adra implements RunGenerosityXBehavior {
 		else
 			setGiftArrayMetrics(userData, defaultAskAmount);		// normal
 		
-		
 		// value priority, high = good
-		Analyze.prioritizeRFMAdra(userData);
+		Analyze.prioritizeRFM(userData);
 		
 		formatAmounts(userData);
 		
@@ -184,6 +198,7 @@ public class Adra implements RunGenerosityXBehavior {
 				UserData.fieldName.NUMBER_OF_DONATIONS.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS_LAST_12_MONTHS.getName(),
 				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
+				UserData.fieldName.YEAR.getName(),
 				UserData.fieldName.PENULTIMATE_AMOUNT.getName(),
 				UserData.fieldName.PENULTIMATE_DATE.getName(),
 				UserData.fieldName.DONATION_AMOUNT_ARRAY.getName(),
@@ -193,6 +208,7 @@ public class Adra implements RunGenerosityXBehavior {
 				UserData.fieldName.RFM.getName(),
 				UserData.fieldName.SEGMENT.getName(),
 				UserData.fieldName.SEGMENT_CODE.getName(),
+				UserData.fieldName.RECORD_TYPE.getName(),
 				UserData.fieldName.DONATION1_AMOUNT.getName(),
 				UserData.fieldName.DONATION2_AMOUNT.getName(),
 				UserData.fieldName.DONATION3_AMOUNT.getName(),
@@ -202,10 +218,11 @@ public class Adra implements RunGenerosityXBehavior {
 				UserData.fieldName.PROVIDE3.getName(),
 				UserData.fieldName.PROVIDE4.getName(),
 				UserData.fieldName.OPEN_DONATION_AMOUNT.getName(),
-				UserData.fieldName.PRIORITY.getName()
+				UserData.fieldName.PRIORITY.getName(),
+				UserData.fieldName.LETTER_VERSION.getName()
 		});
+
 	}
-	
 	
 	private void formatAmounts(UserData userData) {
 		DecimalFormat formatter = new DecimalFormat("$#,###.00");//formatter.format(dn1).replaceAll("\\.0+$", "")
@@ -215,6 +232,7 @@ public class Adra implements RunGenerosityXBehavior {
 			record.setTtlDnAmt(formatter.format(Double.parseDouble(record.getTtlDnAmt())).replaceAll("\\.0+$", ""));
 			record.setTtlDnAmtLst12Mnths(formatter.format(Double.parseDouble(record.getTtlDnAmtLst12Mnths())).replaceAll("\\.0+$", ""));
 			record.setLrgDnAmt(formatter.format(Double.parseDouble(record.getLrgDnAmt())).replaceAll("\\.0+$", ""));
+			record.setYear(formatter.format(Double.parseDouble(record.getYear())).replaceAll("\\.0+$", ""));
 			
 			if(record.getLstDnAmt().equals("$"))
 				record.setLstDnAmt("$0");
@@ -230,6 +248,9 @@ public class Adra implements RunGenerosityXBehavior {
 			
 			if(record.getLrgDnAmt().equals("$"))
 				record.setLrgDnAmt("$0");
+			
+			if(record.getYear().equals("$"))
+				record.setYear("$0");
 			
 			if(record.getDn1Amt().length() > 0) {
 				record.setDn1Amt(formatter.format(Double.parseDouble(record.getDn1Amt())).replaceAll("\\.0+$", ""));
@@ -265,7 +286,7 @@ public class Adra implements RunGenerosityXBehavior {
 		List<List<String>> giftFile = FileIngestor.ingest();	// get the gift file	
 		HashSet<Integer> indexSet = new HashSet<>();
 	
-		int idIndex, amountIndex, giftDateIndex, appealIndex = -1;
+		int idIndex, amountIndex, giftDateIndex, campaignIndex, fundIndex = -1;
 		
 		String[] headers = giftFile.get(0).toArray(new String[0]);
 
@@ -331,8 +352,8 @@ public class Adra implements RunGenerosityXBehavior {
 		if(!indexSet.add(giftDateIndex))
 			throw new Exception("The gift date field has been mapped more than once.");
 		
-		// designation
-		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Appeal Name field.");
+		// campaign
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Campaign field.");
 		dsd.setValues(headers);
 
 		for(int i = 0; i < headers.length; ++i) {
@@ -347,10 +368,31 @@ public class Adra implements RunGenerosityXBehavior {
 		if(!dsd.isNextPressed())
 			throw new Exception("Selection cancelled, please restart job.");
 
-		appealIndex = dsd.getSelectedValueIndex();
+		campaignIndex = dsd.getSelectedValueIndex();
 		
-		if(!indexSet.add(appealIndex))
-			throw new Exception("The appeal name field has been mapped more than once.");
+		if(!indexSet.add(campaignIndex))
+			throw new Exception("The Campaign field has been mapped more than once.");
+		
+		// fund
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Fund field.");
+		dsd.setValues(headers);
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_FUND_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		fundIndex = dsd.getSelectedValueIndex();
+				
+		if(!indexSet.add(fundIndex))
+			throw new Exception("The Fund field has been mapped more than once.");
 		
 		List<Record> giftsList = new ArrayList<>();
 		
@@ -360,7 +402,8 @@ public class Adra implements RunGenerosityXBehavior {
 			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", ""); // Remove leading zeros
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
-			String giftDesignation = giftFile.get(i).get(appealIndex).trim();
+			String giftCampaign = giftFile.get(i).get(campaignIndex).trim();
+			String giftFund = giftFile.get(i).get(fundIndex).trim();
 			
 			boolean isGiftZero = false;
 			
@@ -376,7 +419,8 @@ public class Adra implements RunGenerosityXBehavior {
 					.setInId(id)
 					.setLstDnAmt(giftAmount)
 					.setLstDnDat(giftDate)
-					.setSeg(giftDesignation)
+					.setSeg(giftCampaign)
+					.setSegCode(giftFund)
 					.build();
 			
 			if(giftAmount.contains("-")) // Skip negative dollar amounts
@@ -391,12 +435,12 @@ public class Adra implements RunGenerosityXBehavior {
 	}
 
 	// converts a list of gifts into a HashMap
-	private HashMap<String, List<AdraGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
+	private HashMap<String, List<LarcheGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(giftDateFormat);
 
 		// id, giftHistory
-		HashMap<String, List<AdraGiftHistory>> giftHistoryMap = new HashMap<>();
+		HashMap<String, List<LarcheGiftHistory>> giftHistoryMap = new HashMap<>();
 
 		for(Record record : giftList) {
 			double giftAmount = (Validators.isNumber(record.getLstDnAmt())) ? Double.parseDouble(record.getLstDnAmt()) : 0.0;
@@ -405,15 +449,16 @@ public class Adra implements RunGenerosityXBehavior {
 				//System.out.println(record.getLstDnDat() + " vs " + giftDateFormat);
 				LocalDate giftDate = LocalDate.parse(record.getLstDnDat(), formatter);
 				//System.out.println(giftDate.toString());
-				AdraGiftHistory history = new AdraGiftHistory(
+				LarcheGiftHistory history = new LarcheGiftHistory(
 						record.getInId(),
 						giftAmount,
 						giftDate,
-						record.getSeg()
+						record.getSeg(),
+						record.getSegCode()
 						);
 
 				if(!giftHistoryMap.containsKey(record.getInId()))
-					giftHistoryMap.put(record.getInId(), new ArrayList<AdraGiftHistory>());
+					giftHistoryMap.put(record.getInId(), new ArrayList<LarcheGiftHistory>());
 
 				giftHistoryMap.get(record.getInId()).add(history);
 			}
@@ -422,15 +467,20 @@ public class Adra implements RunGenerosityXBehavior {
 		return giftHistoryMap;
 	}
 	
-	private void processGifts(UserData userData, HashMap<String, List<AdraGiftHistory>> giftHistoryMap) {
+	private void processGifts(UserData userData, HashMap<String, List<LarcheGiftHistory>> giftHistoryMap) {
+		
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
+		final int MONTHS36 = 36;
+		
+		int fileNameIndex = Arrays.asList(userData.getInHeaders()).indexOf("dfFileName");
 
 		String now = String.valueOf(LocalDate.now());
 		
 		for(int i = 0; i < userData.getRecordList().size(); ++i) {
-			Record record = userData.getRecordList().get(i);
+			Record record = userData.getRecordList().get(i);		
+			String recordFileName = record.getDfInData()[fileNameIndex];
 			
 			// Default values
 			record.setLstDnAmt("0");
@@ -451,21 +501,29 @@ public class Adra implements RunGenerosityXBehavior {
 			record.setAppeal("");
 			record.setPenultAmt("0");
 			record.setPenultDat("1900-01-01");
+			record.setRecType("");
 			
 			if(!giftHistoryMap.containsKey(record.getInId())) {
 				System.out.println("No ID for " + record.getInId());
 			}
 			
+			if(DONOR_FILE_SEED_ALL_PATTERN.matcher(recordFileName).find())
+				record.setSeg(segment.SEED_ALL.getName());
+			else if(DONOR_FILE_SEED_LIMITED_PATTERN.matcher(recordFileName).find())
+				record.setSeg(segment.SEED_LIMITED.getName());
+			else if(DONOR_FILE_SEED_BOARD_PATTERN.matcher(recordFileName).find())
+				record.setSeg(segment.SEED_BOARD.getName());
+			
 			if(giftHistoryMap.containsKey(record.getInId())) {
-				List<AdraGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
+				List<LarcheGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
 				
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
 				
-				double totalGiftAmountLast6Months = 0.0;
 				double totalGiftAmountLast12Months = 0.0;
 				int totalGiftsLast12Months = 0;
-				double largestGiftMadeLast24Months = 0.0;
+				double largestGiftMadeLast36Months = 0.0;
+				double largestGift = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
 				
@@ -475,34 +533,43 @@ public class Adra implements RunGenerosityXBehavior {
 				        .collect(Collectors.joining(","));
 				
 				for(int j = 0; j < giftHistoryList.size(); ++j) {
-					AdraGiftHistory giftHistory = giftHistoryList.get(j);
+					LarcheGiftHistory giftHistory = giftHistoryList.get(j);
 					
 					totalGiftAmount += giftHistory.getGiftAmount();
 					giftAmounts.add(giftHistory.getGiftAmount());
 					
+					if(giftHistory.getGiftAmount() > largestGift)
+						largestGift = giftHistory.getGiftAmount();
+					
 					long monthsFromDonation = getMonthsBetween(giftHistory.getGiftDate().toString(), now);
 					
-					if(monthsFromDonation <= MONTHS6 && monthsFromDonation > -1)
-						totalGiftAmountLast6Months += giftHistory.getGiftAmount();
 					
 					if(monthsFromDonation <= MONTHS12 && monthsFromDonation > -1) {
 						++totalGiftsLast12Months;
 						totalGiftAmountLast12Months += giftHistory.getGiftAmount();
 					}
 					
-					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
-						if(giftHistory.getGiftAmount() > largestGiftMadeLast24Months)
-							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
+					if(monthsFromDonation <= MONTHS36 && monthsFromDonation > -1) {
+						if(giftHistory.getGiftAmount() > largestGiftMadeLast36Months)
+							largestGiftMadeLast36Months = giftHistory.getGiftAmount();
+
+					}
+					
+					// look for international records
+					if(INTERNATIONAL_DESIGNATION_PATTERN.matcher(giftHistory.getGiftFund()).find())
+						record.setRecType("International");
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 					
 					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
 					if(daysBetween <= 60) {
-						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftCampaign());
-						if(monthlyMatcher.find())
-							record.setSeg(segment.MONTHLY.getName());
+						if(record.getSeg() == null) {
+							Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftCampaign());
+							if(monthlyMatcher.find())
+								record.setSeg(segment.MONTHLY.getName());
+						}
 					}
-					
+
 					// this is the last donation
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
@@ -530,42 +597,88 @@ public class Adra implements RunGenerosityXBehavior {
                         .mapToDouble(Double::doubleValue)
                         .sum();
 				
+				
+				// segmentation
+				if(record.getSeg() == null) {
+					if(largestGiftMadeLast36Months >= 5000)
+						record.setSeg(segment.ULTRA_HIGH.getName());
+					else if(largestGiftMadeLast36Months >= 2500)
+						record.setSeg(segment.HIGH.getName());
+					else if(largestGiftMadeLast36Months >= 1000)
+						record.setSeg(segment.MEDIUM.getName());
+					else if(largestGiftMadeLast36Months > 0)
+						record.setSeg(segment.ACTIVE.getName());
+					else if(largestGift >= 5000)
+						record.setSeg(segment.LAPSED_ULTRA_HIGH.getName());
+					else if(largestGift >= 1000)
+						record.setSeg(segment.LAPSED_HIGH.getName());
+					else
+						record.setSeg(segment.LAPSED.getName());
+				}
+				
 				record.setMScore(String.valueOf(monetarySum));
 				record.setFScore(String.valueOf(totalGifts));
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
 				record.setTtlDnAmtLst12Mnths(String.valueOf(totalGiftAmountLast12Months));
 				record.setNumDn(String.valueOf(totalGifts));
-				record.setLrgDnAmt(String.valueOf(largestGiftMadeLast24Months));
+				record.setLrgDnAmt(String.valueOf(largestGift));
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months)); 
-				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
+				record.setYear(String.valueOf(largestGiftMadeLast36Months)); // alias to hold largest gift last 36 months
 			}
+			
+			if(record.getSeg() == null)
+				record.setSeg(segment.LAPSED.getName());
 			
 			
 		}
-	}	
+	}
 	
 	private void setCampaignCode(UserData userData, String campaignCode) {
 		for(Record record : userData.getRecordList()) {
-			if(record.getSeg().equalsIgnoreCase(segment.TOP.getName()))
+			record.setLetVer("");
+			
+			if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName())) {
 				record.setSegCode(campaignCode + "-MD1");
-			else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
-				record.setSegCode(campaignCode + "-A");
-			else if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
-				record.setSegCode(campaignCode + "-M1");
-			else if(record.getSeg().equalsIgnoreCase(segment.FREQUENT.getName()))
-				record.setSegCode(campaignCode + "-F0");
-			else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName()))
-				record.setSegCode(campaignCode + "-L0");
-			else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName()))
-				record.setSegCode(campaignCode + "-N0");
+				record.setLetVer("Monthly");
+			} else if(record.getSeg().equalsIgnoreCase(segment.ULTRA_HIGH.getName())) {
+				record.setSegCode(campaignCode + "-UHD1");
+				record.setLetVer("Top");
+			} else if(record.getSeg().equalsIgnoreCase(segment.HIGH.getName())) {
+				record.setSegCode(campaignCode + "-HD1");
+				record.setLetVer("Top");
+			} else if(record.getSeg().equalsIgnoreCase(segment.MEDIUM.getName())) {
+				record.setSegCode(campaignCode + "-MEDD0");
+				record.setLetVer("Top");
+			} else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName())) {
+				record.setSegCode(campaignCode + "-AD");
+				record.setLetVer("Active");
+			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED_ULTRA_HIGH.getName())) {
+				record.setSegCode(campaignCode + "-LUHD1");
+				record.setLetVer("Lapsed");
+			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED_HIGH.getName())) {
+				record.setSegCode(campaignCode + "-LHD1");
+				record.setLetVer("Lapsed");
+			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName())) {
+				record.setSegCode(campaignCode + "-LD0");
+				record.setLetVer("Lapsed");
+			} else if(record.getSeg().equalsIgnoreCase(segment.SEED_ALL.getName())) {
+				record.setSegCode(campaignCode + "-Seed - All");
+				record.setLetVer("Active");
+			} else if(record.getSeg().equalsIgnoreCase(segment.SEED_LIMITED.getName())) {
+				record.setSegCode(campaignCode + "-Seed - L");
+				record.setLetVer("Active");
+			} else if(record.getSeg().equalsIgnoreCase(segment.SEED_BOARD.getName())) {
+				record.setSegCode(campaignCode + "-Seed - B");
+				record.setLetVer("Active");
+			}
 		}
 	}
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. JUN25-01-DM)");
-		uid.getTextField().setText("JUN25-01-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. APR25-02-DM)");
+		uid.getTextField().setText("APR25-02-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -576,8 +689,8 @@ public class Adra implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $36, enter 36)");
-		udid.getTextField().setText("36");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $25, enter 25)");
+		udid.getTextField().setText("25");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -603,10 +716,10 @@ public class Adra implements RunGenerosityXBehavior {
 	// Convert the gift arrays to metrics
 	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
 		
-		String less = "$%s helps provide 1 solar pump for a household.";
-		String single = "$%s provides 1 solar pump for a household.";
-		String plural = "$%s provides %s solar pumps for a household.";
-		String open = "$________ to provide as many solar pumps for a household as possible.";
+		String less = "$%s helps provide Emergency Supplies to 1 Family.";
+		String single = "$%s provides Emergency Supplies to 1 Family.";
+		String plural = "$%s provides Emergency Supplies to %s Families.";
+		String open = "$________ to help as many Families as possible.";
 		
 		String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
 		
@@ -777,58 +890,64 @@ public class Adra implements RunGenerosityXBehavior {
 			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
-			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())
-					&& !donorSegment.equalsIgnoreCase(segment.TOP.getName())) // only create gifts for certain segments
-				setGiftArray(record, lastDonationRoundedUpByFive, defaultAskAmount);
+			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName()) &&
+			   !donorSegment.equalsIgnoreCase(segment.ULTRA_HIGH.getName()) &&
+			   !donorSegment.equalsIgnoreCase(segment.HIGH.getName()) &&
+			   !donorSegment.equalsIgnoreCase(segment.LAPSED_ULTRA_HIGH.getName()) &&
+			   !donorSegment.equalsIgnoreCase(segment.LAPSED_HIGH.getName()) &&
+			   !donorSegment.equalsIgnoreCase(segment.SEED_BOARD.getName())) // only create gifts for certain segments
+				setStaticGiftArray(record, lastDonationRoundedUpByFive);
 
 		}
 	}
 	
+	
+	
 	// logic to build static gift arrays
-		private void setStaticGiftArray(Record record, Double lastDonationRoundedUpByFive) {
-			int askTier = 1;
-			
-			if (lastDonationRoundedUpByFive < 50.0) {
-			    record.setDn1Amt("25");
-			    record.setDn2Amt("50");
-			    record.setDn3Amt("100");
-			    record.setDn4Amt("150");
-			    askTier = 7;
-			} else if (lastDonationRoundedUpByFive < 100.0) {
-			    record.setDn1Amt("50");
-			    record.setDn2Amt("100");
-			    record.setDn3Amt("150");
-			    record.setDn4Amt("200");
-			    askTier = 6;
-			} else if (lastDonationRoundedUpByFive < 250.0) {
-			    record.setDn1Amt("100");
-			    record.setDn2Amt("250");
-			    record.setDn3Amt("350");
-			    record.setDn4Amt("500");
-			    askTier = 5;
-			} else if (lastDonationRoundedUpByFive < 500.0) {
-			    record.setDn1Amt("250");
-			    record.setDn2Amt("500");
-			    record.setDn3Amt("750");
-			    record.setDn4Amt("1000");
-			    askTier = 4;
-			} else if (lastDonationRoundedUpByFive < 750.0) {
-			    record.setDn1Amt("500");
-			    record.setDn2Amt("750");
-			    record.setDn3Amt("1000");
-			    record.setDn4Amt("1250");
-			    askTier = 3;
-			} else {
-			    record.setDn1Amt("750");
-			    record.setDn2Amt("1000");
-			    record.setDn3Amt("1250");
-			    record.setDn4Amt("1500");
-			    askTier = 2;
-			}
-			
-			if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
-				record.setSegCode(record.getSegCode() + askTier);
+	private void setStaticGiftArray(Record record, Double lastDonationRoundedUpByFive) {
+		int askTier = 1;
+		
+		if (lastDonationRoundedUpByFive < 50.0) {
+		    record.setDn1Amt("25");
+		    record.setDn2Amt("50");
+		    record.setDn3Amt("100");
+		    record.setDn4Amt("150");
+		    askTier = 7;
+		} else if (lastDonationRoundedUpByFive < 100.0) {
+		    record.setDn1Amt("50");
+		    record.setDn2Amt("100");
+		    record.setDn3Amt("150");
+		    record.setDn4Amt("200");
+		    askTier = 6;
+		} else if (lastDonationRoundedUpByFive < 250.0) {
+		    record.setDn1Amt("100");
+		    record.setDn2Amt("250");
+		    record.setDn3Amt("350");
+		    record.setDn4Amt("500");
+		    askTier = 5;
+		} else if (lastDonationRoundedUpByFive < 500.0) {
+		    record.setDn1Amt("250");
+		    record.setDn2Amt("500");
+		    record.setDn3Amt("750");
+		    record.setDn4Amt("1000");
+		    askTier = 4;
+		} else if (lastDonationRoundedUpByFive < 750.0) {
+		    record.setDn1Amt("500");
+		    record.setDn2Amt("750");
+		    record.setDn3Amt("1000");
+		    record.setDn4Amt("1250");
+		    askTier = 3;
+		} else {
+		    record.setDn1Amt("750");
+		    record.setDn2Amt("1000");
+		    record.setDn3Amt("1250");
+		    record.setDn4Amt("1500");
+		    askTier = 2;
 		}
+		
+		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
+			record.setSegCode(record.getSegCode() + askTier);
+	}
 	
 	// logic to build non lapsed gift arrays
 	private void setGiftArray(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
@@ -841,114 +960,47 @@ public class Adra implements RunGenerosityXBehavior {
 			sdam = 4;
 		else if(defaultAskAmount < 20)
 			sdam = 2;
-		
-		if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
+
+		if(lastDonationRoundedUpByFive < defaultAskAmount * (2 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
 			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
 			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (5 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (6 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
 			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (11 * sdam)) {
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (10 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (9 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (11 * sdam)));
+			askTier = 5;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (9 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
 			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (15 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (18 * sdam)));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (34 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (28 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (32 * sdam)));
 			askTier = 3;
 		} else {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (18 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (36 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (42 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (48 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (54 * sdam)));
 			askTier = 2;
 		}
-
-		/*if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (9 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (18 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
-			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (24 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (26 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (30 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (34 * sdam)));
-			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (36 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (34 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (38 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (42 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
-			askTier = 3;
-		} else {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (50 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (54 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (58 * sdam)));
-			askTier = 2;
-		}*/
 
 		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
 			record.setSegCode(record.getSegCode() + askTier);
-	}
-	
-	// Logic to categorize donors into segments
-	private void setSegment(UserData userData) {
-		final int MAJOR_DONATION_AMOUNT = 500;
-		final int FREQUENT_DONATIONS_CRITERIA = 3;
-		final int NEW_DONOR_MONTHS_CRITERIA = 6;
-		final int LAPSED_DONATIONS_CRITERIA = 24;
-
-		String now = String.valueOf(LocalDate.now());
-		for(Record record : userData.getRecordList()) {
-			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
-			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
-
-			if(record.getSeg() == null) {
-				if(record.getInId().toLowerCase().contains("seed"))
-					record.setSeg(segment.ACTIVE.getName());
-				else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
-					record.setSeg(segment.TOP.getName());
-				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
-					record.setSeg(segment.NEW.getName());
-				else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA)
-					record.setSeg(segment.FREQUENT.getName());
-				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
-					record.setSeg(segment.LAPSED.getName());
-				else
-					record.setSeg(segment.ACTIVE.getName());
-			}
-		}
 	}
 
 	// Sets the R, F, and M scores
@@ -1006,6 +1058,28 @@ public class Adra implements RunGenerosityXBehavior {
 
 	}
 	
+	private void removeZeroGiftRecords(UserData userData) throws Exception {
+
+		List<Record> removed = new ArrayList<>();
+
+		for(int i = userData.getRecordList().size() - 1; i >= 0; --i) {
+			Record record = userData.getRecordList().get(i);
+
+			if(record.getNumDn().equalsIgnoreCase("0"))
+				if(!record.getDfInData()[userData.getInIdIndex()].toLowerCase().contains("seed"))
+					removed.add(userData.getRecordList().remove(i));
+		}
+
+		if(removed.size() == 0)
+			return;
+
+		File file = new File(UserPrefs.getLastUsedFolder() + "\\" + UiController.getUserDataFileName() + "_NO_GIFTS" + FileExtensions.XLSX);
+
+		FileExporter.exportData(userData.getExportHeaders(), userData.getExportData(removed), file);
+
+		JOptionPane.showMessageDialog(UiController.getMainFrame(), String.format("%d records with zero gifts removed and exported.", removed.size()), "Results", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
 	// calculates the months between two dates
 	private long getMonthsBetween(String startDate, String endDate) {
 		
@@ -1033,76 +1107,6 @@ public class Adra implements RunGenerosityXBehavior {
 		return monthsBetween;
 
 	}
-
-
-	// Sets the recency score
-	/*private void setRScore(UserData userData) {
-		String format = DateTimeInferer.inferFormat(userData, UserData.fieldName.LAST_DONATION_DATE.getName());
-
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-		LocalDate now = LocalDate.now();
-
-		for(Record record : userData.getRecordList()) {
-			record.setRScore("0");
-
-			if (Validators.isStringOfDateFormat(record.getLstDnDat(), format)) {
-				LocalDate recordDate = LocalDate.parse(record.getLstDnDat(), formatter);
-				long daysBetween = ChronoUnit.DAYS.between(recordDate, now);
-				record.setRScore(String.valueOf(daysBetween));
-			}
-		}
-	}
-	
-		// clean the date inputs
-	private void cleanDonationDates(UserData userData) {
-		for(Record record : userData.getRecordList()) {
-			record.setLstDnDat(record.getLstDnDat().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/"));
-			record.setFstDnDat(record.getFstDnDat().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/"));
-		}
-	}
-
-
-	// set the frequency score
-	private void setFScore(UserData userData) {
-		for(Record record : userData.getRecordList()) {
-			String numOfDonations = record.getNumDn().replaceAll("[^0-9\\.]", "");
-
-			if(Validators.isNumber(numOfDonations))
-				record.setFScore(numOfDonations);
-			else
-				record.setFScore("0");
-		}
-	}
-
-	// set the monetary score
-	private void setMScore(UserData userData) {
-		for(Record record : userData.getRecordList()) {
-			String lastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
-
-			if(Validators.isNumber(lastDonation))
-				record.setMScore(lastDonation);
-			else
-				record.setMScore("0.0");
-		}
-	}
-
-
-	// set the first donation date
-	private void setFstDonationDate(UserData userData) {
-		String format = DateTimeInferer.inferFormat(userData, UserData.fieldName.FIRST_DONATION_DATE.getName());
-
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-		LocalDate now = LocalDate.now();
-
-		for(Record record : userData.getRecordList()) {
-			if (Validators.isStringOfDateFormat(record.getFstDnDat(), format)) {
-				LocalDate recordDate = LocalDate.parse(record.getFstDnDat(), formatter);
-				long daysBetween = ChronoUnit.DAYS.between(recordDate, now);
-				record.setDay(String.valueOf(daysBetween));
-			}
-		}
-	}*/
-
 
 	/*
 	 * (non-Javadoc)
@@ -1133,7 +1137,7 @@ public class Adra implements RunGenerosityXBehavior {
 
 	@Override
 	public Boolean isFileNameRequired() {
-		return false;
+		return true;
 	}
 
 }

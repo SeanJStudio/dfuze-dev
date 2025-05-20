@@ -122,7 +122,7 @@ public class InkjetDialog extends JDialog {
 	private JLabel lblOptions;
 	private JLabel lblTitle;
 
-
+	private String newLine = "\r\n";
 
 
 	public InkjetDialog(JFrame frame) {
@@ -1021,26 +1021,26 @@ public class InkjetDialog extends JDialog {
 						final String spacer = "    ";
 
 						StringBuffer inkjetReport = new StringBuffer();
-						inkjetReport.append("\n");
-						inkjetReport.append("File(s) to Inkjet\n");
-						inkjetReport.append("-----------------\n");
-						inkjetReport.append("Root Path: \n\n");
+						inkjetReport.append(newLine);
+						inkjetReport.append("File(s) to Inkjet" + newLine);
+						inkjetReport.append("-----------------" + newLine);
+						inkjetReport.append("Root Path: " + newLine + newLine);
 						
 						for(int j = 0; j < finalArrayLists.size(); ++j)
-							inkjetReport.append(files.get(j).getName() + " - " + finalArrayLists.get(j).length + " Records\n");
+							inkjetReport.append(files.get(j).getName() + " - " + finalArrayLists.get(j).length + " Records" + newLine);
 							
-						inkjetReport.append("\n\n");
-						inkjetReport.append("Date Generated\n");
-						inkjetReport.append("-----------------\n");
-						inkjetReport.append(dtf.format(now) + "\n");
-						inkjetReport.append("\n\n\n");
+						inkjetReport.append(newLine + newLine);
+						inkjetReport.append("Date Generated" + newLine);
+						inkjetReport.append("-----------------" + newLine);
+						inkjetReport.append(dtf.format(now) + "" + newLine);
+						inkjetReport.append(newLine + newLine + newLine);
 						
 						inkjetReport.append(String.format("%17s","Field Number"));
 						inkjetReport.append(spacer);
 						inkjetReport.append(String.format("%-32s","Field Name"));
 						inkjetReport.append(spacer);
 						inkjetReport.append(String.format("%-32s","Original Name"));
-						inkjetReport.append("\n");
+						inkjetReport.append(newLine);
 						
 						inkjetReport.append(String.format("%-17s", "").replace(' ', '-'));
 						inkjetReport.append(spacer);
@@ -1065,11 +1065,11 @@ public class InkjetDialog extends JDialog {
 								}
 							}
 							
-							inkjetReport.append("\n");
+							inkjetReport.append(newLine);
 							
 						}
 
-						inkjetReport.append("\n\n");
+						inkjetReport.append(newLine + newLine);
 
 						int maxLines = 0;
 						String maxLinesListOrder = "";
@@ -1111,13 +1111,13 @@ public class InkjetDialog extends JDialog {
 
 						inkjetReport.append(String.format("%25s", "Max " + maxLines + " address lines:"));
 						inkjetReport.append(" ");
-						inkjetReport.append(lblListOrder.getText() + " #" + maxLinesListOrder + " from " + maxLinesFrom + " \n");
+						inkjetReport.append(lblListOrder.getText() + " #" + maxLinesListOrder + " from " + maxLinesFrom + newLine);
 						
 						inkjetReport.append(String.format("%25s", "Max field " + maxChar + " characters:"));
 						inkjetReport.append(" ");
-						inkjetReport.append(lblListOrder.getText() + " #" + maxCharListOrder + " from " + maxCharFrom + " \n");
+						inkjetReport.append(lblListOrder.getText() + " #" + maxCharListOrder + " from " + maxCharFrom + newLine);
 
-						inkjetReport.append("\n\n");
+						inkjetReport.append(newLine + newLine);
 						inkjetReport.append(String.format("%25s", "Please provide proofs to:"));
 						inkjetReport.append(" ");
 						inkjetReport.append("___________________________");

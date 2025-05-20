@@ -358,14 +358,12 @@ public class EdmontonHumanSociety implements RunHarveyMckinnonAssociatesBehavior
 								dn1Amt = newLastGiftAmt.toPlainString();
 								dn2Amt = newLastGiftAmt.multiply(new BigDecimal("1.1")).setScale(0, RoundingMode.CEILING).divide(new BigDecimal("5"), 0, RoundingMode.UP).multiply(new BigDecimal("5")).toPlainString();
 								dn3Amt = newLastGiftAmt.multiply(new BigDecimal("1.25")).setScale(0, RoundingMode.CEILING).divide(new BigDecimal("5"), 0, RoundingMode.UP).multiply(new BigDecimal("5")).toPlainString();
-								//dn2Amt = String.valueOf(Math.ceil((newLastGiftAmt.intValue() * 1.1) / ROUND_BY_FIVE) * ROUND_BY_FIVE);
-								//dn3Amt = String.valueOf(Math.ceil((newLastGiftAmt.intValue() * 1.25) / ROUND_BY_FIVE) * ROUND_BY_FIVE);
 								oDnAmt = "Other $ _________";
-							} else if (isRecord2YearsOrOlder) {
-								dn1Amt = "$ _________";
-								dn2Amt = "You kindly supported us with a gift of $" + formattedLastDonation +" previously.";
-								dn3Amt = "";
-								oDnAmt = "";
+							//} else if (isRecord2YearsOrOlder) {
+							//	dn1Amt = "$ _________";
+							//	dn2Amt = "You kindly supported us with a gift of $" + formattedLastDonation +" previously.";
+							//	dn3Amt = "";
+							//	oDnAmt = "";
 							} else {
 								dn1Amt = "";
 								dn2Amt = "";
@@ -401,14 +399,12 @@ public class EdmontonHumanSociety implements RunHarveyMckinnonAssociatesBehavior
 								dn1Amt = newLastGiftAmt.toPlainString();
 								dn2Amt = newLastGiftAmt.multiply(new BigDecimal("1.1")).setScale(0, RoundingMode.CEILING).divide(new BigDecimal("5"), 0, RoundingMode.UP).multiply(new BigDecimal("5")).toPlainString();
 								dn3Amt = newLastGiftAmt.multiply(new BigDecimal("1.25")).setScale(0, RoundingMode.CEILING).divide(new BigDecimal("5"), 0, RoundingMode.UP).multiply(new BigDecimal("5")).toPlainString();
-								//dn2Amt = String.valueOf(Math.ceil((newLastGiftAmt.intValue() * 1.1) / ROUND_BY_FIVE) * ROUND_BY_FIVE);
-								//dn3Amt = String.valueOf(Math.ceil((newLastGiftAmt.intValue() * 1.25) / ROUND_BY_FIVE) * ROUND_BY_FIVE);
 								oDnAmt = "Other $ _________";
-							} else if (isRecord2YearsOrOlder) {
-								dn1Amt = "$ _________";
-								dn2Amt = "You kindly supported us with a gift of $" + formattedLastDonation +" previously.";
-								dn3Amt = "";
-								oDnAmt = "";
+							//} else if (isRecord2YearsOrOlder) {
+							//	dn1Amt = "$ _________";
+							//	dn2Amt = "You kindly supported us with a gift of $" + formattedLastDonation +" previously.";
+							//	dn3Amt = "";
+							//	oDnAmt = "";
 							} else {
 								dn1Amt = "";
 								dn2Amt = "";
@@ -437,34 +433,24 @@ public class EdmontonHumanSociety implements RunHarveyMckinnonAssociatesBehavior
 					BigDecimal newLastGiftAmt = new BigDecimal(lstDnAmt);
 
 					if (newLastGiftAmt.doubleValue() < 100.00) {
-						mDn1Amt = "15";
-						mDn2Amt = "20";
-						mDn3Amt = "25";
+						mDn1Amt = "5";
+						mDn2Amt = "10";
+						mDn3Amt = "15";
 						mODnAmt = "Other $ _________";
 					} else if (newLastGiftAmt.doubleValue() < 400.00) {
-						mDn1Amt = "18";
-						mDn2Amt = "25";
-						mDn3Amt = "30";
+						mDn1Amt = "10";
+						mDn2Amt = "15";
+						mDn3Amt = "20";
 						mODnAmt = "Other $ _________";
 					} else if (newLastGiftAmt.doubleValue() < 1000.00) {
-						mDn1Amt = "35";
+						mDn1Amt = "25";
 						mDn2Amt = "55";
 						mDn3Amt = "84";
 						mODnAmt = "Other $ _________";
 					} else if (newLastGiftAmt.doubleValue() < 2000.00) {
 						mDn1Amt = "84";
 						mDn2Amt = "100";
-						mDn3Amt = "125";
-						mODnAmt = "Other $ _________";
-					} else if (newLastGiftAmt.doubleValue() < 3000.00) {
-						mDn1Amt = "166";
-						mDn2Amt = "250";
-						mDn3Amt = "";
-						mODnAmt = "Other $ _________";
-					} else if (newLastGiftAmt.doubleValue() < 5000.00) {
-						mDn1Amt = "250";
-						mDn2Amt = "300";
-						mDn3Amt = "";
+						mDn3Amt = "120";
 						mODnAmt = "Other $ _________";
 					} else {
 						mDn1Amt = "";
@@ -483,34 +469,24 @@ public class EdmontonHumanSociety implements RunHarveyMckinnonAssociatesBehavior
 					BigDecimal newLastGiftAmt = new BigDecimal(lstDnAmt);
 
 					if (newLastGiftAmt.doubleValue() < 100.00) {
-						mDn1Amt = "15";
-						mDn2Amt = "20";
-						mDn3Amt = "25";
+						mDn1Amt = "5";
+						mDn2Amt = "10";
+						mDn3Amt = "15";
 						mODnAmt = "Other $ _________";
 					} else if (newLastGiftAmt.doubleValue() < 400.00) {
-						mDn1Amt = "18";
-						mDn2Amt = "25";
-						mDn3Amt = "30";
+						mDn1Amt = "10";
+						mDn2Amt = "15";
+						mDn3Amt = "20";
 						mODnAmt = "Other $ _________";
 					} else if (newLastGiftAmt.doubleValue() < 1000.00) {
-						mDn1Amt = "35";
+						mDn1Amt = "25";
 						mDn2Amt = "55";
 						mDn3Amt = "84";
 						mODnAmt = "Other $ _________";
 					} else if (newLastGiftAmt.doubleValue() < 2000.00) {
 						mDn1Amt = "84";
 						mDn2Amt = "100";
-						mDn3Amt = "125";
-						mODnAmt = "Other $ _________";
-					} else if (newLastGiftAmt.doubleValue() < 3000.00) {
-						mDn1Amt = "166";
-						mDn2Amt = "250";
-						mDn3Amt = "";
-						mODnAmt = "Other $ _________";
-					} else if (newLastGiftAmt.doubleValue() < 5000.00) {
-						mDn1Amt = "250";
-						mDn2Amt = "300";
-						mDn3Amt = "";
+						mDn3Amt = "120";
 						mODnAmt = "Other $ _________";
 					} else {
 						mDn1Amt = "";

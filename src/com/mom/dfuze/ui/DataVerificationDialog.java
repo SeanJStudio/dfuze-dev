@@ -17,6 +17,7 @@ import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.Theme;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
+import com.mom.dfuze.io.FileIngestor;
 import com.mom.dfuze.io.TextWriter;
 import com.mom.dfuze.io.XLSXWriter;
 
@@ -109,6 +110,7 @@ public class DataVerificationDialog extends JDialog {
 	private LinkedHashMap<String, JComboBox<String>> lineMap = new LinkedHashMap<>();
 	private LinkedHashMap<String, JComboBox<String>> nameMap = new LinkedHashMap<>();
 	private LinkedHashMap<String, JComboBox<String>> addressMap = new LinkedHashMap<>();
+	private LinkedHashMap<String, JComboBox<String>> comboBoxMap = new LinkedHashMap<>();
 	
 	// buttons
 	private JButton btnReset;
@@ -160,6 +162,7 @@ public class DataVerificationDialog extends JDialog {
 	private String newLine = "\r\n";
 	
 	private static final String STRIP_IN_REGEX = "(?i)([I][N]__)+";
+	private JButton btnLoadTemplate;
 	
 	public enum reason {
 		FIRST_RECORD("First Record"),
@@ -560,15 +563,20 @@ public class DataVerificationDialog extends JDialog {
 		btnReset.addActionListener(new ResetButtonHandler());
 		contentPanel.add(btnReset, "cell 0 31 3 1,grow");
 
-		btnMake = new JButton("Make Data Verification");
-		btnMake.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		btnMake.addActionListener(new CreateButtonHandler());
+		btnLoadTemplate = new JButton("Load Template");
+		btnLoadTemplate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		btnLoadTemplate.addActionListener(new LoadTemplateButtonHandler());
+		contentPanel.add(btnLoadTemplate, "cell 4 31 2 1,growx,aligny center");
 		
-				lblSubTitle = new JLabel("LISTORDER is required");
-				lblSubTitle.setForeground(new Color(220, 20, 60));
-				lblSubTitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-				contentPanel.add(lblSubTitle, "cell 4 31 2 1,alignx right");
-		contentPanel.add(btnMake, "cell 7 31 5 1,grow");
+		lblSubTitle = new JLabel("LISTORDER is required");
+		lblSubTitle.setForeground(new Color(220, 20, 60));
+		lblSubTitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		contentPanel.add(lblSubTitle, "cell 7 31 2 1,alignx right");
+		
+		btnMake = new JButton("Make DV");
+		btnMake.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		btnMake.addActionListener(new MakeDVButtonHandler());
+		contentPanel.add(btnMake, "cell 10 31 2 1,grow");
 		
 		fillComboBoxList();
 		fillLabelList();
@@ -576,6 +584,7 @@ public class DataVerificationDialog extends JDialog {
 		fillLineMap();
 		fillNameMap();
 		fillAddressMap();
+		fillComboBoxMap();
 		
 		addDeleteHandlers();
 		
@@ -611,6 +620,30 @@ public class DataVerificationDialog extends JDialog {
 		addressMap.put(lblProv.getText(), comboBoxProv);
 		addressMap.put(lblPC.getText(), comboBoxPC);
 		addressMap.put(lblCountry.getText(), comboBoxCountry);
+	}
+	
+	private void fillComboBoxMap() {
+		comboBoxMap.put(lblLine1.getText(), comboBoxLine1);
+		comboBoxMap.put(lblLine2.getText(), comboBoxLine2);
+		comboBoxMap.put(lblLine3.getText(), comboBoxLine3);
+		comboBoxMap.put(lblLine4.getText(), comboBoxLine4);
+		comboBoxMap.put(lblLine5.getText(), comboBoxLine5);
+		comboBoxMap.put(lblLine6.getText(), comboBoxLine6);
+		comboBoxMap.put(lblLine7.getText(), comboBoxLine7);
+		comboBoxMap.put(lblLine8.getText(), comboBoxLine8);
+		comboBoxMap.put(lblName1.getText(), comboBoxName1);
+		comboBoxMap.put(lblName2.getText(), comboBoxName2);
+		comboBoxMap.put(lblName3.getText(), comboBoxName3);
+		comboBoxMap.put(lblName4.getText(), comboBoxName4);
+		comboBoxMap.put(lblAddress1.getText(), comboBoxAddress1);
+		comboBoxMap.put(lblAddress2.getText(), comboBoxAddress2);
+		comboBoxMap.put(lblAddress3.getText(), comboBoxAddress3);
+		comboBoxMap.put(lblAddress4.getText(), comboBoxAddress4);
+		comboBoxMap.put(lblCity.getText(), comboBoxCity);
+		comboBoxMap.put(lblProv.getText(), comboBoxProv);
+		comboBoxMap.put(lblPC.getText(), comboBoxPC);
+		comboBoxMap.put(lblCountry.getText(), comboBoxCountry);
+		comboBoxMap.put(lblListOrder.getText(), comboBoxListOrder);
 	}
 
 	private void fillComboBoxList() {
@@ -677,6 +710,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxMakeMultipleFiles.setEnabled(false);
 		comboBoxLimit1RecordPerValue.setEnabled(false);
 		btnReset.setEnabled(false);
+		btnLoadTemplate.setEnabled(false);
 		btnMake.setEnabled(false);
 	}
 
@@ -690,6 +724,7 @@ public class DataVerificationDialog extends JDialog {
 		comboBoxMakeMultipleFiles.setEnabled(true);
 		comboBoxLimit1RecordPerValue.setEnabled(true);
 		btnReset.setEnabled(true);
+		btnLoadTemplate.setEnabled(true);
 		btnMake.setEnabled(true);
 	}
 
@@ -1345,8 +1380,41 @@ public class DataVerificationDialog extends JDialog {
 		
 		return UserData.getRecordFieldByName(fieldValueToGet, record);
 	}
-
-	private class CreateButtonHandler implements ActionListener {
+	
+	private class LoadTemplateButtonHandler implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				if (e.getSource() == btnLoadTemplate) {
+					List<String> inHeaders = Arrays.asList(UiController.getUserData().getInHeaders());
+					List<List<String>> giftFile = FileIngestor.ingest();	// get the template
+					
+					for(JComboBox<String> cb : comboBoxList)
+						cb.setSelectedIndex(-1);
+						
+					for(List<String> row : giftFile) {
+						if(row.size() >= 2) {
+							String dvField = row.get(0);
+							String dataFieldToSet = row.get(1);
+							if(comboBoxMap.containsKey(dvField)) {
+								JComboBox<String> comboBox = comboBoxMap.get(dvField);
+								int indexToSet = inHeaders.indexOf(dataFieldToSet);
+								comboBox.setSelectedIndex(indexToSet);
+							}
+						}
+					}
+						
+				}
+			} catch (Exception err) {
+				UiController.handle(err);
+			} finally {
+				enableUi();
+			}
+		}
+	}
+	
+	
+	private class MakeDVButtonHandler implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -1461,9 +1529,10 @@ public class DataVerificationDialog extends JDialog {
 						for(int j = 0; j < finalArrayLists.size(); ++j)
 							XLSXWriter.write(files.get(j), headers, userData.getExportData(finalArrayLists.get(j)), false, true);
 					}
+					
+					JOptionPane.showMessageDialog(DataVerificationDialog.this, "Data Verification export complete", "Success", JOptionPane.INFORMATION_MESSAGE);
 				}
 				
-				JOptionPane.showMessageDialog(DataVerificationDialog.this, "Data Verification export complete", "Success", JOptionPane.INFORMATION_MESSAGE);
 
 			} catch (Exception err) {
 				UiController.handle(err);

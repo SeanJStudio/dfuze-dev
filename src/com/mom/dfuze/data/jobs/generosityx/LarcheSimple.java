@@ -45,18 +45,19 @@ import com.mom.dfuze.ui.UserInputDialog;
 
 
 /**
- * RegularProcess implements a RunBehavior for Larche Jobs
+ * LarcheSimple implements a RunBehavior for Larche Jobs
  * 
  * @author Sean Johnson
  *         Mail-o-Matic Services Ltd
- *         Date: 03/20/2025
+ *         Date: 05/07/2025
  *
  */
-public class Larche implements RunGenerosityXBehavior {
+public class LarcheSimple implements RunGenerosityXBehavior {
 
-	private final String BEHAVIOR_NAME = "Larche";
+	private final String BEHAVIOR_NAME = "Larche Simple";
 	private String[] REQUIRED_FIELDS = {
-			UserData.fieldName.IN_ID.getName()
+			UserData.fieldName.IN_ID.getName(),
+			UserData.fieldName.RECORD_TYPE.getName()
 	};
 
 	private String DESCRIPTION = 
@@ -88,24 +89,13 @@ public class Larche implements RunGenerosityXBehavior {
 	public final Pattern GIFT_FILE_FUND_PATTERN = Pattern.compile("fund", Pattern.CASE_INSENSITIVE);
 	
 	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
-	public final Pattern INTERNATIONAL_DESIGNATION_PATTERN = Pattern.compile("oversea|international", Pattern.CASE_INSENSITIVE);
-	
-	public final Pattern DONOR_FILE_SEED_ALL_PATTERN = Pattern.compile("seed.*all", Pattern.CASE_INSENSITIVE);
-	public final Pattern DONOR_FILE_SEED_LIMITED_PATTERN = Pattern.compile("seed.*limited", Pattern.CASE_INSENSITIVE);
-	public final Pattern DONOR_FILE_SEED_BOARD_PATTERN = Pattern.compile("seed.*board", Pattern.CASE_INSENSITIVE);
+	public final Pattern FOUNDATIONS_PATTERN = Pattern.compile("foundation|organizations|schools|clubs", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		MONTHLY("Monthly"),
-		ULTRA_HIGH("Ultra High"),
-		HIGH("High"),
-		MEDIUM("Medium"),
 		ACTIVE("Active"),
-		LAPSED_ULTRA_HIGH("Lapsed Ultra High"),
-		LAPSED_HIGH("Lapsed High"),
-		LAPSED("Lapsed"),
-		SEED_ALL("Seed All"),
-		SEED_LIMITED("Seed Limited"),
-		SEED_BOARD("Seed Board");
+		FOUNDATIONS("Foundations"),
+		LAPSED("Lapsed");
 		
 		String name;
 
@@ -208,7 +198,6 @@ public class Larche implements RunGenerosityXBehavior {
 				UserData.fieldName.RFM.getName(),
 				UserData.fieldName.SEGMENT.getName(),
 				UserData.fieldName.SEGMENT_CODE.getName(),
-				UserData.fieldName.RECORD_TYPE.getName(),
 				UserData.fieldName.DONATION1_AMOUNT.getName(),
 				UserData.fieldName.DONATION2_AMOUNT.getName(),
 				UserData.fieldName.DONATION3_AMOUNT.getName(),
@@ -472,7 +461,7 @@ public class Larche implements RunGenerosityXBehavior {
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
-		final int MONTHS36 = 36;
+		final int MONTHS48 = 48;
 		
 		int fileNameIndex = Arrays.asList(userData.getInHeaders()).indexOf("dfFileName");
 
@@ -501,19 +490,11 @@ public class Larche implements RunGenerosityXBehavior {
 			record.setAppeal("");
 			record.setPenultAmt("0");
 			record.setPenultDat("1900-01-01");
-			record.setRecType("");
 			
 			if(!giftHistoryMap.containsKey(record.getInId())) {
 				System.out.println("No ID for " + record.getInId());
 			}
-			
-			if(DONOR_FILE_SEED_ALL_PATTERN.matcher(recordFileName).find())
-				record.setSeg(segment.SEED_ALL.getName());
-			else if(DONOR_FILE_SEED_LIMITED_PATTERN.matcher(recordFileName).find())
-				record.setSeg(segment.SEED_LIMITED.getName());
-			else if(DONOR_FILE_SEED_BOARD_PATTERN.matcher(recordFileName).find())
-				record.setSeg(segment.SEED_BOARD.getName());
-			
+					
 			if(giftHistoryMap.containsKey(record.getInId())) {
 				List<LarcheGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
 				
@@ -522,7 +503,7 @@ public class Larche implements RunGenerosityXBehavior {
 				
 				double totalGiftAmountLast12Months = 0.0;
 				int totalGiftsLast12Months = 0;
-				double largestGiftMadeLast36Months = 0.0;
+				double largestGiftMadeLast48Months = 0.0;
 				double largestGift = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
@@ -549,15 +530,12 @@ public class Larche implements RunGenerosityXBehavior {
 						totalGiftAmountLast12Months += giftHistory.getGiftAmount();
 					}
 					
-					if(monthsFromDonation <= MONTHS36 && monthsFromDonation > -1) {
-						if(giftHistory.getGiftAmount() > largestGiftMadeLast36Months)
-							largestGiftMadeLast36Months = giftHistory.getGiftAmount();
+					if(monthsFromDonation <= MONTHS48 && monthsFromDonation > -1) {
+						if(giftHistory.getGiftAmount() > largestGiftMadeLast48Months)
+							largestGiftMadeLast48Months = giftHistory.getGiftAmount();
 
 					}
 					
-					// look for international records
-					if(INTERNATIONAL_DESIGNATION_PATTERN.matcher(giftHistory.getGiftFund()).find())
-						record.setRecType("International");
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 					
@@ -600,18 +578,10 @@ public class Larche implements RunGenerosityXBehavior {
 				
 				// segmentation
 				if(record.getSeg() == null) {
-					if(largestGiftMadeLast36Months >= 5000)
-						record.setSeg(segment.ULTRA_HIGH.getName());
-					else if(largestGiftMadeLast36Months >= 2500)
-						record.setSeg(segment.HIGH.getName());
-					else if(largestGiftMadeLast36Months >= 1000)
-						record.setSeg(segment.MEDIUM.getName());
-					else if(largestGiftMadeLast36Months > 0)
+					if(FOUNDATIONS_PATTERN.matcher(record.getRecType()).find())
+						record.setSeg(segment.FOUNDATIONS.getName());
+					else if(largestGiftMadeLast48Months > 0)
 						record.setSeg(segment.ACTIVE.getName());
-					else if(largestGift >= 5000)
-						record.setSeg(segment.LAPSED_ULTRA_HIGH.getName());
-					else if(largestGift >= 1000)
-						record.setSeg(segment.LAPSED_HIGH.getName());
 					else
 						record.setSeg(segment.LAPSED.getName());
 				}
@@ -624,7 +594,7 @@ public class Larche implements RunGenerosityXBehavior {
 				record.setLrgDnAmt(String.valueOf(largestGift));
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months)); 
-				record.setYear(String.valueOf(largestGiftMadeLast36Months)); // alias to hold largest gift last 36 months
+				record.setYear(String.valueOf(largestGiftMadeLast48Months)); // alias to hold largest gift last 48 months
 			}
 			
 			if(record.getSeg() == null)
@@ -639,46 +609,25 @@ public class Larche implements RunGenerosityXBehavior {
 			record.setLetVer("");
 			
 			if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName())) {
-				record.setSegCode(campaignCode + "-MD1");
-				record.setLetVer("Monthly");
-			} else if(record.getSeg().equalsIgnoreCase(segment.ULTRA_HIGH.getName())) {
-				record.setSegCode(campaignCode + "-UHD1");
-				record.setLetVer("Top");
-			} else if(record.getSeg().equalsIgnoreCase(segment.HIGH.getName())) {
-				record.setSegCode(campaignCode + "-HD1");
-				record.setLetVer("Top");
-			} else if(record.getSeg().equalsIgnoreCase(segment.MEDIUM.getName())) {
-				record.setSegCode(campaignCode + "-MEDD0");
-				record.setLetVer("Top");
+				record.setSegCode(campaignCode + "-M1");
+				record.setLetVer(segment.MONTHLY.getName());
+			} else if(record.getSeg().equalsIgnoreCase(segment.FOUNDATIONS.getName())) {
+				record.setSegCode(campaignCode + "-F1");
+				record.setLetVer(segment.FOUNDATIONS.getName());
 			} else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName())) {
-				record.setSegCode(campaignCode + "-AD");
+				record.setSegCode(campaignCode + "-A");
 				record.setLetVer("Active");
-			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED_ULTRA_HIGH.getName())) {
-				record.setSegCode(campaignCode + "-LUHD1");
-				record.setLetVer("Lapsed");
-			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED_HIGH.getName())) {
-				record.setSegCode(campaignCode + "-LHD1");
-				record.setLetVer("Lapsed");
 			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName())) {
-				record.setSegCode(campaignCode + "-LD0");
+				record.setSegCode(campaignCode + "-L");
 				record.setLetVer("Lapsed");
-			} else if(record.getSeg().equalsIgnoreCase(segment.SEED_ALL.getName())) {
-				record.setSegCode(campaignCode + "-Seed - All");
-				record.setLetVer("Active");
-			} else if(record.getSeg().equalsIgnoreCase(segment.SEED_LIMITED.getName())) {
-				record.setSegCode(campaignCode + "-Seed - L");
-				record.setLetVer("Active");
-			} else if(record.getSeg().equalsIgnoreCase(segment.SEED_BOARD.getName())) {
-				record.setSegCode(campaignCode + "-Seed - B");
-				record.setLetVer("Active");
 			}
 		}
 	}
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. APR25-02-DM)");
-		uid.getTextField().setText("APR25-02-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. MAY-01-NL-DM)");
+		uid.getTextField().setText("MAY-01-NL-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -890,12 +839,7 @@ public class Larche implements RunGenerosityXBehavior {
 			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
-			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName()) &&
-			   !donorSegment.equalsIgnoreCase(segment.ULTRA_HIGH.getName()) &&
-			   !donorSegment.equalsIgnoreCase(segment.HIGH.getName()) &&
-			   !donorSegment.equalsIgnoreCase(segment.LAPSED_ULTRA_HIGH.getName()) &&
-			   !donorSegment.equalsIgnoreCase(segment.LAPSED_HIGH.getName()) &&
-			   !donorSegment.equalsIgnoreCase(segment.SEED_BOARD.getName())) // only create gifts for certain segments
+			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())) // only create gifts for certain segments
 				setStaticGiftArray(record, lastDonationRoundedUpByFive);
 
 		}
@@ -938,10 +882,14 @@ public class Larche implements RunGenerosityXBehavior {
 		    record.setDn4Amt("1250");
 		    askTier = 3;
 		} else {
-		    record.setDn1Amt("750");
-		    record.setDn2Amt("1000");
-		    record.setDn3Amt("1250");
-		    record.setDn4Amt("1500");
+		    //record.setDn1Amt("750");
+		    //record.setDn2Amt("1000");
+		    //record.setDn3Amt("1250");
+		    //record.setDn4Amt("1500");
+		    record.setDn1Amt("");
+		    record.setDn2Amt("");
+		    record.setDn3Amt("");
+		    record.setDn4Amt("");
 		    askTier = 2;
 		}
 		
