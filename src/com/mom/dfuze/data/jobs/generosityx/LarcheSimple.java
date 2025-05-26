@@ -95,7 +95,8 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 		MONTHLY("Monthly"),
 		ACTIVE("Active"),
 		FOUNDATIONS("Foundations"),
-		LAPSED("Lapsed");
+		LAPSED("Lapsed"),
+		NEW("New");
 		
 		String name;
 
@@ -561,6 +562,10 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 					if(j == giftHistoryList.size() - 1) {
 						record.setFstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setFstDnDat(giftHistory.getGiftDate().toString());
+						
+						if(record.getSeg() == null)
+							if(monthsFromDonation <= MONTHS6)
+								record.setSeg(segment.NEW.getName());
 					}
 					
 					// set penultimates (second last gift)
@@ -616,6 +621,9 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 				record.setLetVer(segment.FOUNDATIONS.getName());
 			} else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName())) {
 				record.setSegCode(campaignCode + "-A");
+				record.setLetVer("Active");
+			} else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName())) {
+				record.setSegCode(campaignCode + "-N0");
 				record.setLetVer("Active");
 			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName())) {
 				record.setSegCode(campaignCode + "-L");

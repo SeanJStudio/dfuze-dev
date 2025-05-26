@@ -1317,7 +1317,7 @@ public class DataVerificationDialog extends JDialog {
 			
 			List<Map.Entry<Integer, String>> sortedIdToListOrderEntries = idToListOrderMap.entrySet()
 	                .stream()
-	                .sorted(Comparator.comparingInt(entry -> Integer.parseInt(entry.getValue())))
+	                .sorted(Comparator.comparingInt(entry -> safeParseInt(entry.getValue(), 0)))
 	                .collect(Collectors.toList());
 			
 			for (Map.Entry<Integer, String> entry : sortedIdToListOrderEntries) {
@@ -1353,6 +1353,15 @@ public class DataVerificationDialog extends JDialog {
 		} // End of list loop
 		
 		return selectedRecordLists;
+	}
+	
+	// Helper method to parse int
+	private static int safeParseInt(String s, int defaultValue) {
+	    try {
+	        return Integer.parseInt(s.replaceAll("[^0-9]", ""));
+	    } catch (NumberFormatException e) {
+	        return defaultValue;
+	    }
 	}
 	
 	
