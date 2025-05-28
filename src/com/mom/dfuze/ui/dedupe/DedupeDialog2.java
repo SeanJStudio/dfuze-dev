@@ -1421,16 +1421,20 @@ public class DedupeDialog2 extends JDialog {
 				
 				//System.out.println(DupeAlphaStreetAdd1);
 				//System.out.println(DupeAlphaStreetAdd2);
-				
+
 				// This removes the unit number as long as it does not start with the unit number
-				if (add1StreetApt.find())
+				if (add1StreetApt.find()) {
+					record.setMisc1(add1StreetApt.group());
 					if(!DupeAlphaStreetAdd1.startsWith(add1StreetApt.group()) || DupeAlphaStreetAdd1.equalsIgnoreCase(add1StreetApt.group()))
 						DupeAlphaStreetAdd1 = DupeAlphaStreetAdd1.replaceAll(add1StreetApt.group(), "");
+				}
 						
 
-				if (add2StreetApt.find())
+				if (add2StreetApt.find()) {
+					record.setMisc2(add2StreetApt.group());
 					if(!DupeAlphaStreetAdd2.startsWith(add2StreetApt.group()) || DupeAlphaStreetAdd2.equalsIgnoreCase(add2StreetApt.group()))
 						DupeAlphaStreetAdd2 = DupeAlphaStreetAdd2.replaceAll(add2StreetApt.group(), "");
+				}
 						
 				
 				//System.out.println(DupeAlphaStreetAdd1);
@@ -1613,6 +1617,20 @@ public class DedupeDialog2 extends JDialog {
 					dupeAdd1 = dupeAdd1.replaceAll("^(\\D)?(\\s+)?(\\D)?(\\s+)?\\d+(\\D)?(\\s+)?(\\D)?(\\s+)?-", "");
 					dupeAdd2 = dupeAdd2.replaceAll("^(\\D)?(\\s+)?(\\D)?(\\s+)?\\d+(\\D)?(\\s+)?(\\D)?(\\s+)?-", "");
 				}
+				
+				// Extra Apt info for analytics
+				/////////////////////////////////////////////////////////////
+				Matcher tableauApt1Matcher = REMOVE_APT_PATTERN.matcher(dupeAdd1);
+				Matcher tableauApt2Matcher = REMOVE_APT_PATTERN.matcher(dupeAdd2);
+				
+				if(tableauApt1Matcher.find())
+					if(record.getMisc1().length() == 0)
+						record.setMisc1(tableauApt1Matcher.group());
+				
+				if(tableauApt2Matcher.find())
+					if(record.getMisc2().length() == 0)
+						record.setMisc2(tableauApt2Matcher.group());
+				/////////////////////////////////////////////////////////////
 
 				record.setDupeAdd1(dupeAdd1.replaceAll("[^0-9]", "").replaceFirst("^0+(?!$)", ""));
 				record.setDupeAdd2(dupeAdd2.replaceAll("[^0-9]", "").replaceFirst("^0+(?!$)", ""));
@@ -1663,6 +1681,14 @@ public class DedupeDialog2 extends JDialog {
 							}
 						}
 					}
+					
+					// Extra Apt info for analytics
+					/////////////////////////////////////////////////////////////
+					if(record.getMisc1().length() == 0)
+						record.setMisc1(add1AptValue);
+					if(record.getMisc2().length() == 0)
+						record.setMisc2(add2AptValue);
+					/////////////////////////////////////////////////////////////
 				} 
 
 

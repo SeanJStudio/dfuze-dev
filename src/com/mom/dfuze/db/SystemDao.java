@@ -51,6 +51,9 @@ import com.mom.dfuze.data.jobs.vghubc.VGHUBCJob;
 public class SystemDao {
   public static Job[] jobs = { 
 		  
+		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.NonAddressSeparatorTwoLine()),
+		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.NonAddressSeparatorThreeLine()),
+		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.NonAddressSeparatorFourLine()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.CalculateDistance()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.DataDump()),
 		  new UtilityJob(new com.mom.dfuze.data.jobs.utility.DataVerification()),

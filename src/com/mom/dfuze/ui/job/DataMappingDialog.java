@@ -728,6 +728,10 @@ public class DataMappingDialog extends JDialog {
 			labelName = "COMPANY ADDRESS1";
 		else if (field.equals(UserData.fieldName.COMPANY_ADDRESS2.getName()))
 			labelName = "COMPANY ADDRESS2";
+		else if (field.equals(UserData.fieldName.COMPANY_ADDRESS3.getName()))
+			labelName = "COMPANY ADDRESS3";
+		else if (field.equals(UserData.fieldName.COMPANY_ADDRESS4.getName()))
+			labelName = "COMPANY ADDRESS4";
 		else if (field.equals(UserData.fieldName.ADDRESS1.getName()))
 			labelName = "ADDRESS1";
 		else if (field.equals(UserData.fieldName.ADDRESS1_2.getName()))
@@ -736,6 +740,10 @@ public class DataMappingDialog extends JDialog {
 			labelName = "ADDRESS2";
 		else if (field.equals(UserData.fieldName.ADDRESS2_2.getName()))
 			labelName = "ADDRESS2_2";
+		else if (field.equals(UserData.fieldName.ADDRESS3.getName()))
+			labelName = "ADDRESS3";
+		else if (field.equals(UserData.fieldName.ADDRESS4.getName()))
+			labelName = "ADDRESS4";
 		else if (field.equals(UserData.fieldName.CITY.getName()))
 			labelName = "CITY";
 		else if (field.equals(UserData.fieldName.PROVINCE.getName()))
@@ -1347,6 +1355,10 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setCmpnyAdd1Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.COMPANY_ADDRESS2.getName()))
 					UiController.getUserData().setCmpnyAdd2Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.COMPANY_ADDRESS3.getName()))
+					UiController.getUserData().setCmpnyAdd3Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.COMPANY_ADDRESS4.getName()))
+					UiController.getUserData().setCmpnyAdd4Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.ADDRESS1.getName()))
 					UiController.getUserData().setAdd1Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.ADDRESS1_2.getName()))
@@ -1355,6 +1367,10 @@ public class DataMappingDialog extends JDialog {
 					UiController.getUserData().setAdd2Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.ADDRESS2_2.getName()))
 					UiController.getUserData().setAdd2_2Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.ADDRESS3.getName()))
+					UiController.getUserData().setAdd3Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
+				else if (comboBox.getName().equals(UserData.fieldName.ADDRESS4.getName()))
+					UiController.getUserData().setAdd4Index(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.CITY.getName()))
 					UiController.getUserData().setCityIndex(addToMappedFields(comboBox) ? comboBox.getSelectedIndex() : UserData.DEFAULT_INDEX);
 				else if (comboBox.getName().equals(UserData.fieldName.PROVINCE.getName()))

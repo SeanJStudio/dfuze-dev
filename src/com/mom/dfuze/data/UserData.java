@@ -114,10 +114,14 @@ public class UserData {
 	private int cmpnySalIndex = DEFAULT_INDEX; // company salutation
 	private int cmpnyAdd1Index = DEFAULT_INDEX; // Company address 1
 	private int cmpnyAdd2Index = DEFAULT_INDEX; // Company address 2
+	private int cmpnyAdd3Index = DEFAULT_INDEX; // Company address 3
+	private int cmpnyAdd4Index = DEFAULT_INDEX; // Company address 4
 	private int add1Index = DEFAULT_INDEX; // address 1
 	private int add1_2Index = DEFAULT_INDEX; // the second half of add1 when split on 'n' characters
 	private int add2Index = DEFAULT_INDEX; // address 2
 	private int add2_2Index = DEFAULT_INDEX; // the second half of add2 when split on 'n' characters
+	private int add3Index = DEFAULT_INDEX; // address 3
+	private int add4Index = DEFAULT_INDEX; // address 4
 	private int cityIndex = DEFAULT_INDEX; // city
 	private int provIndex = DEFAULT_INDEX; // province
 	private int pCodeIndex = DEFAULT_INDEX; // postal code
@@ -284,10 +288,14 @@ public class UserData {
 		COMPANY_SALUTATION("dfCmpnySal"),
 		COMPANY_ADDRESS1("dfCmpnyAdd1"), // Company address 1
 		COMPANY_ADDRESS2("dfCmpnyAdd2"), // Company address 2
+		COMPANY_ADDRESS3("dfCmpnyAdd3"), // Company address 3
+		COMPANY_ADDRESS4("dfCmpnyAdd4"), // Company address 4
 		ADDRESS1("dfAdd1"), // address 1
 		ADDRESS1_2("dfAdd1_2"), // the second half of add1 when split on 'n' characters
 		ADDRESS2("dfAdd2"), // address 2
 		ADDRESS2_2("dfAdd2_2"), // the second half of add2 when split on 'n' characters
+		ADDRESS3("dfAdd3"), // address 3
+		ADDRESS4("dfAdd4"), // address 4
 		CITY("dfCity"), // city
 		PROVINCE("dfProv"), // province
 		POSTALCODE("dfPCode"), // postal code
@@ -459,10 +467,14 @@ public class UserData {
 			fieldName.PARAGRAPH_SALUTATION.getName(),
 			fieldName.COMPANY_ADDRESS1.getName(),
 			fieldName.COMPANY_ADDRESS2.getName(),
+			fieldName.COMPANY_ADDRESS3.getName(),
+			fieldName.COMPANY_ADDRESS4.getName(),
 			fieldName.ADDRESS1.getName(),
 			fieldName.ADDRESS1_2.getName(),
 			fieldName.ADDRESS2.getName(),
 			fieldName.ADDRESS2_2.getName(),
+			fieldName.ADDRESS3.getName(),
+			fieldName.ADDRESS4.getName(),
 			fieldName.CITY.getName(),
 			fieldName.PROVINCE.getName(),
 			fieldName.POSTALCODE.getName(),
@@ -851,6 +863,14 @@ public class UserData {
 	public int getCmpnyAdd2Index() {
 		return cmpnyAdd2Index;
 	}
+	
+	public int getCmpnyAdd3Index() {
+		return cmpnyAdd3Index;
+	}
+	
+	public int getCmpnyAdd4Index() {
+		return cmpnyAdd4Index;
+	}
 
 	public int getAdd1Index() {
 		return add1Index;
@@ -866,6 +886,14 @@ public class UserData {
 
 	public int getAdd2_2Index() {
 		return add2_2Index;
+	}
+	
+	public int getAdd3Index() {
+		return add3Index;
+	}
+	
+	public int getAdd4Index() {
+		return add4Index;
 	}
 
 	public int getCityIndex() {
@@ -1440,6 +1468,14 @@ public class UserData {
 	public void setCmpnyAdd2Index(int cmpnyAdd2Index) {
 		this.cmpnyAdd2Index = cmpnyAdd2Index;
 	}
+	
+	public void setCmpnyAdd3Index(int cmpnyAdd3Index) {
+		this.cmpnyAdd3Index = cmpnyAdd3Index;
+	}
+	
+	public void setCmpnyAdd4Index(int cmpnyAdd4Index) {
+		this.cmpnyAdd4Index = cmpnyAdd4Index;
+	}
 
 	public void setAdd1Index(int add1Index) {
 		this.add1Index = add1Index;
@@ -1455,6 +1491,14 @@ public class UserData {
 
 	public void setAdd2_2Index(int add2_2Index) {
 		this.add2_2Index = add2_2Index;
+	}
+	
+	public void setAdd3Index(int add3Index) {
+		this.add3Index = add3Index;
+	}
+	
+	public void setAdd4Index(int add4Index) {
+		this.add4Index = add4Index;
 	}
 
 	public void setCityIndex(int cityIndex) {
@@ -2060,6 +2104,10 @@ public class UserData {
 			return record.getCmpnyAdd1();
 		else if (fieldToGet.equals(fieldName.COMPANY_ADDRESS2.getName()))
 			return record.getCmpnyAdd2();
+		else if (fieldToGet.equals(fieldName.COMPANY_ADDRESS3.getName()))
+			return record.getCmpnyAdd3();
+		else if (fieldToGet.equals(fieldName.COMPANY_ADDRESS4.getName()))
+			return record.getCmpnyAdd4();
 		else if (fieldToGet.equals(fieldName.ADDRESS1.getName()))
 			return record.getAdd1();
 		else if (fieldToGet.equals(fieldName.ADDRESS1_2.getName()))
@@ -2068,6 +2116,10 @@ public class UserData {
 			return record.getAdd2();
 		else if (fieldToGet.equals(fieldName.ADDRESS2_2.getName()))
 			return record.getAdd2_2();
+		else if (fieldToGet.equals(fieldName.ADDRESS3.getName()))
+			return record.getAdd3();
+		else if (fieldToGet.equals(fieldName.ADDRESS4.getName()))
+			return record.getAdd4();
 		else if (fieldToGet.equals(fieldName.CITY.getName()))
 			return record.getCity();
 		else if (fieldToGet.equals(fieldName.PROVINCE.getName()))
@@ -2363,6 +2415,10 @@ public class UserData {
 			record.setCmpnyAdd1(valueToSet);
 		else if (fieldToSet.equals(fieldName.COMPANY_ADDRESS2.getName()))
 			record.setCmpnyAdd2(valueToSet);
+		else if (fieldToSet.equals(fieldName.COMPANY_ADDRESS3.getName()))
+			record.setCmpnyAdd3(valueToSet);
+		else if (fieldToSet.equals(fieldName.COMPANY_ADDRESS4.getName()))
+			record.setCmpnyAdd4(valueToSet);
 		else if (fieldToSet.equals(fieldName.ADDRESS1.getName()))
 			record.setAdd1(valueToSet);
 		else if (fieldToSet.equals(fieldName.ADDRESS1_2.getName()))
@@ -2371,6 +2427,10 @@ public class UserData {
 			record.setAdd2(valueToSet);
 		else if (fieldToSet.equals(fieldName.ADDRESS2_2.getName()))
 			record.setAdd2_2(valueToSet);
+		else if (fieldToSet.equals(fieldName.ADDRESS3.getName()))
+			record.setAdd3(valueToSet);
+		else if (fieldToSet.equals(fieldName.ADDRESS4.getName()))
+			record.setAdd4(valueToSet);
 		else if (fieldToSet.equals(fieldName.CITY.getName()))
 			record.setCity(valueToSet);
 		else if (fieldToSet.equals(fieldName.PROVINCE.getName()))
@@ -2663,9 +2723,13 @@ public class UserData {
 		else if (fieldToSet.equals(fieldName.COMPANY_SALUTATION.getName()))
 			record.setCmpnySal(inData[cmpnySalIndex]);
 		else if (fieldToSet.equals(fieldName.COMPANY_ADDRESS1.getName()))
-			record.setAdd1(inData[cmpnyAdd1Index]);
+			record.setCmpnyAdd1(inData[cmpnyAdd1Index]);
 		else if (fieldToSet.equals(fieldName.COMPANY_ADDRESS2.getName()))
-			record.setAdd1(inData[cmpnyAdd2Index]);
+			record.setCmpnyAdd2(inData[cmpnyAdd2Index]);
+		else if (fieldToSet.equals(fieldName.COMPANY_ADDRESS3.getName()))
+			record.setCmpnyAdd3(inData[cmpnyAdd3Index]);
+		else if (fieldToSet.equals(fieldName.COMPANY_ADDRESS2.getName()))
+			record.setCmpnyAdd4(inData[cmpnyAdd4Index]);
 		else if (fieldToSet.equals(fieldName.ADDRESS1.getName()))
 			record.setAdd1(inData[add1Index]);
 		else if (fieldToSet.equals(fieldName.ADDRESS1_2.getName()))
@@ -2674,6 +2738,10 @@ public class UserData {
 			record.setAdd2(inData[add2Index]);
 		else if (fieldToSet.equals(fieldName.ADDRESS2_2.getName()))
 			record.setAdd2_2(inData[add2_2Index]);
+		else if (fieldToSet.equals(fieldName.ADDRESS3.getName()))
+			record.setAdd3(inData[add3Index]);
+		else if (fieldToSet.equals(fieldName.ADDRESS4.getName()))
+			record.setAdd4(inData[add4Index]);
 		else if (fieldToSet.equals(fieldName.CITY.getName()))
 			record.setCity(inData[cityIndex]);
 		else if (fieldToSet.equals(fieldName.PROVINCE.getName()))

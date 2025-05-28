@@ -104,10 +104,14 @@ public class Record {
   private String cmpnySal; // company salutation
   private String cmpnyAdd1; // company address 1
   private String cmpnyAdd2; // company address 2
+  private String cmpnyAdd3; // company address 3
+  private String cmpnyAdd4; // company address 4
   private String add1; // address 1
   private String add1_2; // the second half of add1 when split on 'n' characters
   private String add2; // address 2
   private String add2_2; // the second half of add2 when split on 'n' characters
+  private String add3; // address 3
+  private String add4; // address 4
   private String city; // city
   private String prov; // province
   private String pCode; // postal code
@@ -275,10 +279,14 @@ public class Record {
     cmpnySal = builder.cmpnySal;
     cmpnyAdd1 = builder.cmpnyAdd1;
     cmpnyAdd2 = builder.cmpnyAdd2;
+    cmpnyAdd3 = builder.cmpnyAdd3;
+    cmpnyAdd4 = builder.cmpnyAdd4;
     add1 = builder.add1;
     add1_2 = builder.add1_2;
     add2 = builder.add2;
     add2_2 = builder.add2_2;
+    add3 = builder.add3;
+    add4 = builder.add4;
     city = builder.city;
     prov = builder.prov;
     pCode = builder.pCode;
@@ -441,10 +449,14 @@ public class Record {
     private String cmpnySal;
     private String cmpnyAdd1;
     private String cmpnyAdd2;
+    private String cmpnyAdd3;
+    private String cmpnyAdd4;
     private String add1;
     private String add1_2;
     private String add2;
     private String add2_2;
+    private String add3;
+    private String add4;
     private String city;
     private String prov;
     private String pCode;
@@ -926,6 +938,16 @@ public class Record {
         this.cmpnyAdd2 = cmpnyAdd2;
         return this;
     }
+    
+    public Builder setCmpnyAdd3(String cmpnyAdd3) {
+        this.cmpnyAdd3 = cmpnyAdd3;
+        return this;
+    }
+    
+    public Builder setCmpnyAdd4(String cmpnyAdd4) {
+        this.cmpnyAdd4 = cmpnyAdd4;
+        return this;
+    }
 
     public Builder setAdd1(String add1) {
       this.add1 = add1;
@@ -945,6 +967,16 @@ public class Record {
     public Builder setAdd2_2(String add2_2) {
       this.add2_2 = add2_2;
       return this;
+    }
+    
+    public Builder setAdd3(String add3) {
+        this.add3 = add3;
+        return this;
+    }
+    
+    public Builder setAdd4(String add4) {
+        this.add4 = add4;
+        return this;
     }
 
     public Builder setCity(String city) {
@@ -1596,6 +1628,14 @@ public class Record {
   public String getCmpnyAdd2() {
 	return cmpnyAdd2;
   }
+  
+	public String getCmpnyAdd3() {
+		return cmpnyAdd3;
+	}
+  
+	public String getCmpnyAdd4() {
+	  return cmpnyAdd4;
+	}
 
   public String getAdd1() {
     return add1;
@@ -1611,6 +1651,14 @@ public class Record {
 
   public String getAdd2_2() {
     return add2_2;
+  }
+  
+  public String getAdd3() {
+	  return add3;
+  }
+  
+  public String getAdd4() {
+	  return add4;
   }
 
   public String getCity() {
@@ -2192,6 +2240,14 @@ public class Record {
   public void setCmpnyAdd2(String cmpnyAdd2) {
 	this.cmpnyAdd2 = cmpnyAdd2;
   }
+  
+	public void setCmpnyAdd3(String cmpnyAdd3) {
+	  this.cmpnyAdd3 = cmpnyAdd3;
+	}
+  
+	public void setCmpnyAdd4(String cmpnyAdd4) {
+	  this.cmpnyAdd4 = cmpnyAdd4;
+	}
 
   public void setAdd1(String add1) {
     this.add1 = add1;
@@ -2208,6 +2264,14 @@ public class Record {
   public void setAdd2_2(String add2_2) {
     this.add2_2 = add2_2;
   }
+  
+	public void setAdd3(String add3) {
+		this.add3 = add3;
+	}
+	
+	public void setAdd4(String add4) {
+		this.add4 = add4;
+	}
 
   public void setCity(String city) {
     this.city = city;
@@ -2505,22 +2569,23 @@ public String toString() {
 			+ ", spouseLstName=" + spouseLstName + ", spouseNam1=" + spouseNam1 + ", spouseNam2=" + spouseNam2
 			+ ", cmpny=" + cmpny + ", cmpny_2=" + cmpny_2 + ", cmpnyCn=" + cmpnyCn + ", dearSal=" + dearSal
 			+ ", paraSal=" + paraSal + ", cmpnySal=" + cmpnySal + ", cmpnyAdd1=" + cmpnyAdd1 + ", cmpnyAdd2="
-			+ cmpnyAdd2 + ", add1=" + add1 + ", add1_2=" + add1_2 + ", add2=" + add2 + ", add2_2=" + add2_2 + ", city="
-			+ city + ", prov=" + prov + ", pCode=" + pCode + ", cntry=" + cntry + ", streetNum=" + streetNum
-			+ ", streetDir=" + streetDir + ", streetNam=" + streetNam + ", streetDef=" + streetDef + ", aptNum="
-			+ aptNum + ", serviceAdd=" + serviceAdd + ", serviceCity=" + serviceCity + ", poBox=" + poBox + ", careOf="
-			+ careOf + ", ncoa=" + ncoa + ", dnm=" + dnm + ", deceased=" + deceased + ", dnAmtArr=" + dnAmtArr
-			+ ", dnDatArr=" + dnDatArr + ", numDn=" + numDn + ", numDnLst12Mnths=" + numDnLst12Mnths + ", ttlDnAmt="
-			+ ttlDnAmt + ", ttlDnAmtLst12Mnths=" + ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr=" + ttlDnAmtCrntYr
-			+ ", ttlDnAmtLstYr=" + ttlDnAmtLstYr + ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt + ", lMDnAmt="
-			+ lMDnAmt + ", lrgDnAmt=" + lrgDnAmt + ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat + ", lstDnDat="
-			+ lstDnDat + ", lMDnDat=" + lMDnDat + ", penultAmt=" + penultAmt + ", penultDat=" + penultDat + ", dn1Amt="
-			+ dn1Amt + ", dn2Amt=" + dn2Amt + ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt=" + oDnAmt
-			+ ", mDn1Amt=" + mDn1Amt + ", mDn2Amt=" + mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt
-			+ ", mODnAmt=" + mODnAmt + ", provide1=" + provide1 + ", provide2=" + provide2 + ", provide3=" + provide3
-			+ ", provide4=" + provide4 + ", priority=" + priority + ", abGroup=" + abGroup + ", appeal=" + appeal
-			+ ", seg=" + seg + ", segCode=" + segCode + ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer="
-			+ repVer + ", codeLine=" + codeLine + ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt
+			+ cmpnyAdd2 + ", cmpnyAdd3=" + cmpnyAdd3 + ", cmpnyAdd4=" + cmpnyAdd4 + ", add1=" + add1 + ", add1_2="
+			+ add1_2 + ", add2=" + add2 + ", add2_2=" + add2_2 + ", add3=" + add3 + ", add4=" + add4 + ", city=" + city
+			+ ", prov=" + prov + ", pCode=" + pCode + ", cntry=" + cntry + ", streetNum=" + streetNum + ", streetDir="
+			+ streetDir + ", streetNam=" + streetNam + ", streetDef=" + streetDef + ", aptNum=" + aptNum
+			+ ", serviceAdd=" + serviceAdd + ", serviceCity=" + serviceCity + ", poBox=" + poBox + ", careOf=" + careOf
+			+ ", ncoa=" + ncoa + ", dnm=" + dnm + ", deceased=" + deceased + ", dnAmtArr=" + dnAmtArr + ", dnDatArr="
+			+ dnDatArr + ", numDn=" + numDn + ", numDnLst12Mnths=" + numDnLst12Mnths + ", ttlDnAmt=" + ttlDnAmt
+			+ ", ttlDnAmtLst12Mnths=" + ttlDnAmtLst12Mnths + ", ttlDnAmtCrntYr=" + ttlDnAmtCrntYr + ", ttlDnAmtLstYr="
+			+ ttlDnAmtLstYr + ", fstDnAmt=" + fstDnAmt + ", lstDnAmt=" + lstDnAmt + ", lMDnAmt=" + lMDnAmt
+			+ ", lrgDnAmt=" + lrgDnAmt + ", smlDnAmt=" + smlDnAmt + ", fstDnDat=" + fstDnDat + ", lstDnDat=" + lstDnDat
+			+ ", lMDnDat=" + lMDnDat + ", penultAmt=" + penultAmt + ", penultDat=" + penultDat + ", dn1Amt=" + dn1Amt
+			+ ", dn2Amt=" + dn2Amt + ", dn3Amt=" + dn3Amt + ", dn4Amt=" + dn4Amt + ", oDnAmt=" + oDnAmt + ", mDn1Amt="
+			+ mDn1Amt + ", mDn2Amt=" + mDn2Amt + ", mDn3Amt=" + mDn3Amt + ", mDn4Amt=" + mDn4Amt + ", mODnAmt="
+			+ mODnAmt + ", provide1=" + provide1 + ", provide2=" + provide2 + ", provide3=" + provide3 + ", provide4="
+			+ provide4 + ", priority=" + priority + ", abGroup=" + abGroup + ", appeal=" + appeal + ", seg=" + seg
+			+ ", segCode=" + segCode + ", letVer=" + letVer + ", pkgVer=" + pkgVer + ", repVer=" + repVer
+			+ ", codeLine=" + codeLine + ", meanAmt=" + meanAmt + ", median=" + median + ", sDevAmt=" + sDevAmt
 			+ ", rScore=" + rScore + ", fScore=" + fScore + ", mScore=" + mScore + ", rfmScore=" + rfmScore
 			+ ", length=" + length + ", width=" + width + ", height=" + height + ", weight=" + weight + "]";
 }

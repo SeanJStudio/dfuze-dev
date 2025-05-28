@@ -83,6 +83,8 @@ public class Dedupe implements RunUtilityBehavior {
 	    		  .setIsDupe(false)
 	    		  .setDupeGroupId(0)
 	    		  .setDupeGroupSize(0)
+	    		  .setMisc1("")
+	    		  .setMisc2("")
 	    		  .build();
 
 	      userData.add(record); // add the record the recordList in userData
@@ -93,7 +95,9 @@ public class Dedupe implements RunUtilityBehavior {
 	    userData.setDfHeaders(new String[] {
 	    		UserData.fieldName.IS_DUPE.getName(),
 	    		UserData.fieldName.DUPE_GROUP_ID.getName(),
-	    		UserData.fieldName.DUPE_GROUP_SIZE.getName()
+	    		UserData.fieldName.DUPE_GROUP_SIZE.getName(),
+	    		//UserData.fieldName.MISC1.getName(),
+	    		//UserData.fieldName.MISC2.getName()
 	    		});
 	    
 	    DedupeDialog2 dedupeDialog = new DedupeDialog2(UiController.getMainFrame());
