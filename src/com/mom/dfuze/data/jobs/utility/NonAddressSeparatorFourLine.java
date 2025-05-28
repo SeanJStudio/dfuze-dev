@@ -60,6 +60,7 @@ public class NonAddressSeparatorFourLine implements RunUtilityBehavior {
 		userData.autoSetRecordListFields(REQUIRED_FIELDS);
 		
 		separateLines(userData);
+		organizeAddressLines(userData);
 			
 		userData.setDfHeaders(new String[] {
 				UserData.fieldName.COMPANY_ADDRESS1.getName(),
