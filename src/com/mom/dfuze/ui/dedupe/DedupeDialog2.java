@@ -1376,8 +1376,8 @@ public class DedupeDialog2 extends JDialog {
 				this.lblStatus.setText(String.format("Pre-processing address for record %d / %d", new Object[] { preprocessingAddressCounter.get(), dataSize }));
 				Record record = recordList.get(i);
 
-				String preAdd1 = record.getAdd1().replaceAll("\\s+", " ").trim();
-				String preAdd2 = record.getAdd2().replaceAll("\\s+", " ").trim();
+				String preAdd1 = record.getAdd1().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\s+", " ").trim();
+				String preAdd2 = record.getAdd2().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\s+", " ").trim();
 
 				Matcher missingHyphenMatcher1 = APT_MISSING_HYPHEN_PATTERN.matcher(preAdd1);
 				Matcher missingHyphenMatcher2 = APT_MISSING_HYPHEN_PATTERN.matcher(preAdd2);

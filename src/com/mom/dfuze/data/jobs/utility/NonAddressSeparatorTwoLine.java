@@ -7,10 +7,16 @@
 package com.mom.dfuze.data.jobs.utility;
 
 
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.util.Common;
+import com.mom.dfuze.data.util.Lookup;
 
 
 
@@ -44,7 +50,7 @@ public class NonAddressSeparatorTwoLine implements RunUtilityBehavior {
 			+ Common.arrayFieldsToHTMLList(REQUIRED_FIELDS)
 			+ "</html>";
 	
-	private static Pattern GD_PATTERN = Pattern.compile("general delivery|gd|(^|\\s+)gen(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	private static Pattern MISC_ADDRESS_PATTERN = Pattern.compile("(^|\\s)(general delivery|gd|gen|po|box|floor|basement|bsmnt|garage|side|door|building|bldg|station|rear|entrance|rue|chemain|succ|tour|ph|trlr|trailer|lot|apartment|condo|appartement|appt|suite|suit|ste|spc|space|room|rm|office|ofc|unit|bureau|piece|group|grp|coup|gr|gp|site|apt|pmb|box|rmb|hwy|highway|county)(\\s|$)|^\\p{L}$", Pattern.CASE_INSENSITIVE);
 	
 	//
 	/*
@@ -68,7 +74,24 @@ public class NonAddressSeparatorTwoLine implements RunUtilityBehavior {
 		});
 	}
 	
-	public void separateLines(UserData userData) {
+	public boolean hasStreetKeyword(String address, Hashtable<String, String> streetSuffixes, HashSet<String> streetNames) {
+
+		String[] parts = StringUtils.stripAccents(address).toLowerCase().replaceAll("\\n", " ").replaceAll("\\r", " ").replaceAll("[^a-zA-Z\\s]", "").split("\\s+");
+
+		for(String part : parts) {
+			if(streetSuffixes.keySet().contains(part))
+				part = streetSuffixes.get(part);
+			if(streetNames.contains(part))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public void separateLines(UserData userData) throws Exception{
+		Hashtable<String, String> streetSuffixes = Lookup.getStreetSuffixes();
+		HashSet<String> streetNames = Lookup.getStreetNames();
+		
 		for(Record record : userData.getRecordList()) {
 			record.setCmpnyAdd1("");
 			record.setCmpnyAdd2("");
@@ -76,21 +99,25 @@ public class NonAddressSeparatorTwoLine implements RunUtilityBehavior {
 			String add1 = record.getAdd1();
 			String add2 = record.getAdd2();
 			
-			if(!GD_PATTERN.matcher(add1).find()) {
+			if(!MISC_ADDRESS_PATTERN.matcher(add1.replaceAll("\\.","")).find()) {
 				if(add1.trim().isBlank() || add1.replaceAll("[^0-9]", "").isBlank()) {
-					record.setCmpnyAdd1(add1);
-					record.setAdd1("");
+					if(!hasStreetKeyword(add1, streetSuffixes, streetNames)) {
+						record.setCmpnyAdd1(add1);
+						record.setAdd1("");
+					}
 				}
 			}
 			
-			if(!GD_PATTERN.matcher(add2).find()) {
+			if(!MISC_ADDRESS_PATTERN.matcher(add2.replaceAll("\\.","")).find()) {
 				if(add2.trim().isBlank() || add2.replaceAll("[^0-9]", "").isBlank()) {
-					if(record.getCmpnyAdd1().isBlank())
-						record.setCmpnyAdd1(add2);
-					else
-						record.setCmpnyAdd2(add2);
-					
-					record.setAdd2("");
+					if(!hasStreetKeyword(add2, streetSuffixes, streetNames)) {
+						if(record.getCmpnyAdd1().isBlank())
+							record.setCmpnyAdd1(add2);
+						else
+							record.setCmpnyAdd2(add2);
+						
+						record.setAdd2("");
+					}
 				}
 			}
 			
