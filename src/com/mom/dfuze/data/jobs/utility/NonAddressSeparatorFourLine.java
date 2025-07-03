@@ -171,7 +171,7 @@ public class NonAddressSeparatorFourLine implements RunUtilityBehavior {
 			String add1 = record.getAdd1();
 			String add2 = record.getAdd2();
 			String add3 = record.getAdd3();
-			String add4 = record.getAdd3();
+			String add4 = record.getAdd4();
 			
 			if(!add2.isBlank()) {
 				if(add1.isBlank()) {

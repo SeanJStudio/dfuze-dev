@@ -464,7 +464,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 				record.setRScore("99999");
 				record.setFScore("0");
 				record.setMScore("0");
-				record.setYear("0"); // Using this to hold the total donation amount of last 24 months
+				//record.setYear("0"); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
@@ -533,7 +533,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 				record.setLrgDnAmt(String.valueOf(largestGiftMadeLast24Months));
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months)); // Using this to hold the number of gifts of last 12 months
-				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
+				//record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			
@@ -1162,7 +1162,7 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 			if(record.getSeg() == null) {
 				if(record.getInId().toLowerCase().contains("seed"))
 					record.setSeg(segment.GENERAL.getName());
-				else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
+				else if(Double.parseDouble(record.getTtlDnAmtLst12Mnths()) >= MAJOR_DONATION_AMOUNT)
 					record.setSeg(segment.TOP.getName());
 				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
 					record.setSeg(segment.NEW.getName());

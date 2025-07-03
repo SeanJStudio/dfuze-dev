@@ -929,12 +929,15 @@ public class Common {
 		int zipcode = -1;
 		String province = "";
 		
-		pc = pc.toUpperCase().trim().replaceAll("[^a-zA-Z0-9]", "").replaceFirst("^0+(?!$)", "");
+		pc = pc.toUpperCase().trim().replaceAll("[^a-zA-Z0-9-]", "").replaceFirst("^0+(?!$)", "");
 		
-		if(Validators.isWholeNumber(pc)) {
+		if(Validators.isWholeNumber(pc.replaceAll("[^a-zA-Z0-9]", ""))) {
 			isUSA = true;
+			pc = pc.split("-")[0];
 			if(pc.length() > 5)
 				pc = pc.substring(0, 5);
+			else if (pc.length() == 0)
+				pc = "0";
 			
 			zipcode = Integer.valueOf(pc);
 		}
