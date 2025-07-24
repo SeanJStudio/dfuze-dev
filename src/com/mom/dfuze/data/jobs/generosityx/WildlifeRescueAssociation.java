@@ -848,7 +848,8 @@ public class WildlifeRescueAssociation implements RunGenerosityXBehavior {
 			if(donorSegment.equalsIgnoreCase(segment.LAPSED.getName())) // set lapsed gifts
 				setLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
 			else if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())) // set non-monthly gifts, leave monthly blank
-				setNonLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
+				if(!donorSegment.equalsIgnoreCase(segment.TOP.getName()))
+					setNonLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
 
 		}
 	}

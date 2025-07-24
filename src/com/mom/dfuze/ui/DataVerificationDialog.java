@@ -165,6 +165,8 @@ public class DataVerificationDialog extends JDialog {
 	private static final String STRIP_IN_REGEX = "(?i)([I][N]__)+";
 	private JButton btnLoadTemplate;
 	
+	private static final String INV_CHAR = "<|>|:|\"|/|\\\\|\\||\\?|\\*";
+	
 	public enum reason {
 		FIRST_RECORD("First Record"),
 		LAST_RECORD("Last Record"),
@@ -1531,7 +1533,7 @@ public class DataVerificationDialog extends JDialog {
 						if(uniqueFileSegments.size() > 0) {
 							for(String segment : uniqueFileSegments) {
 								// ensure only valid characters are present in file names
-								segment = StringUtils.stripAccents(segment).replaceAll("[^a-zA-Z0-9 -_]", "");
+								segment = StringUtils.stripAccents(segment).replaceAll(INV_CHAR, "");
 
 								File tempFile = new File(fileName + " " + segment + ".xlsx");
 								if(tempFile.exists() && tempFile.isFile())
@@ -1563,9 +1565,10 @@ public class DataVerificationDialog extends JDialog {
 
 						for(int j = 0; j < finalArrayLists.size(); ++j)
 							XLSXWriter.write(files.get(j), headers, userData.getExportData(finalArrayLists.get(j)), false, true);
+						
+						JOptionPane.showMessageDialog(DataVerificationDialog.this, "Data Verification export complete", "Success", JOptionPane.INFORMATION_MESSAGE);
 					}
 					
-					JOptionPane.showMessageDialog(DataVerificationDialog.this, "Data Verification export complete", "Success", JOptionPane.INFORMATION_MESSAGE);
 				}
 				
 
