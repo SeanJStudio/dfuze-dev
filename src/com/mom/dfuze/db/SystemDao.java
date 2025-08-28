@@ -112,6 +112,7 @@ public class SystemDao {
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.LarcheComplex()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.LarcheSimple()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.MBA()),
+		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.P2C()),
 		  new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.UnfoldingWord()),
           new GenerosityXJob(new com.mom.dfuze.data.jobs.generosityx.WildlifeRescueAssociation()),
           

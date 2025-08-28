@@ -1413,15 +1413,20 @@ public class DataVerificationDialog extends JDialog {
 								case "JOB_NO":
 									if(Validators.isNumber(dataFieldToSet) && dataFieldToSet.length() < 6)
 										textFieldJobNo.setText(dataFieldToSet);
+										break;
 								case "JOB_NAME":
 									textFieldJobName.setText(dataFieldToSet);
+									break;
 								case "INCLUDE_ALL_RECORDS":
 									if(dataFieldToSet.trim().length() > 0)
 										chckbxIncludeAllRecords.setSelected(true);
+									break;
 								case "DV_FOR_EACH_UNIQUE_VALUE":
 									comboBoxMakeMultipleFiles.setSelectedIndex(inHeaders.indexOf(dataFieldToSet));
+									break;
 								case "ONE_LINE_PER_UNIQUE_VALUE":
 									comboBoxLimit1RecordPerValue.setSelectedIndex(inHeaders.indexOf(dataFieldToSet));
+									break;
 								default:
 									;
 							}
