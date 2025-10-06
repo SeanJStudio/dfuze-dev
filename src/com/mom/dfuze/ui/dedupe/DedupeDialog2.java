@@ -704,7 +704,7 @@ public class DedupeDialog2 extends JDialog {
 						    			Collections.sort(recordList, (Comparator<? super Record>)new RecordSorters.CompareByDupePCodeDupeAdd1DupeAdd2());
 						    			
 						                //int middleIndex = recordList.size() / 2;
-						    			int size = recordList.size();;
+						    			int size = recordList.size();
 						                int firstIntersection = recordList.size() / 4;
 						                int secondIntersection = recordList.size() / 2;
 						                int thirdIntersection = 3 * recordList.size() / 4;
@@ -714,7 +714,7 @@ public class DedupeDialog2 extends JDialog {
 						                List<Record> data3;
 						                List<Record> data4;
 						                
-						                if(!rdbtnDedupeName.isSelected()) {
+						                if(!rdbtnDedupeName.isSelected() && size >= 4) {
 							                data1 = new ArrayList<>(recordList.subList(0, firstIntersection));
 							                data2 = new ArrayList<>(recordList.subList(firstIntersection, secondIntersection));
 							                data3 = new ArrayList<>(recordList.subList(secondIntersection, thirdIntersection));
@@ -1376,8 +1376,8 @@ public class DedupeDialog2 extends JDialog {
 				this.lblStatus.setText(String.format("Pre-processing address for record %d / %d", new Object[] { preprocessingAddressCounter.get(), dataSize }));
 				Record record = recordList.get(i);
 
-				String preAdd1 = record.getAdd1().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\s+", " ").trim();
-				String preAdd2 = record.getAdd2().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\s+", " ").trim();
+				String preAdd1 = record.getAdd1().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\s+", " ").trim();
+				String preAdd2 = record.getAdd2().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\s+", " ").trim();
 
 				Matcher missingHyphenMatcher1 = APT_MISSING_HYPHEN_PATTERN.matcher(preAdd1);
 				Matcher missingHyphenMatcher2 = APT_MISSING_HYPHEN_PATTERN.matcher(preAdd2);
@@ -1415,7 +1415,7 @@ public class DedupeDialog2 extends JDialog {
 					DupeAlphaStreetAdd1 = DupeAlphaStreetAdd1.replaceAll(matcherAdd1FixCountyRoad.group(), String.valueOf(matcherAdd1FixCountyRoad.group().replaceAll("[^\\d]", "")) + " county road"); 
 				if (matcherAdd2FixCountyRoad.find())
 					DupeAlphaStreetAdd2 = DupeAlphaStreetAdd2.replaceAll(matcherAdd2FixCountyRoad.group(), String.valueOf(matcherAdd2FixCountyRoad.group().replaceAll("[^\\d]", "")) + " county road"); 
-
+				
 				Matcher add1StreetApt = ADD_APT_PATTERN.matcher(DupeAlphaStreetAdd1);
 				Matcher add2StreetApt = ADD_APT_PATTERN.matcher(DupeAlphaStreetAdd2);
 				
@@ -1511,6 +1511,7 @@ public class DedupeDialog2 extends JDialog {
 						.replaceAll("second", "two")
 						.replaceAll("third", "three")
 						.replaceAll("fifth", "five")
+						.replaceAll("eigth", "eight")
 						.replaceAll("ninth", "nine")
 						.replaceAll("twelfth", "twelve")
 						.replaceAll("th(?=\\s|$)", "")
@@ -1540,6 +1541,7 @@ public class DedupeDialog2 extends JDialog {
 						.replaceAll("second", "two")
 						.replaceAll("third", "three")
 						.replaceAll("fifth", "five")
+						.replaceAll("eigth", "eight")
 						.replaceAll("ninth", "nine")
 						.replaceAll("twelfth", "twelve")
 						.replaceAll("th(?=\\s|$)", "")

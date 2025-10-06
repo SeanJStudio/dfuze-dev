@@ -7,14 +7,16 @@ public class WRAGiftHistory {
 	private double giftAmount;
 	private LocalDate giftDate;
 	private String giftCampaign;
+	private String recurringStatus;
 	
 	public WRAGiftHistory() {}
 	
-	public WRAGiftHistory(String id, double giftAmount, LocalDate giftDate, String giftCampaign) {
+	public WRAGiftHistory(String id, double giftAmount, LocalDate giftDate, String giftCampaign, String recurringStatus) {
 		this.id = id;
 		this.giftAmount = giftAmount;
 		this.giftDate = giftDate;
 		this.giftCampaign = giftCampaign;
+		this.recurringStatus = recurringStatus;
 	}
 
 	public String getId() {
@@ -49,11 +51,17 @@ public class WRAGiftHistory {
 		this.giftCampaign = giftCampaign;
 	}
 
+	public String getRecurringStatus() {
+		return recurringStatus;
+	}
+
+	public void setRecurringStatus(String recurringStatus) {
+		this.recurringStatus = recurringStatus;
+	}
+
 	@Override
 	public String toString() {
 		return "WRAGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", giftCampaign="
-				+ giftCampaign + "]";
+				+ giftCampaign + ", recurringStatus=" + recurringStatus + "]";
 	}
-
-
 }

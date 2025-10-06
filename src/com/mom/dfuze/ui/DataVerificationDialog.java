@@ -1413,7 +1413,7 @@ public class DataVerificationDialog extends JDialog {
 								case "JOB_NO":
 									if(Validators.isNumber(dataFieldToSet) && dataFieldToSet.length() < 6)
 										textFieldJobNo.setText(dataFieldToSet);
-										break;
+									break;
 								case "JOB_NAME":
 									textFieldJobName.setText(dataFieldToSet);
 									break;
