@@ -160,11 +160,13 @@ public class DedupeDialog2 extends JDialog {
 
 	static final String REMOVE_APT_REGEX = "^(\\D)?(\\s+)?(\\D)?(\\s+)?\\d+(\\D)?(\\s+)?(\\D)?(\\s+)?-";
 
-	static final Pattern APT_MISSING_HYPHEN_PATTERN = Pattern.compile("(?<=^\\d+(\\D)?)\\s+(?=\\d+\\s+(?!TH(\\s+|$|-|\\.+|,)|ND|RD|STREET|ST(\\s+|$|-|\\.+|,)|ROAD|BOUL|BLVD|AV|WAY|CRES|LINE|RANGE|RN|RG|ROUTE|RT|HIGHWAY|HIGH(\\s+|$|-|\\.+|,)|HW|HIW|TOWN|TWN|RUE|TRAIL|TRL|CONC|CN))", Pattern.CASE_INSENSITIVE);
-
+	static final Pattern APT_MISSING_HYPHEN_PATTERN = Pattern.compile("(?<=^\\d+(\\D)?)\\s+(?=\\d+\\s+(?!TH(\\s+|$|-|\\.+|,)|ND|RD|STREET|ST(\\s+|$|-|\\.+|,)|ROAD|BLVD|AVE|WAY|CRES|LINE|RANGE|RN|RG|ROUTE|RT|HIGHWAY|HIGH(\\s+|$|-|\\.+|,)|HW|HIW|TOWN|TWN|TRAIL|TRL|CONC|CN))", Pattern.CASE_INSENSITIVE);
+	
+	static final Pattern APT_WRONG_HYPHEN_PATTERN = Pattern.compile("(?<=^\\d+)(\\s+)?-(\\s+)?(?=\\d+\\s+(TH(\\s+|$|-|\\.+|,)|ND|RD|STREET|ST(\\s+|$|-|\\.+|,)|ROAD|BLVD|AVE|WAY|CRES|LINE|RANGE|RN|RG|ROUTE|RT|HIGHWAY|HIGH(\\s+|$|-|\\.+|,)|HW|HIW|TOWN|TWN|TRAIL|TRL|CONC|CN))",Pattern.CASE_INSENSITIVE);
+	
 	static final Pattern REMOVE_APT_PATTERN = Pattern.compile("^(\\D)?(\\s+)?(\\D)?(\\s+)?\\d+(\\D)?(\\s+)?(\\D)?(\\s+)?-", 2);
 
-	static final String REMOVE_FLOOR_REGEX = "(?i)\\d+(\\D+)?(\\s+)?floor";
+	static final String REMOVE_FLOOR_REGEX = "(?i)\\d+(\\D+)?(\\s+)?(floor|etage)";
 
 	static final String REMOVE_BUZZER_REGEX = "(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+";
 
@@ -1164,8 +1166,16 @@ public class DedupeDialog2 extends JDialog {
 														jaroDistance.apply(Common.getNysiis(tempRec.getDupeMetaStreetAdd2()), 
 																Common.getNysiis(nextRec.getDupeMetaStreetAdd2())).doubleValue() > 0.6D)) {
 													dupeAddFound = true;
-												}  
-										}  
+												}
+										}
+									//handle rrs
+									if((!dupeAddFound && 
+											tempRec.getDupePOBox().isBlank() && tempRec.getDupePOBoxExtra().isBlank() && !tempRec.getDupeRR().isBlank() && 
+											nextRec.getDupePOBox().isBlank() && nextRec.getDupePOBoxExtra().isBlank() && !nextRec.getDupeRR().isBlank() && 
+											isTempRecAdd1Empty && isTempRecAdd2Empty && isNextRecAdd1Empty && isNextRecAdd2Empty)) {
+										if(tempRec.getDupeRR().equalsIgnoreCase(nextRec.getDupeRR()))
+										dupeAddFound = true;
+									}
 									if (tempRec.getAdd1().trim().equalsIgnoreCase(nextRec.getAdd1().trim()) && 
 											tempRec.getAdd2().trim().equalsIgnoreCase(nextRec.getAdd2().trim()))
 										dupeAddFound = true; 
@@ -1376,9 +1386,10 @@ public class DedupeDialog2 extends JDialog {
 				this.lblStatus.setText(String.format("Pre-processing address for record %d / %d", new Object[] { preprocessingAddressCounter.get(), dataSize }));
 				Record record = recordList.get(i);
 
-				String preAdd1 = record.getAdd1().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\s+", " ").trim();
-				String preAdd2 = record.getAdd2().replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\s+", " ").trim();
-
+				String preAdd1 = StringUtils.stripAccents(record.getAdd1()).replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\.","").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\b[A-Za-z]\\b", "").replaceAll("(?i)(?<=\\d)\\s*ieme\\b|^\\s*ieme\\b|\\bieme\\s*$", "").replaceAll("\\s+", " ").trim();
+				String preAdd2 = StringUtils.stripAccents(record.getAdd2()).replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\.","").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\b[A-Za-z]\\b", "").replaceAll("(?i)(?<=\\d)\\s*ieme\\b|^\\s*ieme\\b|\\bieme\\s*$", "").replaceAll("\\s+", " ").trim();
+				
+				//Fix missing apt hyphens
 				Matcher missingHyphenMatcher1 = APT_MISSING_HYPHEN_PATTERN.matcher(preAdd1);
 				Matcher missingHyphenMatcher2 = APT_MISSING_HYPHEN_PATTERN.matcher(preAdd2);
 
@@ -1387,9 +1398,21 @@ public class DedupeDialog2 extends JDialog {
 
 				if(missingHyphenMatcher2.find())
 					preAdd2 = preAdd2.replaceFirst(missingHyphenMatcher2.group(), "-");
+				
+				//Fix incorrectly added hyphens
+				Matcher incorrectHyphenMatcher1 = APT_WRONG_HYPHEN_PATTERN.matcher(preAdd1);
+				Matcher incorrectHyphenMatcher2 = APT_WRONG_HYPHEN_PATTERN.matcher(preAdd2);
+				
+				if(incorrectHyphenMatcher1.find())
+					preAdd1 = preAdd1.replaceFirst(incorrectHyphenMatcher1.group(), " ");
 
-				String DupeAlphaStreetAdd1 = preAdd1.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
-				String DupeAlphaStreetAdd2 = preAdd2.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
+				if(incorrectHyphenMatcher2.find())
+					preAdd2 = preAdd2.replaceFirst(incorrectHyphenMatcher2.group(), " ");
+				
+				System.out.println(preAdd1);
+
+				String DupeAlphaStreetAdd1 = preAdd1.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
+				String DupeAlphaStreetAdd2 = preAdd2.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
 				boolean isAddressSame = false;
 
 				if (DupeAlphaStreetAdd2.equalsIgnoreCase(DupeAlphaStreetAdd1)) {
@@ -1405,8 +1428,8 @@ public class DedupeDialog2 extends JDialog {
 				if (matcherAdd2FixHwy.find())
 					DupeAlphaStreetAdd2 = DupeAlphaStreetAdd2.replaceAll(matcherAdd2FixHwy.group(), String.valueOf(matcherAdd2FixHwy.group().replaceAll("[^\\d]", "")) + " highway"); 
 
-				DupeAlphaStreetAdd1 = DupeAlphaStreetAdd1.replaceAll("(?<=\\s|^)gd(?=\\s|$)|(gen|gn)(\\D+)?(?=\\s|$)(\\s)?((del|dl)(\\D+)?(?=\\s|$))", "general delivery").replaceAll("(\\s+)?-(\\s+)?", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway").replaceAll("(?<=\\s|^)number(\\s|$)", "").replaceAll("casa(?=\\s)", "no").replaceAll("campo(?=\\s)", "").replaceAll(FIX_APT_REGEX, "apt").replaceAll("(?<!(\\d+\\s+(?=(no|#))|apt|pmb|box|rmb|lb|(\\s+|^)?p(\\s+)?o(\\s+)?\\d|comp|cp|(group|grp|coup|gr|gp)\\s?(\\D$|\\D\\s)?\\s?\\d+|site\\s?\\d+|(^|\\s)s\\d+).*)((#|no)(?=(\\s+)?(\\D)?\\d+(\\D?)$))", "apt").replaceAll("\\(|\\)|_|\\+|\\*|#|,|\\.", " ").replaceAll("  ", " ").replaceAll(FIX_APT_REGEX, "apt").trim();
-				DupeAlphaStreetAdd2 = DupeAlphaStreetAdd2.replaceAll("(?<=\\s|^)gd(?=\\s|$)|(gen|gn)(\\D+)?(?=\\s|$)(\\s)?((del|dl)(\\D+)?(?=\\s|$))", "general delivery").replaceAll("(\\s+)?-(\\s+)?", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway").replaceAll("(?<=\\s|^)number(\\s|$)", "").replaceAll("casa(?=\\s)", "no").replaceAll("campo(?=\\s)", "").replaceAll(FIX_APT_REGEX, "apt").replaceAll("(?<!(\\d+\\s+(?=(no|#))|apt|pmb|box|rmb|lb|(\\s+|^)?p(\\s+)?o(\\s+)?\\d|comp|cp|(group|grp|coup|gr|gp)\\s?(\\D$|\\D\\s)?\\s?\\d+|site\\s?\\d+|(^|\\s)s\\d+).*)((#|no)(?=(\\s+)?(\\D)?\\d+(\\D?)$))", "apt").replaceAll("\\(|\\)|_|\\+|\\*|#|,|\\.", " ").replaceAll("  ", " ").replaceAll(FIX_APT_REGEX, "apt").trim();
+				DupeAlphaStreetAdd1 = DupeAlphaStreetAdd1.replaceAll("(?<=\\s|^)gd(?=\\s|$)|(gen|gn)(\\D+)?(?=\\s|$)(\\s)?((del|dl)(\\D+)?(?=\\s|$))", "general delivery").replaceAll("(\\s+)?-(\\s+)?", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway").replaceAll("(?<=\\s|^)number(\\s|$)", "").replaceAll("casa(?=\\s)", "no").replaceAll("campo(?=\\s)", "").replaceAll(FIX_APT_REGEX, "apt").replaceAll("(?<!(\\d+\\s+(?=(no|#))|apt|pmb|box|rmb|lb|(\\s+|^)?p(\\s+)?o(\\s+)?\\d|comp|cp|(group|grp|coup|gr|gp)\\s?(\\D$|\\D\\s)?\\s?\\d+|site\\s?\\d+|(^|\\s)s\\d+).*)((#|no)(?=(\\s+)?(\\D)?\\d+(\\D?)$))", "apt").replaceAll("\\(|\\)|_|\\+|\\*|#|,|\\.", " ").replaceAll("  ", " ").replaceAll(FIX_APT_REGEX, "apt").trim();
+				DupeAlphaStreetAdd2 = DupeAlphaStreetAdd2.replaceAll("(?<=\\s|^)gd(?=\\s|$)|(gen|gn)(\\D+)?(?=\\s|$)(\\s)?((del|dl)(\\D+)?(?=\\s|$))", "general delivery").replaceAll("(\\s+)?-(\\s+)?", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway").replaceAll("(?<=\\s|^)number(\\s|$)", "").replaceAll("casa(?=\\s)", "no").replaceAll("campo(?=\\s)", "").replaceAll(FIX_APT_REGEX, "apt").replaceAll("(?<!(\\d+\\s+(?=(no|#))|apt|pmb|box|rmb|lb|(\\s+|^)?p(\\s+)?o(\\s+)?\\d|comp|cp|(group|grp|coup|gr|gp)\\s?(\\D$|\\D\\s)?\\s?\\d+|site\\s?\\d+|(^|\\s)s\\d+).*)((#|no)(?=(\\s+)?(\\D)?\\d+(\\D?)$))", "apt").replaceAll("\\(|\\)|_|\\+|\\*|#|,|\\.", " ").replaceAll("  ", " ").replaceAll(FIX_APT_REGEX, "apt").trim();
 
 				Matcher matcherAdd1FixCountyRoad = REPLACE_COUNTY_ROAD_NUM_PATTERN.matcher(DupeAlphaStreetAdd1);
 				Matcher matcherAdd2FixCountyRoad = REPLACE_COUNTY_ROAD_NUM_PATTERN.matcher(DupeAlphaStreetAdd2);
@@ -1486,7 +1509,7 @@ public class DedupeDialog2 extends JDialog {
 				String dupeAdd1Normalized = DupeAlphaStreetAdd1;
 				String dupeAdd2Normalized = DupeAlphaStreetAdd2;
 
-				String[] dupeAlphaArr1 = StringUtils.stripAccents(DupeAlphaStreetAdd1).replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split("\\s+");
+				String[] dupeAlphaArr1 = DupeAlphaStreetAdd1.replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split("\\s+");
 				String newDupeAplha1 = "";
 
 				byte b1;
@@ -1516,7 +1539,7 @@ public class DedupeDialog2 extends JDialog {
 						.replaceAll("twelfth", "twelve")
 						.replaceAll("th(?=\\s|$)", "")
 						.replaceAll("hundred", "hun");
-				String[] dupeAlphaArr2 = StringUtils.stripAccents(DupeAlphaStreetAdd2).replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split(" ");
+				String[] dupeAlphaArr2 = DupeAlphaStreetAdd2.replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split(" ");
 
 				String newDupeAplha2 = "";
 				byte b2;
@@ -1551,12 +1574,14 @@ public class DedupeDialog2 extends JDialog {
 						.replaceAll("\\d+(\\s#|\\s|#)?apt|apt(\\s#|\\s|#\\s|#)?\\d+", "")
 						.replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway")
 						.replaceAll("rue(s)?(?=\\s|$)", "")
+						.replaceAll("(^|\\s)des\\s", " ")
 						.replaceAll("[^a-zA-Z\\s]", "");
 
 				newDupeAplha2 = newDupeAplha2
 						.replaceAll("\\d+(\\s#|\\s|#)?apt|apt(\\s#|\\s|#\\s|#)?\\d+", "")
 						.replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway")
 						.replaceAll("rue(s)?(?=\\s|$)", "")
+						.replaceAll("(^|\\s)des\\s", " ")
 						.replaceAll("[^a-zA-Z\\s]", "");
 
 				dupeAlphaArr1 = newDupeAplha1.replaceAll("\\s+", " ").trim().split("\\s+");
@@ -1599,11 +1624,11 @@ public class DedupeDialog2 extends JDialog {
 
 					}
 				
-				record.setDupeMetaStreetAdd1(newDupeAplha1.replaceAll("s(?=\\s|$)", "").replaceAll("[^a-zA-Z0-9]", "").replaceAll("[aeiouyv]", "").replaceAll("(.)\\1+", "$1"));
-				record.setDupeMetaStreetAdd2(newDupeAplha2.replaceAll("s(?=\\s|$)", "").replaceAll("[^a-zA-Z0-9]", "").replaceAll("[aeiouyv]", "").replaceAll("(.)\\1+", "$1"));
+				record.setDupeMetaStreetAdd1(newDupeAplha1.replaceAll("s(?=\\s|$)", "").replaceAll("[^a-zA-Z0-9]", "").replaceAll("[aeiuy]", "").replaceAll("rs", "r").replaceAll("sc", "s").replaceAll("(.)\\1+", "$1"));
+				record.setDupeMetaStreetAdd2(newDupeAplha2.replaceAll("s(?=\\s|$)", "").replaceAll("[^a-zA-Z0-9]", "").replaceAll("[aeiuy]", "").replaceAll("rs", "r").replaceAll("sc", "s").replaceAll("(.)\\1+", "$1"));
 				
-				Matcher matcherAdd1 = ADD_NUM_PATTERN.matcher(dupeAdd1Normalized.replaceAll("[^a-zA-Z0-9\\s-]", "").replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceFirst("^\\D+(?=\\d+)", ""));
-				Matcher matcherAdd2 = ADD_NUM_PATTERN.matcher(dupeAdd2Normalized.replaceAll("[^a-zA-Z0-9\\s-]", "").replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?floor", "").replaceFirst("^\\D+(?=\\d+)", ""));
+				Matcher matcherAdd1 = ADD_NUM_PATTERN.matcher(dupeAdd1Normalized.replaceAll("[^a-zA-Z0-9\\s-]", "").replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceFirst("^\\D+(?=\\d+)", ""));
+				Matcher matcherAdd2 = ADD_NUM_PATTERN.matcher(dupeAdd2Normalized.replaceAll("[^a-zA-Z0-9\\s-]", "").replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceFirst("^\\D+(?=\\d+)", ""));
 
 				String dupeAdd1 = "";
 
@@ -1700,11 +1725,12 @@ public class DedupeDialog2 extends JDialog {
 				if (!record.getDupeMetaStreetAdd2().isBlank())
 					record.setDupeMetaStreetAdd2(Common.rightPad(record.getDupeMetaStreetAdd2(), 15, 'X')); 
 				
-				//System.out.println(record.getDupeAdd1());
-				//System.out.println(newDupeAplha1);
-				//System.out.println(newDupeAplha2);
-				//System.out.println(record.getDupeMetaStreetAdd1());
-				//System.out.println();
+				System.out.println(record.getDupeAdd1());
+				System.out.println(newDupeAplha1);
+				System.out.println(newDupeAplha2);
+				System.out.println(record.getDupeMetaStreetAdd1());
+				System.out.println(record.getDupeRR());
+				System.out.println();
 			} 
 			this.progressBar.setValue(0);
 		} 
