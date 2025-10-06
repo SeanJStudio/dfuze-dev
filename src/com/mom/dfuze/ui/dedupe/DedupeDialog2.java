@@ -1386,8 +1386,8 @@ public class DedupeDialog2 extends JDialog {
 				this.lblStatus.setText(String.format("Pre-processing address for record %d / %d", new Object[] { preprocessingAddressCounter.get(), dataSize }));
 				Record record = recordList.get(i);
 
-				String preAdd1 = StringUtils.stripAccents(record.getAdd1()).replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\.","").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\b[A-Za-z]\\b", "").replaceAll("(?i)(?<=\\d)\\s*ieme\\b|^\\s*ieme\\b|\\bieme\\s*$", "").replaceAll("\\s+", " ").trim();
-				String preAdd2 = StringUtils.stripAccents(record.getAdd2()).replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\.","").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\b[A-Za-z]\\b", "").replaceAll("(?i)(?<=\\d)\\s*ieme\\b|^\\s*ieme\\b|\\bieme\\s*$", "").replaceAll("\\s+", " ").trim();
+				String preAdd1 = StringUtils.stripAccents(record.getAdd1()).replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\.","").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\b[A-Za-z]\\b", "").replaceAll("(?i)(?<=\\d)\\s*ieme\\b|^\\s*ieme\\b|\\bieme\\s*$", "").replaceAll("-+", "-").replaceAll("\\s+", " ").trim();
+				String preAdd2 = StringUtils.stripAccents(record.getAdd2()).replaceAll("\\r"," ").replaceAll("\\n"," ").replaceAll("\\.","").replaceAll("(?<=\\d)(?=[A-Za-z])", " ").replaceAll("(?<=[A-Za-z])(?=\\d)", " ").replaceAll("\\b[A-Za-z]\\b", "").replaceAll("(?i)(?<=\\d)\\s*ieme\\b|^\\s*ieme\\b|\\bieme\\s*$", "").replaceAll("-+", "-").replaceAll("\\s+", " ").trim();
 				
 				//Fix missing apt hyphens
 				Matcher missingHyphenMatcher1 = APT_MISSING_HYPHEN_PATTERN.matcher(preAdd1);
@@ -1507,7 +1507,7 @@ public class DedupeDialog2 extends JDialog {
 				String dupeAdd1Normalized = DupeAlphaStreetAdd1;
 				String dupeAdd2Normalized = DupeAlphaStreetAdd2;
 
-				String[] dupeAlphaArr1 = DupeAlphaStreetAdd1.replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split("\\s+");
+				String[] dupeAlphaArr1 = DupeAlphaStreetAdd1.replaceAll("(^rue\\s|\\srue\\b)", "").replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split("\\s+");
 				String newDupeAplha1 = "";
 
 				byte b1;
@@ -1537,7 +1537,7 @@ public class DedupeDialog2 extends JDialog {
 						.replaceAll("twelfth", "twelve")
 						.replaceAll("th(?=\\s|$)", "")
 						.replaceAll("hundred", "hun");
-				String[] dupeAlphaArr2 = DupeAlphaStreetAdd2.replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split(" ");
+				String[] dupeAlphaArr2 = DupeAlphaStreetAdd2.replaceAll("(^rue\\s|\\srue\\b)", "").replaceAll("(buzzer(\\s)?(number|num)?|buzz(\\s)?(code)?)(\\s#|\\s|#)?\\d+", "").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("[a-zA-Z]+(?=\\d+)", "").replaceAll("(?<=[0-9])[a-zA-Z]+", "").replaceFirst("^\\D+(?=\\d+)", "").replaceAll("^\\d+(-\\d+)?", "").split(" ");
 
 				String newDupeAplha2 = "";
 				byte b2;
@@ -1571,15 +1571,13 @@ public class DedupeDialog2 extends JDialog {
 				newDupeAplha1 = newDupeAplha1
 						.replaceAll("\\d+(\\s#|\\s|#)?apt|apt(\\s#|\\s|#\\s|#)?\\d+", "")
 						.replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway")
-						.replaceAll("rue(s)?(?=\\s|$)", "")
-						.replaceAll("(^|\\s)des\\s", " ")
+						.replaceAll("(^|\\s)des(?=\\s|$)", "")
 						.replaceAll("[^a-zA-Z\\s]", "");
 
 				newDupeAplha2 = newDupeAplha2
 						.replaceAll("\\d+(\\s#|\\s|#)?apt|apt(\\s#|\\s|#\\s|#)?\\d+", "")
 						.replaceAll("(?<=\\s|^)sh(?=\\s|$)", "state highway")
-						.replaceAll("rue(s)?(?=\\s|$)", "")
-						.replaceAll("(^|\\s)des\\s", " ")
+						.replaceAll("(^|\\s)des(?=\\s|$)", "")
 						.replaceAll("[^a-zA-Z\\s]", "");
 
 				dupeAlphaArr1 = newDupeAplha1.replaceAll("\\s+", " ").trim().split("\\s+");
