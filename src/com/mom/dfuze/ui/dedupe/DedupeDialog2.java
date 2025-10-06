@@ -1408,8 +1408,6 @@ public class DedupeDialog2 extends JDialog {
 
 				if(incorrectHyphenMatcher2.find())
 					preAdd2 = preAdd2.replaceFirst(incorrectHyphenMatcher2.group(), " ");
-				
-				System.out.println(preAdd1);
 
 				String DupeAlphaStreetAdd1 = preAdd1.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
 				String DupeAlphaStreetAdd2 = preAdd2.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
@@ -1725,12 +1723,12 @@ public class DedupeDialog2 extends JDialog {
 				if (!record.getDupeMetaStreetAdd2().isBlank())
 					record.setDupeMetaStreetAdd2(Common.rightPad(record.getDupeMetaStreetAdd2(), 15, 'X')); 
 				
-				System.out.println(record.getDupeAdd1());
-				System.out.println(newDupeAplha1);
-				System.out.println(newDupeAplha2);
-				System.out.println(record.getDupeMetaStreetAdd1());
-				System.out.println(record.getDupeRR());
-				System.out.println();
+				//System.out.println(record.getDupeAdd1());
+				//System.out.println(newDupeAplha1);
+				//System.out.println(newDupeAplha2);
+				//System.out.println(record.getDupeMetaStreetAdd1());
+				//System.out.println(record.getDupeRR());
+				//System.out.println();
 			} 
 			this.progressBar.setValue(0);
 		} 
