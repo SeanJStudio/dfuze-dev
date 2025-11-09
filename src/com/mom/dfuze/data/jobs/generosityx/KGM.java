@@ -6,8 +6,6 @@
  */
 package com.mom.dfuze.data.jobs.generosityx;
 
-
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -20,7 +18,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,18 +39,18 @@ import com.mom.dfuze.ui.UserInputDialog;
 
 
 /**
- * InternationalTeamsCanada implements a RunBehavior for GenerosityX Jobs
+ * RegularProcess implements a RunBehavior for KGM Jobs
  * 
  * @author Sean Johnson
  *         Mail-o-Matic Services Ltd
- *         Date: 08/21/2023
+ *         Date: 06/11/2024
  *
  */
-public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
+public class KGM implements RunGenerosityXBehavior {
 
-	private final String BEHAVIOR_NAME = "CWMH";
+	private final String BEHAVIOR_NAME = "KGM";
 	private String[] REQUIRED_FIELDS = {
-			UserData.fieldName.IN_ID.getName(),
+			UserData.fieldName.IN_ID.getName()
 	};
 
 	private String DESCRIPTION = 
@@ -64,13 +61,12 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 					+ "</ul>"
 					+ "Instructions<br/>"
 					+ "<ol>"
-					+ "<li>Load the donor data file</li>"
-					+ "<li>Map record type to the monthly identifier (Recurring donor status)</li>"
-					+ "<li>Load the gifts data file when prompted</li>"
+					+ "<li>Load the supplied data file</li>"
 					+ "<li>Enter the campaign code when prompted</li>"
 					+ "<li>Enter the cost per unit metric when prompted</li>"
 					+ "<li>Enter gift metrics for &lt;1, ==1, &gt;1, and open when prompted</li>"
 					+ "</ol>"
+
 					+ Common.arrayFieldsToHTMLList(REQUIRED_FIELDS)
 					+ "</html>";
 	
@@ -79,14 +75,13 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	public final Pattern NEW_PATTERN = Pattern.compile("(4|5)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	public final Pattern LAPSED_PATTERN = Pattern.compile("(1)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("donor.*id", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)gift amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)date of gift(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DESIGNATION_PATTERN = Pattern.compile("Gift Designation \\(GIFT_DESIG\\)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_APPEAL_PATTERN = Pattern.compile("^Solicitation Descr$", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("lookupid", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)date(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)appeal(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_TYPE_PATTERN = Pattern.compile("(^|\\s+)type(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	
-	//public final Pattern TRIBUTE_PATTERN = Pattern.compile("memory|honour", Pattern.CASE_INSENSITIVE);
-	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)recurring(\\s+|$)", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		NEW("New"),
@@ -94,11 +89,8 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		FREQUENT("Frequent"),
 		TOP("Top"),
 		ACTIVE("Active"),
-		RECENT("Recent"),
 		MONTHLY("Monthly"),
-		PROGRAM_DONOR("Program Donor"),
-		//TRIBUTE("Tribute")
-		;
+		THANKSGIVING("Thanksgiving");
 		
 		String name;
 
@@ -119,29 +111,25 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	@Override
 	public void run(UserData userData) throws Exception {
 
-		// add records to userData, set userData record members via required fields
-		userData.autoSetRecordList();
-		userData.autoSetRecordListFields(REQUIRED_FIELDS);
+		userData.autoSetRecordList();						// add the records to the userData list
+		userData.autoSetRecordListFields(REQUIRED_FIELDS);	// set record members via required fields
 		
-		// Create full name
-		//setName(userData);
+		// create the salutation
+		//createSaluation(userData);
 		
-		// Create salutation
-		//setSalutation(userData);
-		
-		// Add the seeds
-		//addSeeds(userData);
+		// Remove leading zeros to match Giving History
+		removeLeadingZeroFromId(userData);
 		
 		// load gifts file as record list,	infer gift date format to use
 		List<Record> giftList = getGiftList(); // dfInId, dfLstDnAmt, dfLstGftDat, dfSeg is set
 		String giftDateFormat = DateTimeInferer.inferFormat(giftList, UserData.fieldName.LAST_DONATION_DATE.getName());
-		
+				
 		// Sort the gift list by latest donation
 		DateTimeFormatter datetimeFormatter = DateTimeFormatter.ofPattern(giftDateFormat);
 		giftList.sort(new RecordSorters.CompareByFieldDescAsDate(UserData.fieldName.LAST_DONATION_DATE.getName(), datetimeFormatter));
-		
+				
 		// Convert the gifts into a gift history map (id, List(history))
-		HashMap<String, List<CWMHGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
+		HashMap<String, List<KGMGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
 		
 		// process gift history into main donor list
 		processGifts(userData, giftHistoryMap);
@@ -152,47 +140,39 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		//min max rfm
 		Analyze.minMaxRFM(userData);
 		
-		int hasGiftArraysButtonPressed = JOptionPane.showConfirmDialog(UiController.getMainFrame(),
-				"Does this campaign require gift arrays?",
-				"Gift Calculations", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		// Place into categories
+		setSegment(userData);
 		
-		if(hasGiftArraysButtonPressed == JOptionPane.YES_OPTION) {
-			
-			int hasGiftMetricsButtonPressed = JOptionPane.showConfirmDialog(UiController.getMainFrame(),
-					"Does this campaign require gift metrics?\n\nEx. $500 provides a week of groceries for 5 families",
-					"Gift Calculations", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-			
-			// Place into categories
-			setSegment(userData);
-			
-			// Set the campaign code
-			setCampaignCode(userData, getCampaignCode());
-			
-			// Set the gift amounts
-			double defaultAskAmount = getCostPerUnit();
-			setGiftArrays(userData, defaultAskAmount);
-			
-			if(hasGiftMetricsButtonPressed == JOptionPane.YES_OPTION) {
-				UiController.displayMessage("Warning", "Slowly answer the following prompts as you can't go back!", JOptionPane.WARNING_MESSAGE);
-				setGiftArrayMetrics(userData, getCostPerUnit()); 	// Set the metrics via user input
-			}
-			
-		} else {
-			setSegment(userData);
-			setCampaignCode(userData, getCampaignCode());
-			// Fill in placeholder values
-			for(Record record : userData.getRecordList()) {
-				record.setDn1Amt("");
-				record.setDn2Amt("");
-				record.setDn3Amt("");
-				record.setDn4Amt("");
-				record.setODnAmt("");
-			}
-		}
+		// Set the campaign code
+		setCampaignCode(userData, getCampaignCode());
+		
+		// Set the gift amounts
+		double defaultAskAmount = getCostPerUnit();
+		setGiftArrays(userData, defaultAskAmount);
+		
+		// Ask the user if the ask4 should be doubled
+		int isAsk4Doubled = JOptionPane.showConfirmDialog(UiController.getMainFrame(),
+				"Have we been asked to multiply ask4 by 2?", "Ask4 x 2", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				
+		if(isAsk4Doubled == JOptionPane.YES_OPTION)
+			doubleAsk4(userData);
+		
+		// Ask the user if the gifts should be doubled
+		int isMatchCampaign = JOptionPane.showConfirmDialog(UiController.getMainFrame(), "Is this a doubling match campaign?\n\nEx. $5 DOUBLES to $10",
+					"Doubling Match Campaign", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		
+		UiController.displayMessage("Warning", "Slowly answer the following prompts as you can't go back!", JOptionPane.WARNING_MESSAGE);
+		
+		// Set the metrics, either doubled or normal
+		if(isMatchCampaign == JOptionPane.YES_OPTION)
+			setMatchedGiftArrayMetrics(userData, defaultAskAmount); // doubled
+		else
+			setGiftArrayMetrics(userData, defaultAskAmount);		// normal
+		
 		
 		// value priority, high = good
 		Analyze.prioritizeRFM(userData);
-				
+		
 		formatAmounts(userData);
 		
 		userData.getRecordList().sort(new RecordSorters.CompareByFieldDescAsNumber(UserData.fieldName.PRIORITY.getName()));
@@ -204,11 +184,11 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				UserData.fieldName.FIRST_DONATION_DATE.getName(),
 				UserData.fieldName.TOTAL_DONATION_AMOUNT.getName(),
 				UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName(),
-				UserData.fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName(),
-				UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS_LAST_12_MONTHS.getName(),
 				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
+				UserData.fieldName.PENULTIMATE_AMOUNT.getName(),
+				UserData.fieldName.PENULTIMATE_DATE.getName(),
 				UserData.fieldName.DONATION_AMOUNT_ARRAY.getName(),
 				UserData.fieldName.RECENCY.getName(),
 				UserData.fieldName.FREQUENCY.getName(),
@@ -229,6 +209,7 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		});
 	}
 	
+	
 	private void formatAmounts(UserData userData) {
 		DecimalFormat formatter = new DecimalFormat("$#,###.00");//formatter.format(dn1).replaceAll("\\.0+$", "")
 		for(Record record : userData.getRecordList()) {
@@ -236,8 +217,6 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			record.setFstDnAmt(formatter.format(Double.parseDouble(record.getFstDnAmt())).replaceAll("\\.0+$", ""));
 			record.setTtlDnAmt(formatter.format(Double.parseDouble(record.getTtlDnAmt())).replaceAll("\\.0+$", ""));
 			record.setTtlDnAmtLst12Mnths(formatter.format(Double.parseDouble(record.getTtlDnAmtLst12Mnths())).replaceAll("\\.0+$", ""));
-			record.setTtlDnAmtCrntYr(formatter.format(Double.parseDouble(record.getTtlDnAmtCrntYr())).replaceAll("\\.0+$", ""));
-			record.setTtlDnAmtLstYr(formatter.format(Double.parseDouble(record.getTtlDnAmtLstYr())).replaceAll("\\.0+$", ""));
 			record.setLrgDnAmt(formatter.format(Double.parseDouble(record.getLrgDnAmt())).replaceAll("\\.0+$", ""));
 			
 			if(record.getLstDnAmt().equals("$"))
@@ -252,12 +231,6 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			if(record.getTtlDnAmtLst12Mnths().equals("$"))
 				record.setTtlDnAmtLst12Mnths("$0");
 			
-			if(record.getTtlDnAmtCrntYr().equals("$"))
-				record.setTtlDnAmtCrntYr("$0");
-			
-			if(record.getTtlDnAmtLstYr().equals("$"))
-				record.setTtlDnAmtLstYr("$0");
-			
 			if(record.getLrgDnAmt().equals("$"))
 				record.setLrgDnAmt("$0");
 			
@@ -270,6 +243,21 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		}
 	}
 	
+	private void doubleAsk4(UserData userData) {
+		for(Record record : userData.getRecordList()) {
+			if(Validators.isNumber(record.getDn4Amt())) {
+				double ask4 = Double.parseDouble(record.getDn4Amt());
+				ask4 = ask4 * 2;
+				record.setDn4Amt(String.valueOf(ask4));
+			}
+		}
+	}
+	
+	private void removeLeadingZeroFromId(UserData userData) {
+		for(Record record : userData.getRecordList())
+				record.setInId(record.getInId().replaceFirst("^0+", ""));
+	}
+	
 	private List<Record> getGiftList() throws Exception {
 		JOptionPane.showMessageDialog(
 				UiController.getMainFrame(),
@@ -280,7 +268,7 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		List<List<String>> giftFile = FileIngestor.ingest();	// get the gift file	
 		HashSet<Integer> indexSet = new HashSet<>();
 	
-		int idIndex, amountIndex, giftDateIndex, designationIndex, appealIndex = -1;
+		int idIndex, amountIndex, giftDateIndex, appealIndex, giftTypeIndex = -1;
 		
 		String[] headers = giftFile.get(0).toArray(new String[0]);
 
@@ -346,33 +334,12 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		if(!indexSet.add(giftDateIndex))
 			throw new Exception("The gift date field has been mapped more than once.");
 		
-		// in memory
-		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Designation field.");
+		// designation
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Appeal Name field.");
 		dsd.setValues(headers);
 
 		for(int i = 0; i < headers.length; ++i) {
-			if(GIFT_FILE_DESIGNATION_PATTERN.matcher(headers[i]).find()) {
-				dsd.getComboBoxValues().setSelectedIndex(i);
-				break;
-			}
-		}
-
-		dsd.setVisible(true);
-
-		if(!dsd.isNextPressed())
-			throw new Exception("Selection cancelled, please restart job.");
-
-		designationIndex = dsd.getSelectedValueIndex();
-		
-		if(!indexSet.add(designationIndex))
-			throw new Exception("The designation field has been mapped more than once.");
-		
-		// appeal
-		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Appeal field.");
-		dsd.setValues(headers);
-
-		for(int i = 0; i < headers.length; ++i) {
-			if(GIFT_FILE_APPEAL_PATTERN.matcher(headers[i]).find()) {
+			if(GIFT_FILE_CAMPAIGN_PATTERN.matcher(headers[i]).find()) {
 				dsd.getComboBoxValues().setSelectedIndex(i);
 				break;
 			}
@@ -384,9 +351,29 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			throw new Exception("Selection cancelled, please restart job.");
 
 		appealIndex = dsd.getSelectedValueIndex();
-						
+		
 		if(!indexSet.add(appealIndex))
-			throw new Exception("The appeal field has been mapped more than once.");
+			throw new Exception("The appeal name field has been mapped more than once.");
+		
+		//id
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Type field.");
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_TYPE_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		giftTypeIndex = dsd.getSelectedValueIndex();
+				
+		if(!indexSet.add(giftTypeIndex))
+			throw new Exception("The type field has been mapped more than once.");
 		
 		List<Record> giftsList = new ArrayList<>();
 		
@@ -396,8 +383,8 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", ""); // Remove leading zeros
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
-			String designation = giftFile.get(i).get(designationIndex).trim();
-			String appeal = giftFile.get(i).get(appealIndex).trim();
+			String giftDesignation = giftFile.get(i).get(appealIndex).trim();
+			String giftType = giftFile.get(i).get(giftTypeIndex).trim();
 			
 			boolean isGiftZero = false;
 			
@@ -413,8 +400,8 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 					.setInId(id)
 					.setLstDnAmt(giftAmount)
 					.setLstDnDat(giftDate)
-					.setSeg(designation)
-					.setMisc1(appeal)
+					.setSeg(giftDesignation)
+					.setRecType(giftType)
 					.build();
 			
 			if(giftAmount.contains("-")) // Skip negative dollar amounts
@@ -427,90 +414,89 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		
 		return giftsList;
 	}
-	
+
 	// converts a list of gifts into a HashMap
-	private HashMap<String, List<CWMHGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
-		
+	private HashMap<String, List<KGMGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
+
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(giftDateFormat);
-		
+
 		// id, giftHistory
-		HashMap<String, List<CWMHGiftHistory>> giftHistoryMap = new HashMap<>();
-		
+		HashMap<String, List<KGMGiftHistory>> giftHistoryMap = new HashMap<>();
+
 		for(Record record : giftList) {
 			double giftAmount = (Validators.isNumber(record.getLstDnAmt())) ? Double.parseDouble(record.getLstDnAmt()) : 0.0;
-			
+
 			if(Validators.isStringOfDateFormat(record.getLstDnDat(), giftDateFormat)) {
+				//System.out.println(record.getLstDnDat() + " vs " + giftDateFormat);
 				LocalDate giftDate = LocalDate.parse(record.getLstDnDat(), formatter);
-				CWMHGiftHistory history = new CWMHGiftHistory(
+				//System.out.println(giftDate.toString());
+				KGMGiftHistory history = new KGMGiftHistory(
 						record.getInId(),
 						giftAmount,
 						giftDate,
 						record.getSeg(),
-						record.getMisc1()
+						record.getRecType()
 						);
-				
+
 				if(!giftHistoryMap.containsKey(record.getInId()))
-					giftHistoryMap.put(record.getInId(), new ArrayList<CWMHGiftHistory>());
-				
+					giftHistoryMap.put(record.getInId(), new ArrayList<KGMGiftHistory>());
+
 				giftHistoryMap.get(record.getInId()).add(history);
 			}
 		}
-		
+
 		return giftHistoryMap;
 	}
 	
-	private void processGifts(UserData userData, HashMap<String, List<CWMHGiftHistory>> giftHistoryMap) {
+	private void processGifts(UserData userData, HashMap<String, List<KGMGiftHistory>> giftHistoryMap) {
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
 		final int TOP_DONOR_AMOUNT = 500;
-		
+
 		String now = String.valueOf(LocalDate.now());
-		int actuallyThisYear = LocalDate.now().getYear();
-		int currentYear = LocalDate.now().getYear() - 1; // PREVIOUS YEAR
-		int lastYear = LocalDate.now().getYear() - 2; // 2 YEARS AGO
 		
 		for(int i = 0; i < userData.getRecordList().size(); ++i) {
 			Record record = userData.getRecordList().get(i);
 			
+			// Default values
+			record.setLstDnAmt("0");
+			record.setLstDnDat("1900-01-01");
+			record.setFstDnAmt("0");
+			record.setFstDnDat("1900-01-01");
+			record.setTtlDnAmt("0");
+			record.setTtlDnAmtLst12Mnths("0");
+			record.setNumDn("0");
+			record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
+			record.setDnAmtArr("");
+			record.setRScore("99999");
+			record.setFScore("0");
+			record.setMScore("0");
+			record.setNumDnLst12Mnths("0");
+			record.setYear("0"); // Using this to hold the total donation amount of last 6 months
+			record.setMonth("");
+			record.setAppeal("");
+			record.setPenultAmt("0");
+			record.setPenultDat("1900-01-01");
+			record.setStatus("");
+			
 			if(!giftHistoryMap.containsKey(record.getInId())) {
 				System.out.println("No ID for " + record.getInId());
-				record.setLstDnAmt("0");
-				record.setLstDnDat("1900-01-01");
-				record.setFstDnAmt("0");
-				record.setFstDnDat("1900-01-01");
-				record.setTtlDnAmt("0");
-				record.setTtlDnAmtLst12Mnths("0");
-				record.setTtlDnAmtCrntYr("0");
-				record.setTtlDnAmtLstYr("0");
-				record.setNumDn("0");
-				record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
-				record.setDnAmtArr("");
-				record.setRScore("99999");
-				record.setFScore("0");
-				record.setMScore("0");
-				record.setNumDnLst12Mnths("0"); 
-				record.setYear("0"); // Using this to hold the total donation amount of last 6 months
-				record.setMisc1("0");  // Using this to hold the total donation amount for this year
 			}
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
-				List<CWMHGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
+				List<KGMGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
 				
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
 				
 				double totalGiftAmountLast6Months = 0.0;
 				double totalGiftAmountLast12Months = 0.0;
-				double totalGiftAmountActuallyThisYear = 0.0;
-				double totalGiftAmountCurrentYear = 0.0;
-				double totalGiftAmountLastYear = 0.0;
 				int totalGiftsLast12Months = 0;
-				double largestGiftMadeLast12Months = 0.0;
-				double largestGift = 0.0;
+				double largestGiftMadeLast24Months = 0.0;
+				double largestGiftMade = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
-				HashMap<String, Integer> designationCount = new HashMap<>();
 				
 				String commaSeparatedHistory = giftHistoryList
 				        .stream()
@@ -518,13 +504,10 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				        .collect(Collectors.joining(","));
 				
 				for(int j = 0; j < giftHistoryList.size(); ++j) {
-					CWMHGiftHistory giftHistory = giftHistoryList.get(j);
+					KGMGiftHistory giftHistory = giftHistoryList.get(j);
 					
 					totalGiftAmount += giftHistory.getGiftAmount();
 					giftAmounts.add(giftHistory.getGiftAmount());
-					
-					if(giftHistory.getGiftAmount() > largestGift)
-						largestGift = giftHistory.getGiftAmount();
 					
 					long monthsFromDonation = getMonthsBetween(giftHistory.getGiftDate().toString(), now);
 					
@@ -536,111 +519,69 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 						totalGiftAmountLast12Months += giftHistory.getGiftAmount();
 					}
 					
-					if(monthsFromDonation <= MONTHS12 && monthsFromDonation > -1)
-						if(giftHistory.getGiftAmount() > largestGiftMadeLast12Months)
-							largestGiftMadeLast12Months = giftHistory.getGiftAmount();
+					if(giftHistory.getGiftAmount() > largestGiftMade)
+						largestGiftMade = giftHistory.getGiftAmount();
+					
+					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
+						if(giftHistory.getGiftAmount() > largestGiftMadeLast24Months)
+							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 					
 					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
 					if(daysBetween <= 60) {
-						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getAppeal());
+						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftType());
 						if(monthlyMatcher.find())
 							record.setSeg(segment.MONTHLY.getName());
 					}
 					
-					// gift the total gift amount from the current and last year
-					if(giftHistory.getGiftDate().getYear() == actuallyThisYear)
-						totalGiftAmountActuallyThisYear += giftHistory.getGiftAmount();
-					else if(giftHistory.getGiftDate().getYear() == currentYear)
-						totalGiftAmountCurrentYear += giftHistory.getGiftAmount();
-					else if(giftHistory.getGiftDate().getYear() == lastYear)
-						totalGiftAmountLastYear += giftHistory.getGiftAmount();
-					
-					// track gifts to designations
-					String designation = giftHistory.getDesignation();
-					if (monthsFromDonation <= MONTHS24 && designation.trim().length() > 0)
-							if(designationCount.containsKey(designation))
-								designationCount.put(designation, designationCount.get(designation) + 1);
-							else
-								designationCount.put(designation, 1);
-					
-					// This is the last gift made
+					// this is the last donation
 					if(j == 0) {
 						record.setLstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setLstDnDat(giftHistory.getGiftDate().toString());
 						record.setRScore(String.valueOf(daysBetween));
-						
-						// check for in memory donors
-						/*if(record.getSeg() == null) {
-							Matcher inMemoryMatcher = TRIBUTE_PATTERN.matcher(giftHistory.getInMemory());
-							Matcher tributeMatcher = TRIBUTE_PATTERN.matcher(giftHistory.getTributeType());
-							if(tributeMatcher.find() || inMemoryMatcher.find())
-								record.setSeg(segment.TRIBUTE.getName());
-						}*/
+						// Set the months from last donation
+						record.setMonth(String.valueOf(monthsFromDonation));
+						record.setStatus(giftHistory.getGiftCampaign().trim().toUpperCase());
 					}
 					
-					// This is the first gift made
+					// this is the first donation
 					if(j == giftHistoryList.size() - 1) {
 						record.setFstDnAmt(String.valueOf(giftHistory.getGiftAmount()));
 						record.setFstDnDat(giftHistory.getGiftDate().toString());
 					}
+					
+					// set penultimates (second last gift)
+					if(j == 1 && giftHistoryList.size() > 1) {
+						record.setPenultAmt(String.valueOf(giftHistory.getGiftAmount()));
+						record.setPenultDat(giftHistory.getGiftDate().toString());
+					}
 
 				}
-				
-				// set program donors
-				if(record.getSeg() == null && designationCount.entrySet().size() == 1)
-					for (Entry<String, Integer> entry : designationCount.entrySet())
-						if(entry.getValue() >= 3)
-							record.setSeg(segment.PROGRAM_DONOR.getName());
-				
-				// set top donors
-				if(largestGiftMadeLast12Months >= TOP_DONOR_AMOUNT)
-					record.setSeg(segment.TOP.getName());
 				
 				double monetarySum = giftAmounts.stream()
                         .mapToDouble(Double::doubleValue)
                         .sum();
 				
+				if(largestGiftMadeLast24Months >= TOP_DONOR_AMOUNT)
+					record.setSeg(segment.TOP.getName());
+				
 				record.setMScore(String.valueOf(monetarySum));
 				record.setFScore(String.valueOf(totalGifts));
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
 				record.setTtlDnAmtLst12Mnths(String.valueOf(totalGiftAmountLast12Months));
-				record.setTtlDnAmtCrntYr(String.valueOf(totalGiftAmountCurrentYear));
-				record.setTtlDnAmtLstYr(String.valueOf(totalGiftAmountLastYear));
 				record.setNumDn(String.valueOf(totalGifts));
-				record.setLrgDnAmt(String.valueOf(largestGift));
+				record.setLrgDnAmt(String.valueOf(largestGiftMade));
 				record.setDnAmtArr(commaSeparatedHistory);
-				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months));
+				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months)); 
 				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
-				record.setMisc1(String.valueOf(totalGiftAmountActuallyThisYear)); // Using this to hold the total donation amount for this year
 			}
 			
 			
 		}
-	}
-	
-	private double calculateMedian(ArrayList<Double> numArrayList) {
-		double defaultValue = 0.0;
-		
-		if(numArrayList.size() == 0)
-			return defaultValue;
-		
-		Double[] numArray = numArrayList.toArray(new Double[0]);
-		Arrays.sort(numArray);
-		double median;
-		
-		if (numArray.length % 2 == 0)
-		    median = ((double)numArray[numArray.length/2] + (double)numArray[numArray.length/2 - 1])/2;
-		else
-		    median = (double) numArray[numArray.length/2];
-		
-		return median;
-	}
-	
+	}	
 	
 	private void setCampaignCode(UserData userData, String campaignCode) {
-		
 		for(Record record : userData.getRecordList()) {
 			if(record.getSeg().equalsIgnoreCase(segment.TOP.getName()))
 				record.setSegCode(campaignCode + "-MD1");
@@ -654,36 +595,27 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				record.setSegCode(campaignCode + "-L0");
 			else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName()))
 				record.setSegCode(campaignCode + "-N0");
-			else if(record.getSeg().equalsIgnoreCase(segment.PROGRAM_DONOR.getName()))
-				record.setSegCode(campaignCode + "-ZPRO0");
-			else if(record.getSeg().equalsIgnoreCase(segment.RECENT.getName()))
-				record.setSegCode(campaignCode + "-ZRECENT0");
-			//else if(record.getSeg().equalsIgnoreCase(segment.TRIBUTE.getName()))
-			//	record.setSegCode(campaignCode + "-TD1");
+			else if(record.getSeg().equalsIgnoreCase(segment.THANKSGIVING.getName()))
+				record.setSegCode(campaignCode + "-N0");
 		}
 	}
 	
-	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code (Ex. YE25-01-DM)");
-		uid.getTextField().setText("YE25-01-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. WIN25-01-NL)");
+		uid.getTextField().setText("WIN25-01-NL");
 		uid.setVisible(true);
 
-		if(uid.getIsNextPressed()) {
-			String campaignCode = uid.getUserInput().toUpperCase().trim();
-			if(campaignCode.endsWith("-"))
-				campaignCode = campaignCode.substring(0, campaignCode.length() - 1);
-			return campaignCode;
-		}
+		if(uid.getIsNextPressed())
+			return uid.getUserInput().toUpperCase().trim();
 
 		return "";
 	}
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $25, enter 25)");
-		udid.getTextField().setText("25");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $3.23, enter 3.23)");
+		udid.getTextField().setText("3.23");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -707,11 +639,12 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	}
 	
 	// Convert the gift arrays to metrics
-	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {		
-		String less = "$%s to help families find hope and healing.";
-		String single = "$%s to help families find hope and healing.";
-		String plural = "$%s to help families find hope and healing.";
-		String open = "$________ to help families find hope and healing.";
+	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
+		
+		String less = "$%s helps provide 1 nutritious meal.";
+		String single = "$%s provides 1 nutritious meal.";
+		String plural = "$%s provides %s nutritious meals.";
+		String open = "$________ to provide as many meals as possible.";
 		
 		String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
 		
@@ -720,11 +653,11 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		plural = getGiftMetricLine("Enter the sentence to use when asks are > $" + formattedCostPerUnit, plural).trim();
 		open = getGiftMetricLine("Enter the sentence to use for open asks.", open).trim();
 		
-		DecimalFormat formatter = new DecimalFormat("#,###");
+		DecimalFormat formatter = new DecimalFormat("#,###.00");
 		DecimalFormat provides_formatter = new DecimalFormat("#,###");
 		
 		for(Record record : userData.getRecordList()) {
-			
+
 			if(Validators.isNumber(record.getDn1Amt())) {
 				double dn1 = Double.parseDouble(record.getDn1Amt());
 				double dn2 = Double.parseDouble(record.getDn2Amt());
@@ -777,6 +710,84 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 		}
 	}
 	
+	// Convert the gift arrays to metrics
+		private void setMatchedGiftArrayMetrics(UserData userData, double costPerUnit) {
+			
+			String less = "$%s DOUBLES to $%s to help provide Emergency Supplies to 1 Family.";
+			String single = "$%s DOUBLES to $%s to provide Emergency Supplies to 1 Family.";
+			String plural = "$%s DOUBLES to $%s to provide Emergency Supplies to %s Families.";
+			String open = "$________ DOUBLES to help as many Families as possible.";
+			
+			String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
+			
+			less = getGiftMetricLine("Enter the sentence to use when asks are < $" + formattedCostPerUnit, less).trim();
+			single = getGiftMetricLine("Enter the sentence to use when asks are = $" + formattedCostPerUnit, single).trim();
+			plural = getGiftMetricLine("Enter the sentence to use when asks are > $" + formattedCostPerUnit, plural).trim();
+			open = getGiftMetricLine("Enter the sentence to use for open asks.", open).trim();
+			
+			DecimalFormat formatter = new DecimalFormat("#,###.00");
+			DecimalFormat provides_formatter = new DecimalFormat("#,###");
+			
+			for(Record record : userData.getRecordList()) {
+				
+				if(Validators.isNumber(record.getDn1Amt())) {
+					double dn1 = Double.parseDouble(record.getDn1Amt());
+					double dn2 = Double.parseDouble(record.getDn2Amt());
+					double dn3 = Double.parseDouble(record.getDn3Amt());
+					double dn4 = Double.parseDouble(record.getDn4Amt());
+					
+					double dn1X2 = Double.parseDouble(record.getDn1Amt()) * 2;
+					double dn2X2 = Double.parseDouble(record.getDn2Amt()) * 2;
+					double dn3X2 = Double.parseDouble(record.getDn3Amt()) * 2;
+					double dn4X2 = Double.parseDouble(record.getDn4Amt()) * 2;
+					
+					int difference1 = (int) (dn1X2 / costPerUnit);
+					int difference2 = (int) (dn2X2 / costPerUnit);
+					int difference3 = (int) (dn3X2 / costPerUnit);
+					int difference4 = (int) (dn4X2 / costPerUnit);
+					
+					// Donation 1
+					if(difference1 < 1) {
+						record.setProvide1(String.format(less, formatter.format(dn1).replaceAll("\\.0+$", ""), formatter.format(dn1X2).replaceAll("\\.0+$", "")));
+					} else if(difference1 < 2) {
+						record.setProvide1(String.format(single, formatter.format(dn1).replaceAll("\\.0+$", ""), formatter.format(dn1X2).replaceAll("\\.0+$", "")));
+					} else if(difference1 >= 2) {
+						record.setProvide1(String.format(plural, formatter.format(dn1).replaceAll("\\.0+$", ""), formatter.format(dn1X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference1)));
+					}
+					
+					// Donation 2
+					if(difference2 < 1) {
+						record.setProvide2(String.format(less, formatter.format(dn2).replaceAll("\\.0+$", ""), formatter.format(dn2X2).replaceAll("\\.0+$", "")));
+					} else if(difference2 < 2) {
+						record.setProvide2(String.format(single, formatter.format(dn2).replaceAll("\\.0+$", ""), formatter.format(dn2X2).replaceAll("\\.0+$", "")));
+					} else if(difference2 >= 2) {
+						record.setProvide2(String.format(plural, formatter.format(dn2).replaceAll("\\.0+$", ""), formatter.format(dn2X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2)));
+					}
+					
+					// Donation 3
+					if(difference3 < 1) {
+						record.setProvide3(String.format(less, formatter.format(dn3).replaceAll("\\.0+$", ""), formatter.format(dn3X2).replaceAll("\\.0+$", "")));
+					} else if(difference3 < 2) {
+						record.setProvide3(String.format(single, formatter.format(dn3).replaceAll("\\.0+$", ""), formatter.format(dn3X2).replaceAll("\\.0+$", "")));
+					} else if(difference3 >= 2) {
+						record.setProvide3(String.format(plural, formatter.format(dn3).replaceAll("\\.0+$", ""), formatter.format(dn3X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference3)));
+					}
+					
+					// Donation 4
+					if(difference4 < 1) {
+						record.setProvide4(String.format(less, formatter.format(dn4).replaceAll("\\.0+$", ""), formatter.format(dn4X2).replaceAll("\\.0+$", "")));
+					} else if(difference4 < 2) {
+						record.setProvide4(String.format(single, formatter.format(dn4).replaceAll("\\.0+$", ""), formatter.format(dn4X2).replaceAll("\\.0+$", "")));
+					} else if(difference4 >= 2) {
+						record.setProvide4(String.format(plural, formatter.format(dn4).replaceAll("\\.0+$", ""), formatter.format(dn4X2).replaceAll("\\.0+$", ""), provides_formatter.format(difference4)));
+					}
+					
+				}
+				
+				record.setODnAmt(open);
+			}
+		}
+	
 	// Set the gift arrays
 	private void setGiftArrays(UserData userData, double defaultAskAmount) {
 		final BigDecimal LAST_GIFT_ROUNDING_AMOUNT = new BigDecimal("5.00");
@@ -804,97 +815,147 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
-			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName()) && !donorSegment.equalsIgnoreCase(segment.TOP.getName())) // only create gifts for certain segments
+			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())
+					&& !donorSegment.equalsIgnoreCase(segment.TOP.getName())) { // only create gifts for certain segments
 				setGiftArray(record, lastDonationRoundedUpByFive, defaultAskAmount);
+				
+				// increase ask4 by 35%
+				increaseAsk4(record, defaultAskAmount, 35.0);
+			}
 
 		}
 	}
 	
-	// logic to build non lapsed gift arrays
-		private void setGiftArray(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
-			int askTier = 1;
-			
-			// Small default amount multiplier
-			int sdam = 1;
-			
-			if(defaultAskAmount < 10)
-				sdam = 4;
-			else if(defaultAskAmount < 20)
-				sdam = 2;
-			
-			String largestDonation = record.getLrgDnAmt().replaceAll("[^0-9\\.]", "");
-			double largestDonationDouble = 0;
-			
-			if(Validators.isNumber(largestDonation)) // make sure its a valid number
-				largestDonationDouble = Double.valueOf(largestDonation);
-			
-			if(largestDonationDouble >= 1000) {
-		    	askTier = 2;
-		    } else if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
-				record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
-				record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
-				record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-				record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-				askTier = 7;
-			} else if(lastDonationRoundedUpByFive < defaultAskAmount * (5 * sdam)) {
-				record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-				record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-				record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-				record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-				askTier = 6;
-			} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
-				record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-				record.setDn2Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
-				record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-				record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-				askTier = 5;
-			} else if(lastDonationRoundedUpByFive < defaultAskAmount * (11 * sdam)) {
-				record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-				record.setDn2Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-				record.setDn3Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-				record.setDn4Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
-				askTier = 4;
-			} else {
-				record.setDn1Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-				record.setDn2Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-				record.setDn3Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
-				record.setDn4Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
-				askTier = 3;
-			}
-
-			if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
-				record.setSegCode(record.getSegCode() + askTier);
+	// increase gift4 by 35%
+	private void increaseAsk4(Record record, double defaultAskAmount, double percentageIncrease) {
+		if(record.getDn4Amt().length() > 0) {
+			double amount = Double.parseDouble(record.getDn4Amt());
+			double increase = amount * (percentageIncrease / 100.0);
+			double newAmount = amount + increase;
+			double roundedUp = Math.ceil(newAmount / defaultAskAmount) * defaultAskAmount;
+			record.setDn4Amt(String.valueOf(roundedUp));
 		}
+	}
 	
+	// logic to build non lapsed gift arrays
+	private void setGiftArray(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
+		int askTier = 1;
+		
+		// Small default amount multiplier
+		int sdam = 1;
+		
+		if(defaultAskAmount < 5)
+			sdam = 6;
+		if(defaultAskAmount < 10)
+			sdam = 4;
+		else if(defaultAskAmount < 20)
+			sdam = 2;
+		
+		if(lastDonationRoundedUpByFive >= 1000) {
+	    	askTier = 2;
+	    } else if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
+	    	record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
+	    	record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
+	    	record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+	    	record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+	    	askTier = 7;
+	    } else if(lastDonationRoundedUpByFive < defaultAskAmount * (5 * sdam)) {
+	    	record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+	    	record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+	    	record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+	    	record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+	    	askTier = 6;
+	    } else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
+	    	record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
+	    	record.setDn2Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
+	    	record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
+	    	record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
+	    	askTier = 5;
+	    } else if(lastDonationRoundedUpByFive < defaultAskAmount * (12 * sdam)) {
+	    	record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
+	    	record.setDn2Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
+	    	record.setDn3Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
+	    	record.setDn4Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
+	    	askTier = 4;
+	    } else {
+	    	record.setDn1Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
+	    	record.setDn2Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
+	    	record.setDn3Amt(String.valueOf(defaultAskAmount * (40 * sdam)));
+	    	record.setDn4Amt(String.valueOf(defaultAskAmount * (55 * sdam)));
+	    	askTier = 3;
+	    }
+
+		/*if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			askTier = 7;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (9 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
+			askTier = 6;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (18 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
+			askTier = 5;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (24 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (26 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (30 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (34 * sdam)));
+			askTier = 4;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (36 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (34 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (38 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (42 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
+			askTier = 3;
+		} else {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (50 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (54 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (58 * sdam)));
+			askTier = 2;
+		}*/
+
+		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
+			record.setSegCode(record.getSegCode() + askTier);
+	}
+	
+	// Logic to categorize donors into segments
 	private void setSegment(UserData userData) {
 		final int FREQUENT_DONATIONS_CRITERIA = 3;
 		final int NEW_DONOR_MONTHS_CRITERIA = 6;
 		final int LAPSED_DONATIONS_CRITERIA = 24;
 		
+		ArrayList<String> specialAppealsList = new ArrayList<>(Arrays.asList("M240801", "M230801", "M220801", "M240901", "M230901", "M220901"));
+
 		String now = String.valueOf(LocalDate.now());
-		
 		for(Record record : userData.getRecordList()) {
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
 			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
-			
+
 			if(record.getSeg() == null) {
 				if(record.getInId().toLowerCase().contains("seed"))
 					record.setSeg(segment.ACTIVE.getName());
-				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
-					record.setSeg(segment.NEW.getName());
 				else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA)
 					record.setSeg(segment.FREQUENT.getName());
-				//else if(record.getSeg() != null  && record.getSeg().equalsIgnoreCase(segment.TRIBUTE.getName()))
-				//	record.setSeg(segment.TRIBUTE.getName());
+				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
+					record.setSeg(segment.NEW.getName());
 				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
 					record.setSeg(segment.LAPSED.getName());
-				//else if(Double.parseDouble(record.getMisc1()) > 0.0)
-				//	record.setSeg(segment.RECENT.getName());
+				//else if(specialAppealsList.contains(record.getStatus()))
+				//	record.setSeg(segment.THANKSGIVING.getName());
 				else
 					record.setSeg(segment.ACTIVE.getName());
 			}
 		}
-		}
+	}
 
 	// Sets the R, F, and M scores
 	private void setRFM(UserData userData) {
@@ -913,10 +974,10 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 				counter = 0;
 				--currentScore;
 			}
-			
+
 			record.setRfmScore(String.valueOf(currentScore));
 		}
-		
+
 		counter = 0;
 		currentScore = 5;
 
@@ -930,7 +991,7 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			}
 			record.setRfmScore(record.getRfmScore() + "_" + String.valueOf(currentScore));
 		}
-		
+
 		counter = 0;
 		currentScore = 5;
 
@@ -945,7 +1006,7 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 			}
 			record.setRfmScore(record.getRfmScore() + "_" + String.valueOf(currentScore));
 		}
-		
+
 		counter = 0;
 		currentScore = 5;
 
@@ -953,18 +1014,20 @@ public class CaminoWellbeingMentalHealth implements RunGenerosityXBehavior {
 	
 	// calculates the months between two dates
 	private long getMonthsBetween(String startDate, String endDate) {
-		startDate = startDate.replaceAll("[^0-9]", "-");
-		endDate = endDate.replaceAll("[^0-9]", "-");
 		
-		if(!Validators.isStringOfDateFormat(startDate, "yyyy-MM-dd")) {
-			System.out.println("Invalid startdate of " + startDate);
-			return -1;
-		} if(!Validators.isStringOfDateFormat(endDate, "yyyy-MM-dd")) {
-			System.out.println("Invalid enddate of " + endDate);
+		startDate = startDate.replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/");
+		endDate = endDate.replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/");
+		
+		if(!Validators.isStringOfDateFormat(startDate, "yyyy/MM/dd")) {
+			System.out.println("Invalid date of " + startDate);
 			return -1;
 		}
-			
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		if(!Validators.isStringOfDateFormat(endDate, "yyyy/MM/dd")) {
+			System.out.println("Invalid date of " + endDate);
+			return -1;
+		}
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 		LocalDate start = LocalDate.parse(startDate, formatter);
 		LocalDate end = LocalDate.parse(endDate, formatter);
 		

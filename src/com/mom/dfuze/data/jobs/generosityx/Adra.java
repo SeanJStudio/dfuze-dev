@@ -14,6 +14,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -186,6 +187,7 @@ public class Adra implements RunGenerosityXBehavior {
 				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.PENULTIMATE_AMOUNT.getName(),
 				UserData.fieldName.PENULTIMATE_DATE.getName(),
+				UserData.fieldName.MEDIAN.getName(),
 				UserData.fieldName.DONATION_AMOUNT_ARRAY.getName(),
 				UserData.fieldName.RECENCY.getName(),
 				UserData.fieldName.FREQUENCY.getName(),
@@ -441,6 +443,7 @@ public class Adra implements RunGenerosityXBehavior {
 			record.setTtlDnAmtLst12Mnths("0");
 			record.setNumDn("0");
 			record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
+			record.setMedian("0");
 			record.setDnAmtArr("");
 			record.setRScore("99999");
 			record.setFScore("0");
@@ -459,6 +462,8 @@ public class Adra implements RunGenerosityXBehavior {
 			if(giftHistoryMap.containsKey(record.getInId())) {
 				List<AdraGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
 				
+				double median = calculateMedian(toAmountList(giftHistoryList));
+				
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
 				
@@ -466,6 +471,7 @@ public class Adra implements RunGenerosityXBehavior {
 				double totalGiftAmountLast12Months = 0.0;
 				int totalGiftsLast12Months = 0;
 				double largestGiftMadeLast24Months = 0.0;
+				double largestGift = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
 				
@@ -479,6 +485,9 @@ public class Adra implements RunGenerosityXBehavior {
 					
 					totalGiftAmount += giftHistory.getGiftAmount();
 					giftAmounts.add(giftHistory.getGiftAmount());
+					
+					if(giftHistory.getGiftAmount() > largestGift)
+						largestGift = giftHistory.getGiftAmount();
 					
 					long monthsFromDonation = getMonthsBetween(giftHistory.getGiftDate().toString(), now);
 					
@@ -535,7 +544,8 @@ public class Adra implements RunGenerosityXBehavior {
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
 				record.setTtlDnAmtLst12Mnths(String.valueOf(totalGiftAmountLast12Months));
 				record.setNumDn(String.valueOf(totalGifts));
-				record.setLrgDnAmt(String.valueOf(largestGiftMadeLast24Months));
+				record.setLrgDnAmt(String.valueOf(largestGift));
+				record.setMedian(String.valueOf(median));
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months)); 
 				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
@@ -543,7 +553,33 @@ public class Adra implements RunGenerosityXBehavior {
 			
 			
 		}
-	}	
+	}
+	
+	private double calculateMedian(ArrayList<Double> giftList) {
+		double defaultValue = 0.0;
+		
+		if(giftList.size() == 0)
+			return defaultValue;
+		
+		Double[] numArray = giftList.toArray(new Double[0]);
+		Arrays.sort(numArray);
+		double median;
+		
+		if (numArray.length % 2 == 0)
+		    median = ((double)numArray[numArray.length/2] + (double)numArray[numArray.length/2 - 1])/2;
+		else
+		    median = (double) numArray[numArray.length/2];
+		
+		return median;
+	}
+	
+	private ArrayList<Double> toAmountList(List<AdraGiftHistory> giftHistoryList) {
+        if (giftHistoryList == null) return new ArrayList<>();
+        return giftHistoryList.stream()
+                .mapToDouble(AdraGiftHistory::getGiftAmount) // double stream
+                .boxed()                                   // Double stream
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 	
 	private void setCampaignCode(UserData userData, String campaignCode) {
 		for(Record record : userData.getRecordList()) {
@@ -564,8 +600,8 @@ public class Adra implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. JUN25-01-DM)");
-		uid.getTextField().setText("JUN25-01-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. DEC25-02-LA)");
+		uid.getTextField().setText("DEC25-02-LA");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -576,8 +612,8 @@ public class Adra implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $36, enter 36)");
-		udid.getTextField().setText("36");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $20, enter 20)");
+		udid.getTextField().setText("20");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -603,10 +639,10 @@ public class Adra implements RunGenerosityXBehavior {
 	// Convert the gift arrays to metrics
 	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
 		
-		String less = "$%s helps provide 1 solar pump for a household.";
-		String single = "$%s provides 1 solar pump for a household.";
-		String plural = "$%s provides %s solar pumps for a household.";
-		String open = "$________ to provide as many solar pumps for a household as possible.";
+		String less = "$%s helps feed 1 person for a month.";
+		String single = "$%s feeds 1 person for a month.";
+		String plural = "$%s feeds %s people for a month.";
+		String open = "$________ to feed as many people as possible.";
 		
 		String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
 		
@@ -768,18 +804,18 @@ public class Adra implements RunGenerosityXBehavior {
 			
 			String donorSegment = record.getSeg();
 			
-			String tempLastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
+			String tempMedianDonation = record.getMedian().replaceAll("[^0-9\\.]", "");
 			
-			if(!Validators.isNumber(tempLastDonation)) // make sure its a valid number
-				tempLastDonation = String.valueOf(LAST_GIFT_ROUNDING_AMOUNT.doubleValue());
+			if(!Validators.isNumber(tempMedianDonation)) // make sure its a valid number
+				tempMedianDonation = String.valueOf(LAST_GIFT_ROUNDING_AMOUNT.doubleValue());
 			
 			// last donation rounded up to nearest 5
-			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
+			Double medianDonationRoundedUpByFive = new BigDecimal(tempMedianDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
 			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())
 					&& !donorSegment.equalsIgnoreCase(segment.TOP.getName())) // only create gifts for certain segments
-				setGiftArray(record, lastDonationRoundedUpByFive, defaultAskAmount);
+				setGiftArray(record, medianDonationRoundedUpByFive, defaultAskAmount);
 
 		}
 	}
@@ -831,7 +867,7 @@ public class Adra implements RunGenerosityXBehavior {
 		}
 	
 	// logic to build non lapsed gift arrays
-	private void setGiftArray(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
+	private void setGiftArray(Record record, Double medianDonationRoundedUpByFive, double defaultAskAmount) {
 		int askTier = 1;
 		
 		// Small default amount multiplier
@@ -842,81 +878,45 @@ public class Adra implements RunGenerosityXBehavior {
 		else if(defaultAskAmount < 20)
 			sdam = 2;
 		
-		if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
+		String largestDonation = record.getLrgDnAmt().replaceAll("[^0-9\\.]", "");
+		double largestDonationDouble = 0;
+		
+		if(Validators.isNumber(largestDonation)) // make sure its a valid number
+			largestDonationDouble = Double.valueOf(largestDonation);
+		
+		if(largestDonationDouble >= 1000) {
+	    	askTier = 2;
+	    } else if(medianDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
 			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
 			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (5 * sdam)) {
+		} else if(medianDonationRoundedUpByFive < defaultAskAmount * (5 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
 			record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
 			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
+		} else if(medianDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
 			record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
 			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (11 * sdam)) {
+		} else if(medianDonationRoundedUpByFive < defaultAskAmount * (11 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
 			record.setDn4Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
 			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (15 * sdam)) {
+		} else {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (18 * sdam)));
-			askTier = 3;
-		} else {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (18 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (15 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
-			askTier = 2;
-		}
-
-		/*if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (9 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (18 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
-			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (24 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (22 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (26 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (30 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (34 * sdam)));
-			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (36 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (34 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (38 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (42 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (25 * sdam)));
 			askTier = 3;
-		} else {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (50 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (54 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (58 * sdam)));
-			askTier = 2;
-		}*/
+		}
 
 		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
 			record.setSegCode(record.getSegCode() + askTier);

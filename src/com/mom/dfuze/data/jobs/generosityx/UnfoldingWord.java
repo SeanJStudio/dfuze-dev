@@ -596,13 +596,13 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		}
 	}
 	
-	private double calculateMedian(ArrayList<Double> numArrayList) {
+	private double calculateMedian(ArrayList<Double> giftList) {
 		double defaultValue = 0.0;
 		
-		if(numArrayList.size() == 0)
+		if(giftList.size() == 0)
 			return defaultValue;
 		
-		Double[] numArray = numArrayList.toArray(new Double[0]);
+		Double[] numArray = giftList.toArray(new Double[0]);
 		Arrays.sort(numArray);
 		double median;
 		
@@ -613,6 +613,14 @@ public class UnfoldingWord implements RunGenerosityXBehavior {
 		
 		return median;
 	}
+	
+	private ArrayList<Double> toAmountList(List<UWGiftHistory> giftHistoryList) {
+        if (giftHistoryList == null) return new ArrayList<>();
+        return giftHistoryList.stream()
+                .mapToDouble(UWGiftHistory::getGiftAmount) // double stream
+                .boxed()                                   // Double stream
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 	
 	
 	private void setCampaignCode(UserData userData, String campaignCode) {

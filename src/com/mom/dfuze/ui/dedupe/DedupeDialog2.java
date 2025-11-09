@@ -152,7 +152,7 @@ public class DedupeDialog2 extends JDialog {
 
 	static final Pattern ADD_RR_PATTERN = Pattern.compile("(^|\\s)(rr|rfd)\\s?#?\\d*(\\s?\\D$|\\D\\s)?", 2);
 
-	static final Pattern ADD_APT_PATTERN = Pattern.compile("(apt)(\\s+)?(#|\\D)?(\\s+)?\\d+", 2);
+	static final Pattern ADD_APT_PATTERN = Pattern.compile("(apt)(\\s+)?(#|\\D)?(\\s+)?\\d+|^\\d+(?=-)", 2);
 
 	static final String FIX_APT_REGEX = "((trlr|trailer|lot|apartment|condo|appartement|suite|suit|ste|spc|space|room|rm|office|ofc|unit|bureau|piece|(?<=^|\\s+)ph|(?<=^|\\s+)th)(?=\\s+|$|#|-|\\d+))";
 
@@ -1408,6 +1408,10 @@ public class DedupeDialog2 extends JDialog {
 
 				if(incorrectHyphenMatcher2.find())
 					preAdd2 = preAdd2.replaceFirst(incorrectHyphenMatcher2.group(), " ");
+				
+				// Fix US apartments #2$
+				preAdd1 = preAdd1.replaceAll(FIX_US_APT_REGEX, "apt");
+				preAdd2 = preAdd2.replaceAll(FIX_US_APT_REGEX, "apt");
 
 				String DupeAlphaStreetAdd1 = preAdd1.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
 				String DupeAlphaStreetAdd2 = preAdd2.toLowerCase().replaceAll("\\p{Pd}", "-").replaceAll("(?i)\\d+(\\D+)?(\\s+)?(floor|etage)", "").replaceAll("number|(?<=^|\\s)num(?=\\d|$|\\s)", "no").replaceAll("\\s+", " ").trim();
@@ -1448,6 +1452,10 @@ public class DedupeDialog2 extends JDialog {
 					record.setMisc1(add1StreetApt.group());
 					if(!DupeAlphaStreetAdd1.startsWith(add1StreetApt.group()) || DupeAlphaStreetAdd1.equalsIgnoreCase(add1StreetApt.group()))
 						DupeAlphaStreetAdd1 = DupeAlphaStreetAdd1.replaceAll(add1StreetApt.group(), "");
+					if(DupeAlphaStreetAdd1.equalsIgnoreCase(add1StreetApt.group()))
+						DupeAlphaStreetAdd1 = "";
+					if(DupeAlphaStreetAdd2.equalsIgnoreCase(add1StreetApt.group()))
+						DupeAlphaStreetAdd2 = "";
 				}
 						
 
@@ -1455,10 +1463,14 @@ public class DedupeDialog2 extends JDialog {
 					record.setMisc2(add2StreetApt.group());
 					if(!DupeAlphaStreetAdd2.startsWith(add2StreetApt.group()) || DupeAlphaStreetAdd2.equalsIgnoreCase(add2StreetApt.group()))
 						DupeAlphaStreetAdd2 = DupeAlphaStreetAdd2.replaceAll(add2StreetApt.group(), "");
+					if(DupeAlphaStreetAdd1.equalsIgnoreCase(add2StreetApt.group()))
+						DupeAlphaStreetAdd1 = "";
+					if(DupeAlphaStreetAdd2.equalsIgnoreCase(add2StreetApt.group()))
+						DupeAlphaStreetAdd2 = "";
 				}
 						
 				
-				//System.out.println(DupeAlphaStreetAdd1);
+				//ystem.out.println(DupeAlphaStreetAdd1);
 				//System.out.println(DupeAlphaStreetAdd2);
 
 				Matcher matcherAdd1POBox = ADD_PO_BOX_PATTERN.matcher(DupeAlphaStreetAdd1);
@@ -1681,7 +1693,6 @@ public class DedupeDialog2 extends JDialog {
 					boolean boolAdd2AptAlreadyExists = add2AptAlreadyExists.find();
 					
 					String add1AptValue = "";
-					@SuppressWarnings("unused")
 					String add2AptValue = "";
 
 					if (add1Apt.find() && !boolAdd1AptAlreadyExists) {
@@ -1722,6 +1733,7 @@ public class DedupeDialog2 extends JDialog {
 					record.setDupeMetaStreetAdd2(Common.rightPad(record.getDupeMetaStreetAdd2(), 15, 'X')); 
 				
 				//System.out.println(record.getDupeAdd1());
+				//System.out.println(record.getDupeAdd2());
 				//System.out.println(newDupeAplha1);
 				//System.out.println(newDupeAplha2);
 				//System.out.println(record.getDupeMetaStreetAdd1());

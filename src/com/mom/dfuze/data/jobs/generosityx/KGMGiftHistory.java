@@ -2,21 +2,21 @@ package com.mom.dfuze.data.jobs.generosityx;
 
 import java.time.LocalDate;
 
-public class P2CGiftHistory {
+public class KGMGiftHistory {
 	private String id;
 	private double giftAmount;
 	private LocalDate giftDate;
+	private String giftCampaign;
 	private String giftType;
-	private String sourceCode;
 	
-	public P2CGiftHistory() {}
+	public KGMGiftHistory() {}
 	
-	public P2CGiftHistory(String id, double giftAmount, LocalDate giftDate, String giftType, String sourceCode) {
+	public KGMGiftHistory(String id, double giftAmount, LocalDate giftDate, String giftCampaign, String giftType) {
 		this.id = id;
 		this.giftAmount = giftAmount;
 		this.giftDate = giftDate;
+		this.giftCampaign = giftCampaign;
 		this.giftType = giftType;
-		this.sourceCode = sourceCode;
 	}
 
 	public String getId() {
@@ -43,6 +43,14 @@ public class P2CGiftHistory {
 		this.giftDate = giftDate;
 	}
 
+	public String getGiftCampaign() {
+		return giftCampaign;
+	}
+
+	public void setGiftCampaign(String giftCampaign) {
+		this.giftCampaign = giftCampaign;
+	}
+
 	public String getGiftType() {
 		return giftType;
 	}
@@ -51,19 +59,12 @@ public class P2CGiftHistory {
 		this.giftType = giftType;
 	}
 
-	public String getSourceCode() {
-		return sourceCode;
-	}
-
-	public void setSourceCode(String sourceCode) {
-		this.sourceCode = sourceCode;
-	}
-
 	@Override
 	public String toString() {
-		return "P2CGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", giftType="
-				+ giftType + ", sourceCode=" + sourceCode + "]";
+		return "KGMGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", giftCampaign="
+				+ giftCampaign + ", giftType=" + giftType + "]";
 	}
 
+	
 
 }

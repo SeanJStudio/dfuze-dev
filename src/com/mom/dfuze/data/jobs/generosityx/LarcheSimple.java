@@ -92,7 +92,9 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 	public final Pattern FOUNDATIONS_PATTERN = Pattern.compile("foundation|organizations|schools|clubs", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
+		TOP("Top"),
 		MONTHLY("Monthly"),
+		FREQUENT("Frequent"),
 		ACTIVE("Active"),
 		FOUNDATIONS("Foundations"),
 		LAPSED("Lapsed"),
@@ -459,6 +461,8 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 	
 	private void processGifts(UserData userData, HashMap<String, List<LarcheGiftHistory>> giftHistoryMap) {
 		
+		final int TOP_DONATION_AMOUNT = 500;
+		
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
@@ -504,6 +508,7 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 				
 				double totalGiftAmountLast12Months = 0.0;
 				int totalGiftsLast12Months = 0;
+				double largestGiftMadeLast6Months = 0.0;
 				double largestGiftMadeLast48Months = 0.0;
 				double largestGift = 0.0;
 				
@@ -548,6 +553,10 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 								record.setSeg(segment.MONTHLY.getName());
 						}
 					}
+					
+					if(monthsFromDonation <= MONTHS6)
+						if(giftHistory.getGiftAmount() > largestGiftMadeLast6Months)
+							largestGiftMadeLast6Months = giftHistory.getGiftAmount();
 
 					// this is the last donation
 					if(j == 0) {
@@ -582,14 +591,17 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 				
 				
 				// segmentation
-				if(record.getSeg() == null) {
-					if(FOUNDATIONS_PATTERN.matcher(record.getRecType()).find())
+				if(record.getSeg() == null || record.getSeg() == segment.NEW.getName()) {
+					if(totalGiftsLast12Months >= 3)
+						record.setSeg(segment.FREQUENT.getName());
+					else if(FOUNDATIONS_PATTERN.matcher(record.getRecType()).find())
 						record.setSeg(segment.FOUNDATIONS.getName());
-					else if(largestGiftMadeLast48Months > 0)
+					else if(largestGiftMadeLast48Months > 0 && record.getSeg() != segment.NEW.getName())
 						record.setSeg(segment.ACTIVE.getName());
-					else
-						record.setSeg(segment.LAPSED.getName());
 				}
+				
+				if(largestGiftMadeLast6Months >= TOP_DONATION_AMOUNT)
+					record.setSeg(segment.TOP.getName());
 				
 				record.setMScore(String.valueOf(monetarySum));
 				record.setFScore(String.valueOf(totalGifts));
@@ -613,11 +625,17 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 		for(Record record : userData.getRecordList()) {
 			record.setLetVer("");
 			
-			if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName())) {
+			if(record.getSeg().equalsIgnoreCase(segment.TOP.getName())) {
+				record.setSegCode(campaignCode + "-MD1");
+				record.setLetVer(segment.TOP.getName());
+			} else if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName())) {
 				record.setSegCode(campaignCode + "-M1");
 				record.setLetVer(segment.MONTHLY.getName());
+			} else if(record.getSeg().equalsIgnoreCase(segment.FREQUENT.getName())) {
+				record.setSegCode(campaignCode + "-F0");
+				record.setLetVer(segment.FREQUENT.getName());
 			} else if(record.getSeg().equalsIgnoreCase(segment.FOUNDATIONS.getName())) {
-				record.setSegCode(campaignCode + "-F1");
+				record.setSegCode(campaignCode + "-FD0");
 				record.setLetVer(segment.FOUNDATIONS.getName());
 			} else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName())) {
 				record.setSegCode(campaignCode + "-A");
@@ -626,7 +644,7 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 				record.setSegCode(campaignCode + "-N0");
 				record.setLetVer("Active");
 			} else if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName())) {
-				record.setSegCode(campaignCode + "-L");
+				record.setSegCode(campaignCode + "-L0");
 				record.setLetVer("Lapsed");
 			}
 		}
@@ -634,8 +652,8 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. MAY-01-NL-DM)");
-		uid.getTextField().setText("MAY-01-NL-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. NOV25-DM)");
+		uid.getTextField().setText("NOV25-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -847,7 +865,7 @@ public class LarcheSimple implements RunGenerosityXBehavior {
 			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
-			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())) // only create gifts for certain segments
+			if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName()) && !donorSegment.equalsIgnoreCase(segment.TOP.getName())) // only create gifts for certain segments
 				setStaticGiftArray(record, lastDonationRoundedUpByFive);
 
 		}

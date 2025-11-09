@@ -2,20 +2,20 @@ package com.mom.dfuze.data.jobs.generosityx;
 
 import java.time.LocalDate;
 
-public class CWMHGiftHistory {
+public class BISGiftHistory {
 	private String id;
 	private double giftAmount;
 	private LocalDate giftDate;
-	private String designation;
+	private String giftType;
 	private String appeal;
 	
-	public CWMHGiftHistory() {}
+	public BISGiftHistory() {}
 	
-	public CWMHGiftHistory(String id, double giftAmount, LocalDate giftDate, String designation, String appeal) {
+	public BISGiftHistory(String id, double giftAmount, LocalDate giftDate, String giftType, String appeal) {
 		this.id = id;
 		this.giftAmount = giftAmount;
 		this.giftDate = giftDate;
-		this.designation = designation;
+		this.giftType = giftType;
 		this.appeal = appeal;
 	}
 
@@ -43,12 +43,12 @@ public class CWMHGiftHistory {
 		this.giftDate = giftDate;
 	}
 
-	public String getDesignation() {
-		return designation;
+	public String getGiftType() {
+		return giftType;
 	}
 
-	public void setDesignation(String designation) {
-		this.designation = designation;
+	public void setGiftType(String giftType) {
+		this.giftType = giftType;
 	}
 
 	public String getAppeal() {
@@ -61,10 +61,9 @@ public class CWMHGiftHistory {
 
 	@Override
 	public String toString() {
-		return "CWMHGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", designation="
-				+ designation + ", appeal=" + appeal + "]";
+		return "BISGiftHistory [id=" + id + ", giftAmount=" + giftAmount + ", giftDate=" + giftDate + ", giftType="
+				+ giftType + ", appeal=" + appeal + "]";
 	}
 
 	
 }
-	

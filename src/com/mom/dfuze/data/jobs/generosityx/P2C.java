@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ import com.mom.dfuze.ui.UserInputDialog;
 
 
 /**
- * RegularProcess implements a RunBehavior for Adra Jobs
+ * RegularProcess implements a RunBehavior for P2C Jobs
  * 
  * @author Sean Johnson
  *         Mail-o-Matic Services Ltd
@@ -73,18 +74,21 @@ public class P2C implements RunGenerosityXBehavior {
 	public final Pattern NEW_PATTERN = Pattern.compile("(4|5)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	public final Pattern LAPSED_PATTERN = Pattern.compile("(1)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("donord id", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("donordid", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("amount", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("date", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("staff", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_TYPE_PATTERN = Pattern.compile("gifttype", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_SOURCE_CODE_PATTERN = Pattern.compile("sourcecode", Pattern.CASE_INSENSITIVE);
+	
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
-		NEW("New"),
-		LAPSED("Lapsed"),
-		FREQUENT("Frequent"),
 		TOP("Top"),
-		ACTIVE("Active"),
-		STAFF("Staff");
+		MONTHLY("Monthly"),
+		FREQUENT("Frequent"),
+		LAPSED("Lapsed"),
+		NEW("New"),
+		ACTIVE("Active");
 		
 		String name;
 
@@ -260,7 +264,7 @@ public class P2C implements RunGenerosityXBehavior {
 		List<List<String>> giftFile = FileIngestor.ingest();	// get the gift file	
 		HashSet<Integer> indexSet = new HashSet<>();
 	
-		int idIndex, amountIndex, giftDateIndex, appealIndex = -1;
+		int idIndex, amountIndex, giftDateIndex, giftTypeIndex, giftSourceCodeIndex = -1;
 		
 		String[] headers = giftFile.get(0).toArray(new String[0]);
 
@@ -326,12 +330,12 @@ public class P2C implements RunGenerosityXBehavior {
 		if(!indexSet.add(giftDateIndex))
 			throw new Exception("The gift date field has been mapped more than once.");
 		
-		// designation
-		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the staff/intern Name field.");
+		// gift type
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Gift Type field.");
 		dsd.setValues(headers);
 
 		for(int i = 0; i < headers.length; ++i) {
-			if(GIFT_FILE_CAMPAIGN_PATTERN.matcher(headers[i]).find()) {
+			if(GIFT_FILE_TYPE_PATTERN.matcher(headers[i]).find()) {
 				dsd.getComboBoxValues().setSelectedIndex(i);
 				break;
 			}
@@ -342,10 +346,31 @@ public class P2C implements RunGenerosityXBehavior {
 		if(!dsd.isNextPressed())
 			throw new Exception("Selection cancelled, please restart job.");
 
-		appealIndex = dsd.getSelectedValueIndex();
+		giftTypeIndex = dsd.getSelectedValueIndex();
 		
-		if(!indexSet.add(appealIndex))
-			throw new Exception("The appeal name field has been mapped more than once.");
+		if(!indexSet.add(giftTypeIndex))
+			throw new Exception("The Gift Type field has been mapped more than once.");
+		
+		// source code
+		dsd = new DropdownSelectDialog(UiController.getMainFrame(), headers, "Select the Source Code field.");
+		dsd.setValues(headers);
+
+		for(int i = 0; i < headers.length; ++i) {
+			if(GIFT_FILE_SOURCE_CODE_PATTERN.matcher(headers[i]).find()) {
+				dsd.getComboBoxValues().setSelectedIndex(i);
+				break;
+			}
+		}
+
+		dsd.setVisible(true);
+
+		if(!dsd.isNextPressed())
+			throw new Exception("Selection cancelled, please restart job.");
+
+		giftSourceCodeIndex = dsd.getSelectedValueIndex();
+				
+		if(!indexSet.add(giftSourceCodeIndex))
+			throw new Exception("The source code field has been mapped more than once.");
 		
 		List<Record> giftsList = new ArrayList<>();
 		
@@ -355,7 +380,8 @@ public class P2C implements RunGenerosityXBehavior {
 			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", ""); // Remove leading zeros
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
-			String giftDesignation = giftFile.get(i).get(appealIndex).trim();
+			String giftType = giftFile.get(i).get(giftTypeIndex).trim();
+			String giftSourceCode = giftFile.get(i).get(giftSourceCodeIndex).trim();
 			
 			boolean isGiftZero = false;
 			
@@ -371,7 +397,8 @@ public class P2C implements RunGenerosityXBehavior {
 					.setInId(id)
 					.setLstDnAmt(giftAmount)
 					.setLstDnDat(giftDate)
-					.setSeg(giftDesignation)
+					.setRecType(giftType)
+					.setSegCode(giftSourceCode)
 					.build();
 			
 			if(giftAmount.contains("-")) // Skip negative dollar amounts
@@ -404,7 +431,8 @@ public class P2C implements RunGenerosityXBehavior {
 						record.getInId(),
 						giftAmount,
 						giftDate,
-						record.getSeg()
+						record.getRecType(),
+						record.getSegCode()
 						);
 
 				if(!giftHistoryMap.containsKey(record.getInId()))
@@ -494,14 +522,17 @@ public class P2C implements RunGenerosityXBehavior {
 						if(giftHistory.getGiftAmount() > largestGiftMadeLast18Months)
 							largestGiftMadeLast18Months = giftHistory.getGiftAmount();
 					
-					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
-						if(giftHistory.getGiftCampaign().toLowerCase().contains("staff"))
-							record.setStatus(segment.STAFF.getName());
-					
 					if(giftHistory.getGiftAmount() > largestGiftMade)
 						largestGiftMade = giftHistory.getGiftAmount();
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
+					
+					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
+					if(daysBetween <= 60) {
+						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftType());
+						if(monthlyMatcher.find())
+							record.setSeg(segment.MONTHLY.getName());
+					}
 					
 					// this is the last donation
 					if(j == 0) {
@@ -552,6 +583,8 @@ public class P2C implements RunGenerosityXBehavior {
 		for(Record record : userData.getRecordList()) {
 			if(record.getSeg().equalsIgnoreCase(segment.TOP.getName()))
 				record.setSegCode(campaignCode + "-MD1");
+			else if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
+				record.setSegCode(campaignCode + "-M1");
 			else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
 				record.setSegCode(campaignCode + "-A");
 			else if(record.getSeg().equalsIgnoreCase(segment.FREQUENT.getName()))
@@ -560,15 +593,13 @@ public class P2C implements RunGenerosityXBehavior {
 				record.setSegCode(campaignCode + "-L0");
 			else if(record.getSeg().equalsIgnoreCase(segment.NEW.getName()))
 				record.setSegCode(campaignCode + "-N0");
-			else if(record.getSeg().equalsIgnoreCase(segment.STAFF.getName()))
-				record.setSegCode(campaignCode + "-ZSTAFF0");
 		}
 	}
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. B2S25-01-DM)");
-		uid.getTextField().setText("B2S25-01-DM");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. XMAS25-01)");
+		uid.getTextField().setText("XMAS25-01");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -579,8 +610,8 @@ public class P2C implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $100, enter 100)");
-		udid.getTextField().setText("100");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $150, enter 150)");
+		udid.getTextField().setText("150");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -606,10 +637,10 @@ public class P2C implements RunGenerosityXBehavior {
 	// Convert the gift arrays to metrics
 	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
 		
-		String less = "$%s to help students take the next steps toward Jesus.";
-		String single = "$%s helps 1 student take the next steps toward Jesus.";
-		String plural = "$%s helps %s students take the next steps toward Jesus.";
-		String open = "$________ to help as many students as possible take the next steps toward Jesus.";
+		String less = "$%s to help students attend The Great Canadian Adventure Retreat and take their next steps toward Jesus.";
+		String single = "$%s helps 1 student attend The Great Canadian Adventure Retreat and take their next steps toward Jesus.";
+		String plural = "$%s helps %s students attend The Great Canadian Adventure Retreat and take their next steps toward Jesus.";
+		String open = "$________ to help as many students as possible attend The Great Canadian Adventure Retreat and take their next steps toward Jesus.";
 		
 		String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
 		
@@ -780,7 +811,7 @@ public class P2C implements RunGenerosityXBehavior {
 			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
 					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
 			
-			if(!donorSegment.equalsIgnoreCase(segment.FREQUENT.getName())
+			if(!donorSegment.equalsIgnoreCase(segment.FREQUENT.getName()) && !donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())
 					&& !donorSegment.equalsIgnoreCase(segment.TOP.getName())) // only create gifts for certain segments
 				setGiftArray(record, lastDonationRoundedUpByFive, defaultAskAmount);
 
@@ -864,8 +895,6 @@ public class P2C implements RunGenerosityXBehavior {
 					record.setSeg(segment.NEW.getName());
 				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
 					record.setSeg(segment.LAPSED.getName());
-				else if(record.getStatus().equalsIgnoreCase(segment.STAFF.getName()))
-					record.setSeg(segment.STAFF.getName());
 				else
 					record.setSeg(segment.ACTIVE.getName());
 			}
