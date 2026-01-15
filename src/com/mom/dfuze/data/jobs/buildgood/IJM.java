@@ -4,7 +4,7 @@
  * Date: Mar 15, 2020
  * Time: 3:10:39 PM
  */
-package com.mom.dfuze.data.jobs.generosityx;
+package com.mom.dfuze.data.jobs.buildgood;
 
 
 
@@ -45,13 +45,13 @@ import com.mom.dfuze.ui.UiController;
  * RegularProcess implements a RunBehavior for Monthly Jobs
  * 
  * @author Sean Johnson
- *         Mail-o-Matic Services Ltd
- *         Date: 06/11/2024
+ *         Datacore
+ *         Date: 01/13/2026
  *
  */
-public class MBA implements RunGenerosityXBehavior {
+public class IJM implements RunBuildGoodBehavior {
 
-	private final String BEHAVIOR_NAME = "MBA";
+	private final String BEHAVIOR_NAME = "IJM";
 	private String[] REQUIRED_FIELDS = {
 			UserData.fieldName.IN_ID.getName()
 	};
@@ -70,19 +70,17 @@ public class MBA implements RunGenerosityXBehavior {
 					+ Common.arrayFieldsToHTMLList(REQUIRED_FIELDS)
 					+ "</html>";
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)No client(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)Montant(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)Date(\\s+|$)", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)Donor Type(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("(^|\\s+)Account Long ID(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("(^|\\s+)Amount(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)Close Date(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)Campaign Name(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	
 	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
-		HVD("High-Value Donor"),
-		LAPSED("Lapsed"),
-		MONTHLY("Monthly"),
-		LBUNTY("LBUNTY"),
-		GENERAL("General");
+		ACTIVE_NEW("Mass one-time new active donors"),
+		ACTIVE_AGING("Mass one-time active and aging donors"),
+		LAPSED("Lapsed");
 		
 		String name;
 
@@ -115,7 +113,7 @@ public class MBA implements RunGenerosityXBehavior {
 		giftList.sort(new RecordSorters.CompareByFieldDescAsDate(UserData.fieldName.LAST_DONATION_DATE.getName(), datetimeFormatter));
 				
 		// Convert the gifts into a gift history map (id, List(history))
-		HashMap<String, List<MBAGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
+		HashMap<String, List<IJMGiftHistory>> giftHistoryMap = convertGiftsToMap(giftList, giftDateFormat);
 		
 		// process gift history into main donor list
 		processGifts(userData, giftHistoryMap);
@@ -126,11 +124,8 @@ public class MBA implements RunGenerosityXBehavior {
 		//min max rfm
 		Analyze.minMaxRFM(userData);
 		
-		// Place into categories
-		setSegment(userData);
-		
 		// value priority, high = good
-		Analyze.prioritizeRFM(userData);
+		Analyze.prioritizeRFMBuildGood(userData);
 
 		userData.getRecordList().sort(new RecordSorters.CompareByFieldDescAsNumber(UserData.fieldName.PRIORITY.getName()));
 
@@ -141,8 +136,8 @@ public class MBA implements RunGenerosityXBehavior {
 				UserData.fieldName.FIRST_DONATION_DATE.getName(),
 				UserData.fieldName.TOTAL_DONATION_AMOUNT.getName(),
 				UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_12_MONTHS.getName(),
-				UserData.fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName(),
-				UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName(),
+				//UserData.fieldName.TOTAL_DONATION_AMOUNT_CURRENT_YEAR.getName(),
+				//UserData.fieldName.TOTAL_DONATION_AMOUNT_LAST_YEAR.getName(),
 				UserData.fieldName.NUMBER_OF_DONATIONS.getName(),
 				UserData.fieldName.LARGEST_DONATION_AMOUNT.getName(),
 				UserData.fieldName.PENULTIMATE_AMOUNT.getName(),
@@ -151,7 +146,7 @@ public class MBA implements RunGenerosityXBehavior {
 				UserData.fieldName.RECENCY.getName(),
 				UserData.fieldName.FREQUENCY.getName(),
 				UserData.fieldName.MONETARY.getName(),
-				UserData.fieldName.RFM.getName(),
+				//UserData.fieldName.RFM.getName(),
 				UserData.fieldName.SEGMENT.getName(),
 				UserData.fieldName.PRIORITY.getName()
 		});
@@ -295,12 +290,12 @@ public class MBA implements RunGenerosityXBehavior {
 	}
 
 	// converts a list of gifts into a HashMap
-	private HashMap<String, List<MBAGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
+	private HashMap<String, List<IJMGiftHistory>> convertGiftsToMap(List<Record> giftList, String giftDateFormat) {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(giftDateFormat);
 
 		// id, giftHistory
-		HashMap<String, List<MBAGiftHistory>> giftHistoryMap = new HashMap<>();
+		HashMap<String, List<IJMGiftHistory>> giftHistoryMap = new HashMap<>();
 
 		for(Record record : giftList) {
 			double giftAmount = (Validators.isNumber(record.getLstDnAmt())) ? Double.parseDouble(record.getLstDnAmt()) : 0.0;
@@ -309,7 +304,7 @@ public class MBA implements RunGenerosityXBehavior {
 				//System.out.println(record.getLstDnDat() + " vs " + giftDateFormat);
 				LocalDate giftDate = LocalDate.parse(record.getLstDnDat(), formatter);
 				//System.out.println(giftDate.toString());
-				MBAGiftHistory history = new MBAGiftHistory(
+				IJMGiftHistory history = new IJMGiftHistory(
 						record.getInId(),
 						giftAmount,
 						giftDate,
@@ -317,7 +312,7 @@ public class MBA implements RunGenerosityXBehavior {
 						);
 
 				if(!giftHistoryMap.containsKey(record.getInId()))
-					giftHistoryMap.put(record.getInId(), new ArrayList<MBAGiftHistory>());
+					giftHistoryMap.put(record.getInId(), new ArrayList<IJMGiftHistory>());
 
 				giftHistoryMap.get(record.getInId()).add(history);
 			}
@@ -326,7 +321,7 @@ public class MBA implements RunGenerosityXBehavior {
 		return giftHistoryMap;
 	}
 	
-	private void processGifts(UserData userData, HashMap<String, List<MBAGiftHistory>> giftHistoryMap) {
+	private void processGifts(UserData userData, HashMap<String, List<IJMGiftHistory>> giftHistoryMap) {
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
@@ -357,10 +352,12 @@ public class MBA implements RunGenerosityXBehavior {
 			record.setMScore("0");
 			record.setQuantity("0"); // Using this to hold the number of gifts in last 12 months
 			record.setYear("0"); // Using this to hold the total donation amount of last 24 months
+			record.setSeg(segment.LAPSED.getName());
+			record.setSegCode("");
 			
 			
 			if(giftHistoryMap.containsKey(record.getInId())) {
-				List<MBAGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
+				List<IJMGiftHistory> giftHistoryList = giftHistoryMap.get(record.getInId());
 				
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
@@ -369,6 +366,7 @@ public class MBA implements RunGenerosityXBehavior {
 				
 				double totalGiftAmountLast6Months = 0.0;
 				double totalGiftAmountLast12Months = 0.0;
+				double totalGiftAmountLast24Months = 0.0;
 				int totalGiftsLast12Months = 0;
 				double totalGiftAmountCurrentYear = 0.0;
 				double totalGiftAmountLastYear = 0.0;
@@ -384,7 +382,7 @@ public class MBA implements RunGenerosityXBehavior {
 				
 				for(int j = 0; j < giftHistoryList.size(); ++j) {
 					
-					MBAGiftHistory giftHistory = giftHistoryList.get(j);
+					IJMGiftHistory giftHistory = giftHistoryList.get(j);
 					
 					// Specific to BuildGood, only count 1 gift per day for frequency
 					giftDates.add(giftHistory.getGiftDate());
@@ -406,9 +404,11 @@ public class MBA implements RunGenerosityXBehavior {
 						totalGiftAmountLast12Months += giftHistory.getGiftAmount();
 					}
 					
-					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
+					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1) {
+						totalGiftAmountLast24Months += giftHistory.getGiftAmount();
 						if(giftHistory.getGiftAmount() > largestGiftMadeLast24Months)
 							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
+					}
 					
 					long daysBetween = ChronoUnit.DAYS.between(giftHistory.getGiftDate(), LocalDate.now());
 					
@@ -416,15 +416,6 @@ public class MBA implements RunGenerosityXBehavior {
 						totalGiftAmountCurrentYear += giftHistory.getGiftAmount();
 					else if(giftHistory.getGiftDate().getYear() == lastYear)
 						totalGiftAmountLastYear += giftHistory.getGiftAmount();
-					
-					// identify monthly donors if last gift is within 60 days and monthly id found in appeal
-					if(daysBetween <= 60) {
-						Matcher monthlyMatcher = MONTHLY_DESIGNATION_PATTERN.matcher(giftHistory.getGiftCampaign());
-						if(monthlyMatcher.find()) {
-							System.out.println("monthly");
-							record.setSeg(segment.MONTHLY.getName());
-						}
-					}
 					
 					// this is the last donation
 					if(j == 0) {
@@ -447,6 +438,16 @@ public class MBA implements RunGenerosityXBehavior {
 
 				}
 				
+				// Set segments
+				long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
+				
+				if(monthsFromFirstDonation <= MONTHS6)
+					record.setSeg(segment.ACTIVE_NEW.getName());
+				else if(totalGiftAmountLast24Months > 0)
+					record.setSeg(segment.ACTIVE_AGING.getName());
+				else
+					record.setSeg(segment.LAPSED.getName());
+				
 				double monetarySum = giftAmounts.stream()
                         .mapToDouble(Double::doubleValue)
                         .sum();
@@ -467,31 +468,6 @@ public class MBA implements RunGenerosityXBehavior {
 			
 		}
 		
-	}
-
-	// Logic to categorize donors into segments
-	private void setSegment(UserData userData) {
-		final int MAJOR_DONATION_AMOUNT = 500;
-		final int LAPSED_DONATIONS_CRITERIA = 24;
-
-		String now = String.valueOf(LocalDate.now());
-		
-		for(Record record : userData.getRecordList()) {
-			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
-			double currentYearDonation = Double.parseDouble(record.getTtlDnAmtCrntYr());
-			double lastYearDonation = Double.parseDouble(record.getTtlDnAmtLstYr());
-			
-			if(record.getSeg() == null) {
-				if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
-					record.setSeg(segment.HVD.getName());
-				else if(currentYearDonation == 0.0 && lastYearDonation > 0.0)
-					record.setSeg(segment.LBUNTY.getName());
-				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
-					record.setSeg(segment.LAPSED.getName());
-				else
-					record.setSeg(segment.GENERAL.getName());
-			}
-		}
 	}
 
 	// Sets the R, F, and M scores

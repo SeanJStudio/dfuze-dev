@@ -359,7 +359,7 @@ public class Adra implements RunGenerosityXBehavior {
 		giftFile.remove(0); // remove header row
 		
 		for(int i = 0; i < giftFile.size(); ++i) {
-			String id = giftFile.get(i).get(idIndex).replaceAll("[^a-zA-Z0-9_]", "").replaceFirst("^0+", ""); // Remove leading zeros
+			String id = giftFile.get(i).get(idIndex).replaceFirst("^0+", ""); // Remove leading zeros
 			String giftAmount = giftFile.get(i).get(amountIndex).replaceAll("[^0-9\\.-]", "");
 			String giftDate = giftFile.get(i).get(giftDateIndex).replaceAll("\\d+:.*$", "").trim().replaceAll("[^a-zA-Z0-9]", "/").replaceAll("/+", "/").trim();
 			String giftDesignation = giftFile.get(i).get(appealIndex).trim();
@@ -436,9 +436,9 @@ public class Adra implements RunGenerosityXBehavior {
 			
 			// Default values
 			record.setLstDnAmt("0");
-			record.setLstDnDat("1900-01-01");
+			record.setLstDnDat("");
 			record.setFstDnAmt("0");
-			record.setFstDnDat("1900-01-01");
+			record.setFstDnDat("");
 			record.setTtlDnAmt("0");
 			record.setTtlDnAmtLst12Mnths("0");
 			record.setNumDn("0");
@@ -453,7 +453,7 @@ public class Adra implements RunGenerosityXBehavior {
 			record.setMonth("");
 			record.setAppeal("");
 			record.setPenultAmt("0");
-			record.setPenultDat("1900-01-01");
+			record.setPenultDat("");
 			
 			if(!giftHistoryMap.containsKey(record.getInId())) {
 				System.out.println("No ID for " + record.getInId());

@@ -598,8 +598,8 @@ public class P2C implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. XMAS25-01)");
-		uid.getTextField().setText("XMAS25-01");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. XMAS25-01-DM)");
+		uid.getTextField().setText("XMAS25-01-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -833,19 +833,30 @@ public class P2C implements RunGenerosityXBehavior {
 		if(defaultAskAmount >= 100)
 			sdam = 0.5;
 		
-		if(lastDonationRoundedUpByFive < defaultAskAmount * (3.0 * sdam)) {
+		if(defaultAskAmount >= 150)
+			sdam = 0.25;
+		
+		String largestDonation = record.getLrgDnAmt().replaceAll("[^0-9\\.]", "");
+		double largestDonationDouble = 0;
+		
+		if(Validators.isNumber(largestDonation)) // make sure its a valid number
+			largestDonationDouble = Double.valueOf(largestDonation);
+		
+		if(largestDonationDouble >= 1000) {
+	    	askTier = 2;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (3.0 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (2.0 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (4.0 * sdam)));
 			//record.setDn4Amt(String.valueOf(defaultAskAmount * (4.0 * sdam)));
 			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (5.0 * sdam)) {
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (6.0 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (4.0 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (6.0 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (8.0 * sdam)));
 			//record.setDn4Amt(String.valueOf(defaultAskAmount * (6.0 * sdam)));
 			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7.0 * sdam)) {
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (8.0 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (6.0 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (8.0 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (10.0 * sdam)));
@@ -857,18 +868,12 @@ public class P2C implements RunGenerosityXBehavior {
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
 			//record.setDn4Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
 			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (15.0 * sdam)) {
+		} else {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (12.0 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (18.0 * sdam)));
 			//record.setDn4Amt(String.valueOf(defaultAskAmount * (18.0 * sdam)));
 			askTier = 3;
-		} else {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (16.0 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (18.0 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (22.0 * sdam)));
-			//record.setDn4Amt(String.valueOf(defaultAskAmount * (22.0 * sdam)));
-			askTier = 2;
 		}
 
 		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))

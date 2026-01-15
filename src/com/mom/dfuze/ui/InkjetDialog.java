@@ -11,12 +11,12 @@ import javax.swing.border.EmptyBorder;
 import org.apache.commons.lang3.StringUtils;
 
 import com.mom.dfuze.ApplicationException;
+import com.mom.dfuze.data.FileExtensions;
 import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.Theme;
 import com.mom.dfuze.data.UserData;
 import com.mom.dfuze.data.UserPrefs;
 import com.mom.dfuze.io.TextWriter;
-import com.mom.dfuze.io.XLSXWriter;
 
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JLabel;
@@ -961,22 +961,22 @@ public class InkjetDialog extends JDialog {
 						File file = fileChooser.getSelectedFile();
 						String fileName = file.getAbsolutePath();
 
-						if (fileName.toLowerCase().endsWith(".xlsx"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".xlsx"));
-						else if (fileName.toLowerCase().endsWith(".xlsm"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".xlsm"));
-						else if (fileName.toLowerCase().endsWith(".accdb"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".accdb"));
-						else if (fileName.toLowerCase().endsWith(".mdb"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".mdb"));
-						else if (fileName.toLowerCase().endsWith(".dbf"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".dbf"));
-						else if (fileName.toLowerCase().endsWith(".txt"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".txt"));
-						else if (fileName.toLowerCase().endsWith(".csv"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".csv"));
-						else if (fileName.toLowerCase().endsWith(".dat"))
-							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(".dat"));
+						if (fileName.toLowerCase().endsWith(FileExtensions.XLSX))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.XLSX));
+						else if (fileName.toLowerCase().endsWith(FileExtensions.XLSM))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.XLSM));
+						else if (fileName.toLowerCase().endsWith(FileExtensions.ACCDB))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.ACCDB));
+						else if (fileName.toLowerCase().endsWith(FileExtensions.MDB))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.MDB));
+						else if (fileName.toLowerCase().endsWith(FileExtensions.DBF))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.DBF));
+						else if (fileName.toLowerCase().endsWith(FileExtensions.TXT))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.TXT));
+						else if (fileName.toLowerCase().endsWith(FileExtensions.CSV))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.CSV));
+						else if (fileName.toLowerCase().endsWith(FileExtensions.DAT))
+							fileName = fileName.substring(0, fileName.toLowerCase().lastIndexOf(FileExtensions.DAT));
 
 
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
@@ -985,28 +985,32 @@ public class InkjetDialog extends JDialog {
 						
 						List<File> files = new ArrayList<>();
 						
+						// We use CSVs as the standard for inkjet files
+						String defaultFileType = FileExtensions.CSV;
+						
 						if(uniqueFileSegments.size() > 0) {
 							for(String segment : uniqueFileSegments) {
 								// ensure only valid characters are present in file names
 								segment = StringUtils.stripAccents(segment).replaceAll("[^a-zA-Z0-9 -_]", "");
 								
-								File tempFile = new File(fileName + " " + segment + ".xlsx");
+								File tempFile = new File(fileName + " " + segment + defaultFileType);
 								if(tempFile.exists() && tempFile.isFile())
-									tempFile = new File(fileName + " " + segment + " " + idtf.format(now) + ".xlsx");
+									tempFile = new File(fileName + " " + segment + " " + idtf.format(now) + defaultFileType);
 								
 								files.add(tempFile);
 							}
 						} else {
-							File tempFile  = new File(fileName + ".xlsx");
+							File tempFile  = new File(fileName + defaultFileType);
 							if(tempFile.exists() && tempFile.isFile())
-								tempFile  = new File(fileName + " " + idtf.format(now) + ".xlsx");
+								tempFile  = new File(fileName + " " + idtf.format(now) + defaultFileType);
 							files.add(tempFile);
 						}
 						
 						
-						
+						char delimiter = ',';
 						for(int j = 0; j < finalArrayLists.size(); ++j)
-							XLSXWriter.write(files.get(j), reportInkjetHeaders, finalArrayLists.get(j), false, true);
+							TextWriter.write(files.get(j), delimiter, true, reportInkjetHeaders, finalArrayLists.get(j));
+							//XLSXWriter.write(files.get(j), reportInkjetHeaders, finalArrayLists.get(j), false, true); // Standard used to XLSX, times have changed
 						
 						
 						//=======================================

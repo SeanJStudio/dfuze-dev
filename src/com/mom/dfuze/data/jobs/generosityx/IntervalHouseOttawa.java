@@ -21,7 +21,7 @@ import javax.swing.JOptionPane;
 import com.mom.dfuze.data.Record;
 import com.mom.dfuze.data.RecordSorters;
 import com.mom.dfuze.data.UserData;
-import com.mom.dfuze.data.jobs.generosityx.AdraUkraine.segment;
+import com.mom.dfuze.data.jobs.generosityx.P2C.segment;
 import com.mom.dfuze.data.util.Analyze;
 import com.mom.dfuze.data.util.Common;
 import com.mom.dfuze.data.util.DateTimeInferer;
@@ -63,14 +63,14 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("(^|\\s+)gift_date(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	public final Pattern GIFT_FILE_CAMPAIGN_PATTERN = Pattern.compile("(^|\\s+)solicit_code_descr(\\s+|$)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("(^|\\s+)monthly(\\s+|$)", Pattern.CASE_INSENSITIVE);
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("monthly", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		NEW("New"),
 		LAPSED("Lapsed"),
 		FREQUENT("Frequent"),
 		TOP("Top"),
-		GENERAL("General"),
+		ACTIVE("General"),
 		MONTHLY("Monthly");
 		
 		String name;
@@ -124,11 +124,11 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 		// Set the campaign code
 		setCampaignCode(userData, getCampaignCode());
 		
-		double defaultAskAmount = 0;
-		
+		// Set the gift amounts
+		double defaultAskAmount = getCostPerUnit();
 		setGiftArrays(userData, defaultAskAmount);
 		
-		setGiftArrayMetrics(userData, defaultAskAmount);
+		setGiftArrayMetrics(userData, defaultAskAmount);		// normal
 		
 		// value priority, high = good
 		Analyze.prioritizeRFM(userData);
@@ -378,6 +378,7 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS24 = 24;
+		final int TOP_DONOR_AMT = 500;
 
 		String now = String.valueOf(LocalDate.now());
 		
@@ -393,7 +394,7 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 				record.setTtlDnAmt("0");
 				record.setTtlDnAmtLst12Mnths("0");
 				record.setNumDn("0");
-				record.setLrgDnAmt("0"); // largest donation amount in last 2 years;
+				record.setLrgDnAmt("0"); // largest donation amount
 				record.setDnAmtArr("");
 				record.setRScore("99999");
 				record.setFScore("0");
@@ -408,10 +409,12 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 				double totalGiftAmount = 0.0;
 				int totalGifts = giftHistoryList.size();
 				
-				double totalGiftAmountLast6Months = 0.0;
 				double totalGiftAmountLast12Months = 0.0;
 				int totalGiftsLast12Months = 0;
+				
+				double largestGiftAmountLast6Months = 0.0;
 				double largestGiftMadeLast24Months = 0.0;
+				double largestGiftMade = 0.0;
 				
 				ArrayList<Double> giftAmounts = new ArrayList<>();
 				
@@ -426,10 +429,15 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 					totalGiftAmount += giftHistory.getGiftAmount();
 					giftAmounts.add(giftHistory.getGiftAmount());
 					
+					if(giftHistory.getGiftAmount() > largestGiftMade)
+						largestGiftMade = giftHistory.getGiftAmount();
+					
 					long monthsFromDonation = getMonthsBetween(giftHistory.getGiftDate().toString(), now);
 					
-					if(monthsFromDonation <= MONTHS6 && monthsFromDonation > -1)
-						totalGiftAmountLast6Months += giftHistory.getGiftAmount();
+					if(monthsFromDonation <= MONTHS6 && monthsFromDonation > -1) {
+						if(giftHistory.getGiftAmount() > largestGiftAmountLast6Months)
+							largestGiftAmountLast6Months = giftHistory.getGiftAmount();
+					}
 					
 					if(monthsFromDonation <= MONTHS12 && monthsFromDonation > -1) {
 						++totalGiftsLast12Months;
@@ -462,6 +470,9 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 
 				}
 				
+				if(largestGiftAmountLast6Months >= TOP_DONOR_AMT)
+					record.setSeg(segment.TOP.getName());
+				
 				double monetarySum = giftAmounts.stream()
                         .mapToDouble(Double::doubleValue)
                         .sum();
@@ -471,10 +482,9 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 				record.setTtlDnAmt(String.valueOf(totalGiftAmount));
 				record.setTtlDnAmtLst12Mnths(String.valueOf(totalGiftAmountLast12Months));
 				record.setNumDn(String.valueOf(totalGifts));
-				record.setLrgDnAmt(String.valueOf(largestGiftMadeLast24Months));
+				record.setLrgDnAmt(String.valueOf(largestGiftMade));
 				record.setDnAmtArr(commaSeparatedHistory);
 				record.setNumDnLst12Mnths(String.valueOf(totalGiftsLast12Months));
-				record.setYear(String.valueOf(totalGiftAmountLast6Months)); // Using this to hold the total donation amount of last 6 months
 			}
 			
 			
@@ -504,7 +514,7 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 		for(Record record : userData.getRecordList()) {
 			if(record.getSeg().equalsIgnoreCase(segment.TOP.getName()))
 				record.setSegCode(campaignCode + "-MD1");
-			else if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
+			else if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
 				record.setSegCode(campaignCode + "-A");
 			else if(record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
 				record.setSegCode(campaignCode + "-M1");
@@ -519,8 +529,8 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the donation metric line in asks
 	private String getCampaignCode() {
-		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. 2024-LEB-BRE)");
-		uid.getTextField().setText("2024-LEB-BRE");
+		UserInputDialog uid = new UserInputDialog(UiController.getMainFrame(), "Enter the campaign code. (Ex. NOV25-01-DM)");
+		uid.getTextField().setText("NOV25-01-DM");
 		uid.setVisible(true);
 
 		if(uid.getIsNextPressed())
@@ -531,8 +541,8 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 	
 	// Prompt the user for the cost per unit for donation metrics
 	private double getCostPerUnit() {
-		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $40, enter 40)");
-		udid.getTextField().setText("40");
+		UserDecimalInputDialog udid = new UserDecimalInputDialog(UiController.getMainFrame(), "Enter the gift metric unit cost. (Ex if 1 unit costs $150, enter 150)");
+		udid.getTextField().setText("150");
 		udid.setVisible(true);
 		
 		double costPerUnit = 1.0;
@@ -556,304 +566,193 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 	}
 	
 	// Convert the gift arrays to metrics
-	private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
-		
-		String less = "";
-		String single = "";
-		String plural = "";
-		String open = "";
-		
-		String less1 = "$%s helps provide 1 day of meals for a family at IHO.";
-		String single1 = "$%s provides 1 day of meals for a family at IHO.";
-		String plural1 = "$%s provides %s days of meals for a family at IHO.";
-		String open1 = "$________ to help as many Families as possible.";
-		
-		String less2 = "$%s helps provide 1 holiday gift for a child at IHO.";
-		String single2 = "$%s provides 1 holiday gift for a child at IHO.";
-		String plural2 = "$%s provides %s holiday gifts for a child at IHO.";
-		String open2 = "$________ to help as many Children as possible.";
-		
-		DecimalFormat formatter = new DecimalFormat("#,###.00");
-		DecimalFormat provides_formatter = new DecimalFormat("#,###");
-		
-		for(Record record : userData.getRecordList()) {
+		private void setGiftArrayMetrics(UserData userData, double costPerUnit) {
 			
-			String tempLastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
-			double lastGift = 0;
+			String less = "$%s helps provide 1 night of safety for a family in crisis.";
+			String single = "$%s provides 1 night of safety for a family in crisis.";
+			String plural = "$%s provides %s nights of safety for a family in crisis.";
+			String between = "$%s helps provide %s nights of safety for a family in crisis.";
+			String open = "$________ to provide as many nights of safety for a family in crisis.";
 			
-			// determine which ask to make
-			if(Validators.isNumber(tempLastDonation)) // make sure its a valid number
-				lastGift = Double.parseDouble(tempLastDonation);
+			String formattedCostPerUnit = String.valueOf(costPerUnit).replaceAll("\\.0+$", "");
 			
-			if(lastGift <= 100) {
-				costPerUnit = 20;
-				less = less1;
-				single = single1;
-				plural = plural1;
-				open = open1;
-			} else {
-				costPerUnit = 125;
-				less = less2;
-				single = single2;
-				plural = plural2;
-				open = open2;
+			less = getGiftMetricLine("Enter the sentence to use when asks are < $" + formattedCostPerUnit, less).trim();
+			single = getGiftMetricLine("Enter the sentence to use when asks are = $" + formattedCostPerUnit, single).trim();
+			plural = getGiftMetricLine("Enter the sentence to use when asks are > $" + formattedCostPerUnit, plural).trim();
+			between = getGiftMetricLine("Enter the sentence to use when asks are between a multiple of $" + formattedCostPerUnit, between).trim();
+			open = getGiftMetricLine("Enter the sentence to use for open asks.", open).trim();
+			
+			DecimalFormat formatter = new DecimalFormat("#,###.00");
+			DecimalFormat provides_formatter = new DecimalFormat("#,###");
+			
+			for(Record record : userData.getRecordList()) {
+
+				if(Validators.isNumber(record.getDn1Amt())) {
+					double dn1 = Double.parseDouble(record.getDn1Amt());
+					double dn2 = Double.parseDouble(record.getDn2Amt());
+					double dn3 = Double.parseDouble(record.getDn3Amt());
+					double dn4 = Double.parseDouble(record.getDn4Amt());
+					int difference1 = (int) (dn1 / costPerUnit);
+					int difference2 = (int) (dn2 / costPerUnit);
+					int difference3 = (int) (dn3 / costPerUnit);
+					int difference4 = (int) (dn4 / costPerUnit);
+					double differenceDouble1 = dn1 / costPerUnit;
+					double differenceDouble2 = dn2 / costPerUnit;
+					double differenceDouble3 = dn3 / costPerUnit;
+					double differenceDouble4 = dn4 / costPerUnit;
+					
+					// Donation 1
+					if(difference1 < 1) {
+						record.setProvide1(String.format(less, formatter.format(dn1).replaceAll("\\.0+$", "")));
+					} else if(differenceDouble1 == 1.0) {
+						record.setProvide1(String.format(single, formatter.format(dn1).replaceAll("\\.0+$", "")));
+					} else {
+						if(differenceDouble1 - difference1 > 0.0)
+							record.setProvide1(String.format(between, formatter.format(dn1).replaceAll("\\.0+$", ""), provides_formatter.format(difference1+1)));
+						else
+							record.setProvide1(String.format(plural, formatter.format(dn1).replaceAll("\\.0+$", ""), provides_formatter.format(difference1)));
+					}
+					
+					// Donation 2
+					if(difference2 < 1) {
+						record.setProvide2(String.format(less, formatter.format(dn2).replaceAll("\\.0+$", "")));
+					} else if(differenceDouble2 == 1.0) {
+						record.setProvide2(String.format(single, formatter.format(dn2).replaceAll("\\.0+$", "")));
+					} else {
+						if(differenceDouble2 - difference2 > 0.0)
+							record.setProvide2(String.format(between, formatter.format(dn2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2+1)));
+						else
+							record.setProvide2(String.format(plural, formatter.format(dn2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2)));	
+					}
+					
+					// Donation 3
+					if(difference3 < 1) {
+						record.setProvide3(String.format(less, formatter.format(dn3).replaceAll("\\.0+$", "")));
+					} else if(differenceDouble3 == 1.0) {
+						record.setProvide3(String.format(single, formatter.format(dn3).replaceAll("\\.0+$", "")));
+					} else {
+						if(differenceDouble3 - difference3  > 0.0)
+							record.setProvide3(String.format(between, formatter.format(dn3).replaceAll("\\.0+$", ""), provides_formatter.format(difference3+1)));
+						else
+							record.setProvide3(String.format(plural, formatter.format(dn3).replaceAll("\\.0+$", ""), provides_formatter.format(difference3)));
+					}
+					
+					// Donation 4
+					if(difference4 < 1) {
+						record.setProvide4(String.format(less, formatter.format(dn4).replaceAll("\\.0+$", "")));
+					} else if(differenceDouble4 == 1.0) {
+						record.setProvide4(String.format(single, formatter.format(dn4).replaceAll("\\.0+$", "")));
+					} else {
+						if(differenceDouble4 - difference4  > 0.0)
+							record.setProvide4(String.format(between, formatter.format(dn4).replaceAll("\\.0+$", ""), provides_formatter.format(difference4+1)));
+						else
+							record.setProvide4(String.format(plural, formatter.format(dn4).replaceAll("\\.0+$", ""), provides_formatter.format(difference4)));
+					}
+					
+				}
+				
+				record.setODnAmt(open);
 			}
-			
-			if(Validators.isNumber(record.getDn1Amt())) {
-				double dn1 = Double.parseDouble(record.getDn1Amt());
-				double dn2 = Double.parseDouble(record.getDn2Amt());
-				double dn3 = Double.parseDouble(record.getDn3Amt());
-				double dn4 = Double.parseDouble(record.getDn4Amt());
-				int difference1 = (int) (dn1 / costPerUnit);
-				int difference2 = (int) (dn2 / costPerUnit);
-				int difference3 = (int) (dn3 / costPerUnit);
-				int difference4 = (int) (dn4 / costPerUnit);
-				
-				// Donation 1
-				if(difference1 < 1) {
-					record.setProvide1(String.format(less, formatter.format(dn1).replaceAll("\\.0+$", "")));
-				} else if(difference1 < 2) {
-					record.setProvide1(String.format(single, formatter.format(dn1).replaceAll("\\.0+$", "")));
-				} else if(difference1 >= 2) {
-					record.setProvide1(String.format(plural, formatter.format(dn1).replaceAll("\\.0+$", ""), provides_formatter.format(difference1)));
-				}
-				
-				// Donation 2
-				if(difference2 < 1) {
-					record.setProvide2(String.format(less, formatter.format(dn2).replaceAll("\\.0+$", "")));
-				} else if(difference2 < 2) {
-					record.setProvide2(String.format(single, formatter.format(dn2).replaceAll("\\.0+$", "")));
-				} else if(difference2 >= 2) {
-					record.setProvide2(String.format(plural, formatter.format(dn2).replaceAll("\\.0+$", ""), provides_formatter.format(difference2)));
-				}
-				
-				// Donation 3
-				if(difference3 < 1) {
-					record.setProvide3(String.format(less, formatter.format(dn3).replaceAll("\\.0+$", "")));
-				} else if(difference3 < 2) {
-					record.setProvide3(String.format(single, formatter.format(dn3).replaceAll("\\.0+$", "")));
-				} else if(difference3 >= 2) {
-					record.setProvide3(String.format(plural, formatter.format(dn3).replaceAll("\\.0+$", ""), provides_formatter.format(difference3)));
-				}
-				
-				// Donation 4
-				if(difference4 < 1) {
-					record.setProvide4(String.format(less, formatter.format(dn4).replaceAll("\\.0+$", "")));
-				} else if(difference4 < 2) {
-					record.setProvide4(String.format(single, formatter.format(dn4).replaceAll("\\.0+$", "")));
-				} else if(difference4 >= 2) {
-					record.setProvide4(String.format(plural, formatter.format(dn4).replaceAll("\\.0+$", ""), provides_formatter.format(difference4)));
-				}
-				
-			}
-			
-			record.setODnAmt(open);
 		}
-	}
 	
 	// Set the gift arrays
-	private void setGiftArrays(UserData userData, double defaultAskAmount) {
-		final BigDecimal LAST_GIFT_ROUNDING_AMOUNT = new BigDecimal("5.00");
+		private void setGiftArrays(UserData userData, double defaultAskAmount) {
+			final BigDecimal LAST_GIFT_ROUNDING_AMOUNT = new BigDecimal("5.00");
 
-		for(Record record : userData.getRecordList()) {
-			// initialize default values
-			record.setDn1Amt("");
-			record.setDn2Amt("");
-			record.setDn3Amt("");
-			record.setDn4Amt("");
-			record.setProvide1("");
-			record.setProvide2("");
-			record.setProvide3("");
-			record.setProvide4("");
-			record.setODnAmt("");
-			
-			String donorSegment = record.getSeg();
-			
-			String tempLastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
-			double lastGift = 0;
-			
-			if(!Validators.isNumber(tempLastDonation)) // make sure its a valid number
-				tempLastDonation = String.valueOf(LAST_GIFT_ROUNDING_AMOUNT.doubleValue());
-			else
-				lastGift = Double.parseDouble(tempLastDonation);
-			
-			if(lastGift <= 100)
-				defaultAskAmount = 20;
-			else
-				defaultAskAmount = 125;
-			
-			// last donation rounded up to nearest 5
-			Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
-					.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
-			
-			if(donorSegment.equalsIgnoreCase(segment.LAPSED.getName())) // set lapsed gifts
-				setLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
-			else if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName())) // set non-monthly gifts, leave monthly blank
-				setNonLapsedGiftArray2(record, lastDonationRoundedUpByFive, defaultAskAmount);
-
-		}
-	}
-	
-	// Logic to build lapsed gift arrays
-	private void setLapsedGiftArray2(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
-		int askTier = 1;
-		
-		// Small default amount multiplier
-		int sdam = 1;
+			for(Record record : userData.getRecordList()) {
+				// initialize default values
+				record.setDn1Amt("");
+				record.setDn2Amt("");
+				record.setDn3Amt("");
+				record.setDn4Amt("");
+				record.setProvide1("");
+				record.setProvide2("");
+				record.setProvide3("");
+				record.setProvide4("");
+				record.setODnAmt("");
 				
-		if(defaultAskAmount < 10)
-			sdam = 4;
-		else if(defaultAskAmount < 20)
-			sdam = 2;
+				String donorSegment = record.getSeg();
+				
+				String tempLastDonation = record.getLstDnAmt().replaceAll("[^0-9\\.]", "");
+				
+				if(!Validators.isNumber(tempLastDonation)) // make sure its a valid number
+					tempLastDonation = String.valueOf(LAST_GIFT_ROUNDING_AMOUNT.doubleValue());
+				
+				// last donation rounded up to nearest 5
+				Double lastDonationRoundedUpByFive = new BigDecimal(tempLastDonation).divide(LAST_GIFT_ROUNDING_AMOUNT, 2, RoundingMode.CEILING)
+						.setScale(0, RoundingMode.CEILING).multiply(LAST_GIFT_ROUNDING_AMOUNT).doubleValue();
+				
+				if(!donorSegment.equalsIgnoreCase(segment.MONTHLY.getName()) && !donorSegment.equalsIgnoreCase(segment.TOP.getName())) // only create gifts for certain segments
+					setGiftArray(record, lastDonationRoundedUpByFive, defaultAskAmount);
 
-		if(lastDonationRoundedUpByFive < defaultAskAmount * (2 * sdam)) {
-			record.setDn1Amt(String.valueOf(Math.ceil((defaultAskAmount * sdam) / 2.0))); // Round up to nearest dollar
-			record.setDn2Amt(String.valueOf(defaultAskAmount * sdam));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			askTier = 11;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			askTier = 10;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (4 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			askTier = 9;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (6 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
-			askTier = 8;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (10 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
-			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (22 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
-			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (32 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (32 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (40 * sdam)));
-			askTier = 3;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (44 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (32 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (40 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (48 * sdam)));
-			askTier = 2;
+			}
 		}
-
-		if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
-			record.setSegCode(record.getSegCode() + askTier);
-	}
 	
-	// logic to build non lapsed gift arrays
-	private void setNonLapsedGiftArray2(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
+	private void setGiftArray(Record record, Double lastDonationRoundedUpByFive, double defaultAskAmount) {
 		int askTier = 1;
 		
 		// Small default amount multiplier
-		int sdam = 1;
+		double sdam = 1;
 		
 		if(defaultAskAmount < 10)
 			sdam = 4;
 		else if(defaultAskAmount < 20)
 			sdam = 2;
-
-		if(lastDonationRoundedUpByFive < defaultAskAmount * (2 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			askTier = 11;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (3 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (2 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			askTier = 10;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (4 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (3 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			askTier = 9;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (6 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (4 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
-			askTier = 8;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (7 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (5 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (6 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (7 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
+		
+		if(defaultAskAmount >= 150)
+			sdam = 0.25;
+		
+		String largestDonation = record.getLrgDnAmt().replaceAll("[^0-9\\.]", "");
+		double largestDonationDouble = 0;
+		
+		if(Validators.isNumber(largestDonation)) // make sure its a valid number
+			largestDonationDouble = Double.valueOf(largestDonation);
+		
+		if(largestDonationDouble >= 1000) {
+	    	askTier = 2;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (4.0 * sdam)) {
+			if(defaultAskAmount >= 150)
+				record.setDn1Amt(String.valueOf(defaultAskAmount / 6));
+			else
+				record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
+			
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (2.0 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (4.0 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (6.0 * sdam)));
 			askTier = 7;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (10 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (8 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (9 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (10 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (11 * sdam)));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (6.0 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (4.0 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (6.0 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (8.0 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (10.0 * sdam)));
 			askTier = 6;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (18 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (9 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (12 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (14 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (16 * sdam)));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (8.0 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (6.0 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (8.0 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (10.0 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (12.0 * sdam)));
 			askTier = 5;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (34 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (20 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (24 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (28 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (32 * sdam)));
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (14.0 * sdam)) {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (8.0 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (10.0 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (16.0 * sdam)));
 			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (45 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (36 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (42 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (48 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (54 * sdam)));
+		} else {
+			record.setDn1Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
+			record.setDn2Amt(String.valueOf(defaultAskAmount * (16.0 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (20.0 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (24.0 * sdam)));
 			askTier = 3;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (48 * sdam)) {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (46 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (52 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (58 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (64 * sdam)));
-			askTier = 2;
 		}
 
-		if(record.getSeg().equalsIgnoreCase(segment.GENERAL.getName()))
+		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
 			record.setSegCode(record.getSegCode() + askTier);
 	}
 	
 	
 	// Logic to categorize donors into segments
 	private void setSegment(UserData userData) {
-		final int MAJOR_DONATION_AMOUNT = 500;
 		final int FREQUENT_DONATIONS_CRITERIA = 3;
 		final int NEW_DONOR_MONTHS_CRITERIA = 6;
 		final int LAPSED_DONATIONS_CRITERIA = 24;
@@ -863,20 +762,18 @@ public class IntervalHouseOttawa implements RunGenerosityXBehavior {
 			long monthsFromFirstDonation = getMonthsBetween(record.getFstDnDat(), now);
 			long monthsFromLastDonation = getMonthsBetween(record.getLstDnDat(), now);
 
-			if(record.getInId().toLowerCase().contains("seed"))
-				record.setSeg(segment.GENERAL.getName());
-			else if(record.getSeg() != null && record.getSeg().equalsIgnoreCase(segment.MONTHLY.getName()))
-				record.setSeg(segment.MONTHLY.getName());
-			else if(Double.parseDouble(record.getYear()) >= MAJOR_DONATION_AMOUNT) //getYear is total donation amount in last 6 months
-				record.setSeg(segment.TOP.getName());
-			else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
-				record.setSeg(segment.NEW.getName());
-			else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA)
-				record.setSeg(segment.FREQUENT.getName());
-			else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
-				record.setSeg(segment.LAPSED.getName());
-			else
-				record.setSeg(segment.GENERAL.getName());
+			if(record.getSeg() == null) {
+				if(record.getInId().toLowerCase().contains("seed"))
+					record.setSeg(segment.ACTIVE.getName());
+				else if(Integer.parseInt(record.getNumDnLst12Mnths()) >= FREQUENT_DONATIONS_CRITERIA)
+					record.setSeg(segment.FREQUENT.getName());
+				else if(monthsFromFirstDonation >= 0 && monthsFromFirstDonation <= NEW_DONOR_MONTHS_CRITERIA)
+					record.setSeg(segment.NEW.getName());
+				else if(monthsFromLastDonation > LAPSED_DONATIONS_CRITERIA)
+					record.setSeg(segment.LAPSED.getName());
+				else
+					record.setSeg(segment.ACTIVE.getName());
+			}
 		}
 	}
 

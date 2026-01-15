@@ -4,7 +4,7 @@
  * Date: Mar 15, 2020
  * Time: 3:10:39 PM
  */
-package com.mom.dfuze.data.jobs.generosityx;
+package com.mom.dfuze.data.jobs.buildgood;
 
 
 
@@ -49,7 +49,7 @@ import com.mom.dfuze.ui.UiController;
  *         Date: 06/11/2024
  *
  */
-public class MBA implements RunGenerosityXBehavior {
+public class MBA implements RunBuildGoodBehavior {
 
 	private final String BEHAVIOR_NAME = "MBA";
 	private String[] REQUIRED_FIELDS = {

@@ -64,6 +64,16 @@ public class Analyze {
 
 	}
 	
+	public static void prioritizeRFMBuildGood(UserData userData) {
+		for(Record record : userData.getRecordList()) {
+			double sum = 0;
+			sum += Double.parseDouble(record.getRScore());
+			sum += Double.parseDouble(record.getMScore());
+			sum += Double.parseDouble(record.getFScore());
+			record.setPriority(String.valueOf(sum));
+		}
+	}
+	
 	public static void prioritizeRFM(UserData userData) {
 		for(Record record : userData.getRecordList()) {
 			double sum = 0;

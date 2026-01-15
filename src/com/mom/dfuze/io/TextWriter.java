@@ -42,7 +42,7 @@ public class TextWriter {
 	 * @param file
 	 *          the text based file to create
 	 * @param delimiter
-	 *          the delimiter to delimited the data by
+	 *          the delimiter to delimit the data by
 	 * @param includeHeader
 	 *          boolean value to include headers or not
 	 * @param headers

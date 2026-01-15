@@ -74,14 +74,14 @@ public class BIS implements RunGenerosityXBehavior {
 	public final Pattern NEW_PATTERN = Pattern.compile("(4|5)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	public final Pattern LAPSED_PATTERN = Pattern.compile("(1)_(1|2|3|4|5)_(1|2|3|4|5)", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("donor_id", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("amount", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("date", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_TYPE_PATTERN = Pattern.compile("memo", Pattern.CASE_INSENSITIVE);
-	public final Pattern GIFT_FILE_APPEAL_PATTERN = Pattern.compile("designationName", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_ID_PATTERN = Pattern.compile("contact id|donor_id", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_AMOUNT_PATTERN = Pattern.compile("^amount$", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_DATE_PATTERN = Pattern.compile("Payment Captured \\(Donor's Local Timezone\\)|^date$", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_TYPE_PATTERN = Pattern.compile("frequency|^memo$", Pattern.CASE_INSENSITIVE);
+	public final Pattern GIFT_FILE_APPEAL_PATTERN = Pattern.compile("Fund Name|designationName", Pattern.CASE_INSENSITIVE);
 	
-	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("recurring", Pattern.CASE_INSENSITIVE);
-	public final Pattern CHILD_SPONSOR_PATTERN = Pattern.compile("CHILD SPONSORSHIP", Pattern.CASE_INSENSITIVE);
+	public final Pattern MONTHLY_DESIGNATION_PATTERN = Pattern.compile("recurring|monthly", Pattern.CASE_INSENSITIVE);
+	public final Pattern CHILD_SPONSOR_PATTERN = Pattern.compile("CHILD SPONSORSHIP|Sponsor A Child", Pattern.CASE_INSENSITIVE);
 
 	public enum segment {
 		TOP("Top"),
@@ -424,6 +424,7 @@ public class BIS implements RunGenerosityXBehavior {
 		final int MONTHS6 = 6;
 		final int MONTHS12 = 12;
 		final int MONTHS18 = 18;
+		final int MONTHS24 = 24;
 		
 		final double TOP_DONOR_AMOUNT = 500.0;
 
@@ -497,6 +498,10 @@ public class BIS implements RunGenerosityXBehavior {
 						if(giftHistory.getGiftAmount() > largestGiftMadeLast18Months)
 							largestGiftMadeLast18Months = giftHistory.getGiftAmount();
 					
+					if(monthsFromDonation <= MONTHS24 && monthsFromDonation > -1)
+						if(giftHistory.getGiftAmount() > largestGiftMadeLast18Months)
+							largestGiftMadeLast24Months = giftHistory.getGiftAmount();
+					
 					if(monthsFromDonation <= MONTHS6 && monthsFromDonation > -1)
 						if(giftHistory.getGiftAmount() > largestGiftMadeLast6Months)
 							largestGiftMadeLast6Months = giftHistory.getGiftAmount();
@@ -547,7 +552,7 @@ public class BIS implements RunGenerosityXBehavior {
                         .mapToDouble(Double::doubleValue)
                         .sum();
 				
-				if(largestGiftMadeLast6Months >= TOP_DONOR_AMOUNT)
+				if(largestGiftMadeLast24Months >= TOP_DONOR_AMOUNT)
 					record.setSeg(segment.TOP.getName());
 				
 				record.setMScore(String.valueOf(monetarySum));
@@ -752,7 +757,15 @@ public class BIS implements RunGenerosityXBehavior {
 		//if(defaultAskAmount >= 100)
 		//	sdam = 0.5;
 		
-		if(lastDonationRoundedUpByFive < defaultAskAmount * (3.0 * sdam)) {
+		String largestDonation = record.getLrgDnAmt().replaceAll("[^0-9\\.]", "");
+		double largestDonationDouble = 0;
+		
+		if(Validators.isNumber(largestDonation)) // make sure its a valid number
+			largestDonationDouble = Double.valueOf(largestDonation);
+		
+		if(largestDonationDouble >= 1000) {
+	    	askTier = 2;
+		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (3.0 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * sdam));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (2.0 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (4.0 * sdam)));
@@ -773,25 +786,26 @@ public class BIS implements RunGenerosityXBehavior {
 		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (11.0 * sdam)) {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (8.0 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (10.0 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (16.0 * sdam)));
+			record.setDn3Amt(String.valueOf(defaultAskAmount * (12.0 * sdam)));
+			record.setDn4Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
 			askTier = 4;
-		} else if(lastDonationRoundedUpByFive < defaultAskAmount * (15.0 * sdam)) {
+		} else {
 			record.setDn1Amt(String.valueOf(defaultAskAmount * (12.0 * sdam)));
 			record.setDn2Amt(String.valueOf(defaultAskAmount * (14.0 * sdam)));
 			record.setDn3Amt(String.valueOf(defaultAskAmount * (18.0 * sdam)));
 			record.setDn4Amt(String.valueOf(defaultAskAmount * (20.0 * sdam)));
 			askTier = 3;
-		} else {
-			record.setDn1Amt(String.valueOf(defaultAskAmount * (16.0 * sdam)));
-			record.setDn2Amt(String.valueOf(defaultAskAmount * (18.0 * sdam)));
-			record.setDn3Amt(String.valueOf(defaultAskAmount * (22.0 * sdam)));
-			record.setDn4Amt(String.valueOf(defaultAskAmount * (24.0 * sdam)));
-			askTier = 2;
 		}
 
 		if(record.getSeg().equalsIgnoreCase(segment.ACTIVE.getName()))
 			record.setSegCode(record.getSegCode() + askTier);
+		
+		if(record.getSeg().equalsIgnoreCase(segment.LAPSED.getName()) && largestDonationDouble >= 500) {
+			record.setDn1Amt("");
+			record.setDn2Amt("");
+			record.setDn3Amt("");
+			record.setDn4Amt("");
+		}
 	}
 	
 	// Logic to categorize donors into segments
