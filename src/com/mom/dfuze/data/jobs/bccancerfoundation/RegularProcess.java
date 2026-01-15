@@ -97,7 +97,7 @@ public class RegularProcess implements RunBCCancerFoundationBehavior {
 			String dn2Amt = giftArray[1];
 			String dn3Amt = giftArray[2];
 			
-			String barCode = String.format("*%s$I%s$I%s$I%s$I%s*", id, appeal, fundId, letterCode, pkg);
+			String barCode = String.format("*%s$I%s$I%s$I%s*", id, appeal, letterCode, pkg);
 
 			Record record = new Record.Builder(i, data[i], "", "", "")
 					.setLetVer(letterCode)
